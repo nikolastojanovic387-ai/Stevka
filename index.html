@@ -68,7 +68,9 @@ header{flex-shrink:0;height:52px;display:flex;align-items:center;justify-content
 .legend{position:absolute;left:8px;bottom:8px;display:flex;flex-direction:column;gap:4px;background:rgba(2,11,24,0.82);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:7px 9px;pointer-events:none;}
 .leg-row{display:flex;align-items:center;gap:6px;font-size:10px;color:rgba(138,176,204,0.75);}
 .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.mfab{position:absolute;right:8px;bottom:8px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.28);border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);cursor:pointer;min-height:38px;display:flex;align-items:center;}
+.mfab{position:absolute;right:8px;bottom:8px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.28);border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);cursor:pointer;min-height:38px;display:flex;align-items:center;touch-action:manipulation;}
+.mfab.free{background:rgba(255,202,40,0.15);border-color:rgba(255,202,40,0.4);color:var(--gold);}
+#lockBtn{bottom:54px;padding:0;width:38px;height:38px;justify-content:center;font-size:16px;letter-spacing:0;}
 #fadeEl{position:absolute;inset:0;background:#010812;opacity:0;pointer-events:none;transition:opacity 0.35s;z-index:20;}
 #fadeEl.show{opacity:1;pointer-events:all;}
 #yearFlash{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(3,13,30,0.92);border:1px solid rgba(0,229,255,0.3);border-radius:12px;padding:6px 16px;pointer-events:none;font-family:'Orbitron',monospace;font-size:12px;color:var(--cyan);opacity:0;transition:opacity 0.3s;z-index:50;white-space:nowrap;}
@@ -86,6 +88,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .yr-end{font-family:'Space Mono',monospace;font-size:9px;color:rgba(138,176,204,0.3);flex-shrink:0;}
 /* Sheets */
 #sheet,#optSheet,#listOverlay,#planetSheet{position:fixed;left:0;right:0;bottom:0;z-index:200;background:var(--panel);border-top:1px solid rgba(0,229,255,0.22);border-radius:20px 20px 0 0;transform:translateY(110%);transition:transform 0.38s cubic-bezier(0.32,0.72,0,1);backdrop-filter:blur(20px);}
+.pl-close{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.07);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;touch-action:manipulation;}
 .sheet-open{transform:translateY(0)!important;}
 #sheet{max-height:72vh;display:flex;flex-direction:column;}
 #optSheet{max-height:82vh;display:flex;flex-direction:column;}
@@ -228,12 +231,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 <body>
 <header>
   <div class="h-brand"><em>STEVKA</em></div>
-  <div class="h-pills">
-    <div class="pill"><span class="pill-val c" id="hR">131</span><span class="pill-lbl" data-i18n="p_ly">LY Radius</span></div>
-    <div class="pill"><span class="pill-val" id="hS">—</span><span class="pill-lbl" data-i18n="p_reach">Reached</span></div>
-    <div class="pill"><span class="pill-val g" id="hH">—</span><span class="pill-lbl" data-i18n="p_hab">Habitable</span></div>
-  </div>
-  <div class="hbtn" id="habBtn" title="Filter habitable stars" style="font-size:15px;border-color:rgba(0,230,118,0.2);">🌿</div>
+  <div class="h-pills" style="flex:1;"></div>
+  <div class="hbtn" id="habBtn" title="Filter habitable stars" style="font-size:14px;border-color:rgba(0,230,118,0.25);position:relative;">🌿<span id="hH" style="position:absolute;top:-5px;right:-5px;background:#00e676;color:#000;font-size:8px;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;font-family:'Space Mono',monospace;"></span></div>
   <div class="hbtn" id="chartBtn" title="Life probability chart" style="font-size:15px;border-color:rgba(0,180,255,0.2);">📊</div>
   <div class="hbtn" id="optBtn">⚙️</div>
 </header>
@@ -247,11 +246,14 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
     <div class="tap-hint" data-i18n="tap_hint">Tap ★ or planet · drag · pinch</div>
   </div>
   <div class="legend" id="legendEl">
-    <div class="leg-row"><div class="leg-dot" style="background:#ffca28;box-shadow:0 0 5px #ffca28"></div><span data-i18n="l1">Habitable planets</span></div>
-    <div class="leg-row"><div class="leg-dot" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff"></div><span data-i18n="l2">Reached</span></div>
-    <div class="leg-row"><div class="leg-dot" style="background:#ff4060"></div><span data-i18n="l4">Not yet reached</span></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#ffca28;box-shadow:0 0 6px #ffca28aa"></div><span data-i18n="l1">🌿 Habitable zone planet</span></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#00e5ff;box-shadow:0 0 6px #00e5ffaa"></div><span data-i18n="l2">📡 Radio reached</span></div>
+    <div class="leg-row"><div class="leg-dot" style="background:#ff4060;box-shadow:0 0 4px #ff406066"></div><span data-i18n="l4">🔕 Not reached yet</span></div>
   </div>
   <div class="mfab" id="listFab" data-i18n="all_stars">☰ ALL STARS</div>
+  <div class="mfab" id="homeBtn" style="right:8px;bottom:100px;font-size:16px;padding:0;width:38px;height:38px;justify-content:center;">🏠</div>
+  <div class="mfab" id="lockBtn" style="right:8px;bottom:54px;font-size:16px;padding:0;width:38px;height:38px;justify-content:center;">🔒</div>
+
   <div id="yearFlash"></div>
   <div id="fadeEl"></div>
 </div>
@@ -270,7 +272,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 </div>
 
 <div id="sheet"><div class="sh-drag" id="shDrag"><div class="sh-drag-bar"></div></div><div class="sh-head" id="shHead"></div><div class="sh-body" id="shBody"></div></div>
-<div id="planetSheet"><div class="sh-drag" id="plDrag"><div class="sh-drag-bar"></div></div><div class="sh-head" id="plHead"></div><div class="sh-body" id="plBody"></div></div>
+<div id="planetSheet"><div class="sh-drag" id="plDrag"><div class="sh-drag-bar"></div><div class="pl-close" id="plClose">✕</div></div><div class="sh-head" id="plHead"></div><div class="sh-body" id="plBody"></div></div>
 
 <div id="optSheet">
   <div class="sh-drag" id="optDrag"><div class="sh-drag-bar"></div></div>
@@ -685,11 +687,127 @@ const stars=[
   {name:"Kepler-62",dist:990,angle:62,type:"K2V Orange Dwarf",type_ru:"K2V Оранжевый карлик",size:2.2,hab:true,constellation:"Lyra",planets:"Kepler-62e (1.61 R⊕, inner HZ) · Kepler-62f (1.41 R⊕, outer HZ, ESI 0.67) · b c d (inner)",planets_ru:"Kepler-62e (1,61 R⊕, внутр. зона обит.) · Kepler-62f (1,41 R⊕, внешн. зона обит., ИСЗ 0,67) · b c d"},
   {name:"Kepler-442",dist:1206,angle:80,type:"K5V Orange Dwarf",type_ru:"K5V Оранжевый карлик",size:2.1,hab:true,constellation:"Lyra",planets:"Kepler-442b (confirmed, 1.34 R⊕, ESI 0.84 — one of most habitable known exoplanets)",planets_ru:"Kepler-442b (подтверждена, 1,34 R⊕, ИСЗ 0,84 — одна из наиболее обитаемых известных экзопланет)"},
   {name:"Kepler-452",dist:1402,angle:58,type:"G2V Yellow Dwarf",type_ru:"G2V Жёлтый карлик",size:2.3,hab:true,constellation:"Cygnus",planets:"Kepler-452b (confirmed, 1.63 R⊕, ESI 0.83 — 'Earth's cousin', first HZ super-Earth around a G-type star)",planets_ru:"Kepler-452b (подтверждена, 1,63 R⊕, ИСЗ 0,83 — «кузен Земли», первая суперземля в зоне обит. у G-звезды)"},
+  // ── New stars within 500 ly ────────────────────────────────────────────────
+  {name:"61 Cygni",dist:11.4,angle:98,type:"K5Ve + K7Ve Binary",type_ru:"K5Ve + K7Ve Двойная",size:2.0,hab:false,constellation:"Cygnus",planets:"No confirmed planets (intensive search ongoing)",planets_ru:"Нет подтверждённых планет (активный поиск)"},
+  {name:"70 Ophiuchi",dist:16.6,angle:85,type:"K0V + K4V Binary",type_ru:"K0V + K4V Двойная",size:2.1,hab:false,constellation:"Ophiuchus",planets:"No confirmed planets despite historic claims",planets_ru:"Нет подтверждённых планет, несмотря на исторические заявления"},
+  {name:"Sigma Draconis",dist:18.8,angle:48,type:"K0V Orange Dwarf",type_ru:"K0V Оранжевый карлик",size:2.0,hab:false,constellation:"Draco",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"82 Eridani",dist:19.7,angle:203,type:"G8V Yellow Dwarf",type_ru:"G8V Жёлтый карлик",size:2.2,hab:true,constellation:"Eridanus",planets:"3 super-Earths: b (1.7 M⊕), c (2.4 M⊕), d (2.0 M⊕) — inner system",planets_ru:"3 суперземли: b, c, d — внутренняя система"},
+  {name:"Delta Pavonis",dist:19.9,angle:237,type:"G8IV Yellow Subgiant",type_ru:"G8IV Жёлтый субгигант",size:2.3,hab:false,constellation:"Pavo",planets:"No confirmed planets — prime SETI target",planets_ru:"Нет подтверждённых планет — приоритетная цель SETI"},
+  {name:"Beta Hydri",dist:24.4,angle:242,type:"G2IV Yellow Subgiant",type_ru:"G2IV Жёлтый субгигант",size:2.4,hab:false,constellation:"Hydrus",planets:"No confirmed planets — nearest subgiant to Earth",planets_ru:"Нет подтверждённых планет — ближайший субгигант к Земле"},
+  {name:"Eta Cassiopeiae",dist:19.4,angle:18,type:"G0V + K7V Binary",type_ru:"G0V + K7V Двойная",size:2.3,hab:false,constellation:"Cassiopeia",planets:"No confirmed planets (studied for biosignatures)",planets_ru:"Нет подтверждённых планет"},
+  {name:"Zeta Tucanae",dist:28.0,angle:258,type:"F9.5V Yellow Dwarf",type_ru:"F9.5V Жёлтый карлик",size:2.2,hab:false,constellation:"Tucana",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"Beta Canum Ven.",dist:27.4,angle:132,type:"G0V Yellow Dwarf",type_ru:"G0V Жёлтый карлик",size:2.2,hab:false,constellation:"Canes Venatici",planets:"No confirmed planets — SETI target (Cor Caroli A)",planets_ru:"Нет подтверждённых планет"},
+  {name:"Pi3 Orionis",dist:26.2,angle:335,type:"F6V Yellow Dwarf",type_ru:"F6V Жёлтый карлик",size:2.5,hab:false,constellation:"Orion",planets:"Unconfirmed planet candidate",planets_ru:"Неподтверждённый кандидат в планеты"},
+  {name:"HD 40307",dist:42.0,angle:225,type:"K2.5V Orange Dwarf",type_ru:"K2.5V Оранжевый карлик",size:1.9,hab:true,constellation:"Pictor",planets:"HD 40307 g (7.1 M⊕, HZ, super-Earth) + 5 others",planets_ru:"HD 40307 g (7,1 M⊕, зона обит.) + 5 других"},
+  {name:"Gliese 667",dist:22.7,angle:213,type:"K3V + K5V + M Triple",type_ru:"K3V + K5V + M Тройная",size:2.1,hab:true,constellation:"Scorpius",planets:"3 confirmed in HZ around component C",planets_ru:"3 подтверждённых в зоне обитаемости компонента C"},
+  {name:"HD 85512",dist:36.6,angle:218,type:"K5V Orange Dwarf",type_ru:"K5V Оранжевый карлик",size:1.9,hab:true,constellation:"Vela",planets:"HD 85512 b (3.6 M⊕, inner HZ edge, ESI 0.77)",planets_ru:"HD 85512 b (3,6 M⊕, внутр. край зоны обит., ИСЗ 0,77)"},
+  {name:"HD 20794",dist:19.7,angle:191,type:"G8V Yellow Dwarf",type_ru:"G8V Жёлтый карлик",size:2.2,hab:true,constellation:"Eridanus",planets:"3 super-Earths: e (2.5 M⊕, HZ), b, c",planets_ru:"3 суперземли: e (2,5 M⊕, зона обит.), b, c"},
+  {name:"Alpha Mensae",dist:33.2,angle:254,type:"G6V Yellow Dwarf",type_ru:"G6V Жёлтый карлик",size:2.2,hab:false,constellation:"Mensa",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"Gamma Leporis",dist:29.3,angle:342,type:"F7V Yellow Dwarf",type_ru:"F7V Жёлтый карлик",size:2.3,hab:false,constellation:"Lepus",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"Mu Herculis",dist:27.1,angle:67,type:"G5IV Yellow Subgiant",type_ru:"G5IV Жёлтый субгигант",size:2.2,hab:false,constellation:"Hercules",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"HD 101501",dist:29.8,angle:150,type:"G8V Yellow Dwarf",type_ru:"G8V Жёлтый карлик",size:2.1,hab:false,constellation:"Canes Venatici",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"36 Ophiuchi",dist:19.5,angle:93,type:"K2V + K1V + K6V Triple",type_ru:"K2V + K1V + K6V Тройная",size:2.0,hab:false,constellation:"Ophiuchus",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"Xi Bootis",dist:22.0,angle:142,type:"G8Ve + K4Ve Binary",type_ru:"G8Ve + K4Ve Двойная",size:2.1,hab:false,constellation:"Boötes",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"Iota Persei",dist:34.4,angle:22,type:"G0V Yellow Dwarf",type_ru:"G0V Жёлтый карлик",size:2.2,hab:false,constellation:"Perseus",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"Zeta Reticuli",dist:39.3,angle:265,type:"G2V + G1V Binary",type_ru:"G2V + G1V Двойная",size:2.3,hab:false,constellation:"Reticulum",planets:"Debris disk detected — UFO folklore star",planets_ru:"Обнаружен диск обломков — звезда уфологических легенд"},
+  // ── More important studied stars within 500 ly ────────────────────────────
+  {name:"61 Virginis",dist:27.8,angle:168,type:"G7V Yellow Dwarf",type_ru:"G7V Жёлтый карлик",size:2.1,hab:true,constellation:"Virgo",planets:"3 super-Earths: b(5.1M⊕), c(18M⊕), d(22.9M⊕) — inner system, HZ possible",planets_ru:"3 суперземли: b, c, d — возможна обитаемая зона"},
+  {name:"HD 69830",dist:41.0,angle:195,type:"K0V Orange Dwarf",type_ru:"K0V Оранжевый карлик",size:1.9,hab:true,constellation:"Puppis",planets:"3 Neptunes: b c d + massive asteroid belt + possible HZ",planets_ru:"3 нептуна + пояс астероидов + возможная зона обитаемости"},
+  {name:"55 Cnc b / Copernicus",dist:40.3,angle:125,type:"G8V + M3.5V Binary",type_ru:"G8V + M3.5V Двойная",size:2.5,hab:true,constellation:"Cancer",planets:"5 planets inc. 55 Cnc e (lava world) + f near HZ",planets_ru:"5 планет вкл. 55 Рака e (лавовый мир) + f у зоны обит."},
+  {name:"Upsilon Andromedae",dist:44.0,angle:20,type:"F8V + M4.5V Binary",type_ru:"F8V + M4.5V Двойная",size:2.8,hab:false,constellation:"Andromeda",planets:"4 planets including hot Jupiters b c d e",planets_ru:"4 планеты вкл. горячие юпитеры b c d e"},
+  {name:"47 Ursae Majoris",dist:45.9,angle:142,type:"G1V Yellow Dwarf",type_ru:"G1V Жёлтый карлик",size:2.2,hab:true,constellation:"Ursa Major",planets:"3 Jupiter-analogs: b(2.6 MJ) c(0.54 MJ) d(1.6 MJ) + HZ clear",planets_ru:"3 аналога Юпитера: b, c, d + чистая зона обитаемости"},
+  {name:"Mu Arae",dist:50.6,angle:212,type:"G3IV Yellow Dwarf",type_ru:"G3IV Жёлтый карлик",size:2.4,hab:true,constellation:"Ara",planets:"4 planets: b(1.7MJ) c(10.5M⊕) d(0.52MJ) e(1.81MJ)",planets_ru:"4 планеты: b, c (суперземля), d, e"},
+  {name:"Iota Horologii",dist:56.2,angle:270,type:"F8V Yellow Dwarf",type_ru:"F8V Жёлтый карлик",size:2.3,hab:false,constellation:"Horologium",planets:"1 hot Jupiter: b (2.26 MJ, 311-day orbit)",planets_ru:"1 горячий юпитер: b (2,26 MJ, 311-дневная орбита)"},
+  {name:"Beta Pictoris",dist:63.4,angle:240,type:"A6V White Star",type_ru:"A6V Белая звезда",size:3.0,hab:false,constellation:"Pictor",planets:"b (9 MJ, directly imaged) + c (8 MJ) — young 23M yr system",planets_ru:"b и c (прямое фото) — молодая система 23 млн лет"},
+  {name:"Fomalhaut",dist:25.0,angle:215,type:"A3Va White Star",type_ru:"A3Va Белая звезда",size:3.2,hab:false,constellation:"Piscis Austrinus",planets:"Fomalhaut b (candidate, possibly disintegrating, 2 MJ)",planets_ru:"Фомальгаут b (кандидат, возможно распадается)"},
+  {name:"HD 189733",dist:63.0,angle:88,type:"K2V + M4V Binary",type_ru:"K2V + M4V Двойная",size:2.0,hab:false,constellation:"Vulpecula",planets:"b: closest hot Jupiter to Earth, azure blue, 1150°C winds 8700 km/h",planets_ru:"b: ближайший горячий юпитер, лазурно-синий, ветры 8700 км/ч"},
+  {name:"WASP-12",dist:870,angle:105,type:"G0V Yellow Dwarf",type_ru:"G0V Жёлтый карлик",size:2.2,hab:false,constellation:"Auriga",planets:"b: ultra-hot Jupiter being devoured by its star (1.1-day orbit)",planets_ru:"b: ультрагорячий юпитер, поглощаемый звездой (орбита 1,1 сут.)"},
+  {name:"Regulus",dist:79.0,angle:163,type:"B7V Blue-White",type_ru:"B7V Сине-белая",size:3.4,hab:false,constellation:"Leo",planets:"None — rapid rotator (86% breakup speed)",planets_ru:"Нет — быстрый ротатор (86% скорости разрыва)"},
+  {name:"Arcturus",dist:37.0,angle:148,type:"K0III Orange Giant",type_ru:"K0III Оранжевый гигант",size:3.5,hab:false,constellation:"Boötes",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
+  {name:"Castor",dist:51.0,angle:127,type:"A1V + A2V + M + Binary",type_ru:"A1V + A2V + M — кратная",size:3.2,hab:false,constellation:"Gemini",planets:"6-star system — no HZ planets possible",planets_ru:"6-кратная система — планеты в зоне обит. невозможны"},
+  {name:"Pollux",dist:33.8,angle:125,type:"K0III Orange Giant",type_ru:"K0III Оранжевый гигант",size:3.4,hab:false,constellation:"Gemini",planets:"Pollux b (2.3 MJ giant confirmed, 1.69 AU orbit)",planets_ru:"Поллукс b (2,3 MJ, подтверждена, орбита 1,69 а.е.)"},
+  {name:"Altair",dist:16.7,angle:70,type:"A7V White Star",type_ru:"A7V Белая звезда",size:2.9,hab:false,constellation:"Aquila",planets:"No confirmed planets — rapid rotator, oblate shape",planets_ru:"Нет планет — быстрый ротатор, сплющенная форма"},
+  {name:"Deneb",dist:2600,angle:80,type:"A2Ia White Supergiant",type_ru:"A2Ia Белый сверхгигант",size:5.0,hab:false,constellation:"Cygnus",planets:"None — luminosity 200,000×Sun",planets_ru:"Нет — светимость 200 000 Солнц"},
+  {name:"Sirius B",dist:8.6,angle:156,type:"DA2 White Dwarf",type_ru:"DA2 Белый карлик",size:1.5,hab:false,constellation:"Canis Major",planets:"No — companion to Sirius A",planets_ru:"Нет — компаньон Сириуса A"},
+  {name:"Procyon",dist:11.5,angle:135,type:"F5IV Yellow Subgiant",type_ru:"F5IV Жёлтый субгигант",size:2.7,hab:false,constellation:"Canis Minor",planets:"No confirmed planets (Procyon B is white dwarf)",planets_ru:"Нет подтверждённых планет"},
+  {name:"Achernar",dist:139,angle:270,type:"B6Vep Blue Star",type_ru:"B6Vep Синяя звезда",size:3.8,hab:false,constellation:"Eridanus",planets:"None — oblate rapid rotator, most flattened known star",planets_ru:"Нет — сильно сплющенная, самая сплюснутая из известных звёзд"},
+  {name:"Rigel",dist:860,angle:325,type:"B8Ia Blue Supergiant",type_ru:"B8Ia Синий сверхгигант",size:5.0,hab:false,constellation:"Orion",planets:"None — 120,000× solar luminosity",planets_ru:"Нет — светимость 120 000 Солнц"},
+  {name:"Capella",dist:42.9,angle:115,type:"G8III + G0III Binary",type_ru:"G8III + G0III Двойная",size:3.5,hab:false,constellation:"Auriga",planets:"No confirmed planets (both are giant stars)",planets_ru:"Нет — обе звезды гиганты"},
+  {name:"Aldebaran",dist:65.3,angle:347,type:"K5III Red Giant",type_ru:"K5III Красный гигант",size:3.6,hab:false,constellation:"Taurus",planets:"b: super-Jupiter (6.5 MJ) in wide orbit",planets_ru:"b: суперюпитер (6,5 MJ) на широкой орбите"},
+  {name:"HD 10700",dist:11.9,angle:190,type:"G8.5V Yellow Dwarf",type_ru:"G8.5V Жёлтый карлик",size:2.2,hab:true,constellation:"Cetus",planets:"4 super-Earths: g h e f — two near HZ (Tau Ceti)",planets_ru:"4 суперземли: g h e f — две у зоны обит. (Тау Кита)"},
+  {name:"Alnilam",dist:2000,angle:330,type:"B0Ia Blue Supergiant",type_ru:"B0Ia Синий сверхгигант",size:5.0,hab:false,constellation:"Orion",planets:"None — Orion's Belt center star",planets_ru:"Нет — центральная звезда Пояса Ориона"},
+  {name:"Eta Carinae",dist:7500,angle:225,type:"LBV Blue Variable",type_ru:"LBV Переменная голубая",size:5.0,hab:false,constellation:"Carina",planets:"None — 5 million solar luminosities, pre-supernova",planets_ru:"Нет — 5 млн светимостей Солнца, pre-сверхновая"},
+  {name:"Kappa1 Ceti",dist:29.8,angle:103,type:"G5V Yellow Dwarf",type_ru:"G5V Жёлтый карлик",size:2.1,hab:false,constellation:"Cetus",planets:"No confirmed planets — young Sun analog (600 Myr), SETI interest",planets_ru:"Нет — молодой аналог Солнца (600 млн лет), интерес SETI"},
+  {name:"Alpha Centauri A",dist:4.24,angle:202,type:"G2V Yellow Dwarf",type_ru:"G2V Жёлтый карлик",size:2.2,hab:false,constellation:"Centaurus",planets:"Candidate planet in HZ (disputed)",planets_ru:"Кандидат в планеты в зоне обит. (спорно)"},
+  {name:"Alpha Centauri B",dist:4.24,angle:203,type:"K1V Orange Dwarf",type_ru:"K1V Оранжевый карлик",size:2.0,hab:false,constellation:"Centaurus",planets:"No confirmed planets",planets_ru:"Нет подтверждённых планет"},
   // far
   {name:"Spica",dist:250,angle:177,type:"B1III-IV Binary",type_ru:"B1III-IV Двойная",size:3.6,hab:false,constellation:"Virgo",planets:"None confirmed",planets_ru:"Не обнаружено"},
   {name:"Canopus",dist:310,angle:232,type:"A9II White Supergiant",type_ru:"A9II Белый сверхгигант",size:4.2,hab:false,constellation:"Carina",planets:"None confirmed",planets_ru:"Не обнаружено"},
   {name:"Polaris",dist:433,angle:3,type:"F7Ib Yellow Supergiant",type_ru:"F7Ib Жёлтый сверхгигант",size:3.8,hab:false,constellation:"Ursa Minor",planets:"Polaris Ab (confirmed companion)",planets_ru:"Полярная Ab (подтверждённый компаньон)"},
-  {name:"Betelgeuse",dist:700,angle:322,type:"M2Iab Red Supergiant",type_ru:"M2Iab Красный сверхгигант",size:4.8,hab:false,constellation:"Orion",planets:"None — will go supernova",planets_ru:"Нет — взорвётся как сверхновая"}
+  {name:"Betelgeuse",dist:700,angle:322,type:"M2Iab Red Supergiant",type_ru:"M2Iab Красный сверхгигант",size:4.8,hab:false,constellation:"Orion",planets:"None — will go supernova",planets_ru:"Нет — взорвётся как сверхновая"},
+  // ── 500–2500 ly: important studied stars with confirmed planets ────────────
+  {name:"55 Cnc (Copernicus)",dist:41,angle:126,type:"G8V + M3.5V Binary",type_ru:"G8V + M3.5V Двойная",size:2.4,hab:true,constellation:"Cancer",planets:"5 planets: e(lava world,18-hr year) b c f(HZ edge) d(giant)",planets_ru:"5 планет: e(лавовый мир) b c f(зона обит.) d(гигант)"},
+  {name:"Kepler-16",dist:196,angle:56,type:"K7V + M7V Binary",type_ru:"K7V + M7V Двойная",size:1.8,hab:false,constellation:"Cygnus",planets:"b: circumbinary 'Tatooine' planet (0.33 MJ, outer HZ edge)",planets_ru:"b: циркумбинарная планета «Татуин» (0,33 MJ, край зоны обит.)"},
+  {name:"Kepler-22",dist:638,angle:55,type:"G5V Yellow Dwarf",type_ru:"G5V Жёлтый карлик",size:2.3,hab:true,constellation:"Cygnus",planets:"b: first confirmed HZ planet of a Sun-like star (2.4 R⊕, 290-day orbit)",planets_ru:"b: первая подтверждённая планета в зоне обит. солнцеподобной звезды (2,4 R⊕)"},
+  {name:"Kepler-62",dist:1200,angle:62,type:"K2V Orange Dwarf",type_ru:"K2V Оранжевый карлик",size:2.2,hab:true,constellation:"Lyra",planets:"e(1.61 R⊕ inner HZ) f(1.41 R⊕ outer HZ, ESI 0.67) + b c d",planets_ru:"e(1,61 R⊕) f(1,41 R⊕, зона обит., ИСЗ 0,67) + b c d"},
+  {name:"Kepler-69",dist:2430,angle:58,type:"G4V Yellow Dwarf",type_ru:"G4V Жёлтый карлик",size:2.3,hab:true,constellation:"Cygnus",planets:"c (1.54 R⊕, inner HZ — Venus analog candidate) + b(hot)",planets_ru:"c (1,54 R⊕, внутр. зона обит. — кандидат типа Венеры) + b"},
+  {name:"Kepler-296",dist:1670,angle:71,type:"M1V + M3V Binary",type_ru:"M1V + M3V Двойная",size:1.8,hab:true,constellation:"Cygnus",planets:"e(1.75 R⊕, HZ) f(1.8 R⊕, HZ) — both in habitable zone",planets_ru:"e(1,75 R⊕, зона обит.) f(1,8 R⊕, зона обит.) — обе в зоне обит."},
+  {name:"Kepler-438",dist:470,angle:74,type:"K8V Orange Dwarf",type_ru:"K8V Оранжевый карлик",size:2.0,hab:true,constellation:"Lyra",planets:"b: 1.12 R⊕, ESI 0.88 — most Earth-like Kepler planet by size",planets_ru:"b: 1,12 R⊕, ИСЗ 0,88 — наиболее землеподобная по размеру"},
+  {name:"Kepler-440",dist:1610,angle:67,type:"K5V Orange Dwarf",type_ru:"K5V Оранжевый карлик",size:2.0,hab:true,constellation:"Lyra",planets:"b (1.86 R⊕, HZ, ESI 0.73 — potential surface water)",planets_ru:"b (1,86 R⊕, зона обит., ИСЗ 0,73 — возможная поверхностная вода)"},
+  {name:"Kepler-442",dist:1194,angle:79,type:"K5V Orange Dwarf",type_ru:"K5V Оранжевый карлик",size:2.1,hab:true,constellation:"Lyra",planets:"b: 1.34 R⊕, ESI 0.84, 112-day orbit — highly habitable candidate",planets_ru:"b: 1,34 R⊕, ИСЗ 0,84, орбита 112 дней — высокоперспективный кандидат"},
+  {name:"Kepler-452",dist:1402,angle:58,type:"G2V Yellow Dwarf",type_ru:"G2V Жёлтый карлик",size:2.3,hab:true,constellation:"Cygnus",planets:"b: 1.63 R⊕, 385-day orbit, Earth's cousin around a G-type star",planets_ru:"b: 1,63 R⊕, орбита 385 дней, «кузен Земли» у G-звезды"},
+  {name:"Kepler-1649",dist:302,angle:74,type:"M1.5V Red Dwarf",type_ru:"M1.5V Красный карлик",size:1.8,hab:true,constellation:"Cygnus",planets:"c: 1.06 R⊕, 19.5-day orbit, ESI 0.90 — nearly Earth-sized in HZ",planets_ru:"c: 1,06 R⊕, орбита 19,5 дней, ИСЗ 0,90 — почти земного размера в зоне обит."},
+  {name:"Kepler-186",dist:582,angle:72,type:"M1V Red Dwarf",type_ru:"M1V Красный карлик",size:1.7,hab:true,constellation:"Cygnus",planets:"f: first Earth-sized planet in HZ of a different star (1.11 R⊕, 130-day orbit)",planets_ru:"f: первая землеразмерная планета в зоне обит. другой звезды (1,11 R⊕, 130 дней)"},
+  {name:"Kepler-283",dist:1740,angle:65,type:"K1V Orange Dwarf",type_ru:"K1V Оранжевый карлик",size:2.1,hab:true,constellation:"Cygnus",planets:"c: 1.82 R⊕, outer HZ (ESI 0.68) + b (inner)",planets_ru:"c: 1,82 R⊕, внешн. зона обит. (ИСЗ 0,68) + b (внутр.)"},
+  {name:"Kepler-1544",dist:1700,angle:68,type:"K0V Orange Dwarf",type_ru:"K0V Оранжевый карлик",size:2.1,hab:true,constellation:"Cygnus",planets:"b: 1.79 R⊕, inner HZ (168-day orbit)",planets_ru:"b: 1,79 R⊕, внутр. зона обит. (орбита 168 дней)"},
+  {name:"TOI-700",dist:101,angle:258,type:"M2V Red Dwarf",type_ru:"M2V Красный карлик",size:1.7,hab:true,constellation:"Dorado",planets:"d(1.14 R⊕, HZ, confirmed TESS) e(1.08 R⊕, optimistic HZ)",planets_ru:"d(1,14 R⊕, зона обит., TESS) e(1,08 R⊕, оптимист. зона обит.)"},
+  {name:"TOI-715",dist:137,angle:285,type:"M4V Red Dwarf",type_ru:"M4V Красный карлик",size:1.7,hab:true,constellation:"Sculptor",planets:"b: 1.55 R⊕, HZ (19.3-day orbit) + candidate c(1.07 R⊕, HZ)",planets_ru:"b: 1,55 R⊕, зона обит. + кандидат c(1,07 R⊕, зона обит.)"},
+  {name:"GJ 357",dist:31,angle:148,type:"M2.5V Red Dwarf",type_ru:"M2.5V Красный карлик",size:1.7,hab:true,constellation:"Hydra",planets:"d: 6.1 M⊕, outer HZ (55.7-day orbit) + b(hot Earth) c",planets_ru:"d: 6,1 M⊕, внешн. зона обит. (55,7 дней) + b(горячая Земля) c"},
+  {name:"GJ 1061",dist:12,angle:258,type:"M5.5V Red Dwarf",type_ru:"M5.5V Красный карлик",size:1.6,hab:true,constellation:"Horologium",planets:"c(1.74 M⊕, inner HZ) d(1.68 M⊕, outer HZ) b(hot)",planets_ru:"c(1,74 M⊕, внутр. зона обит.) d(1,68 M⊕, внешн. зона обит.) b(горячая)"},
+  {name:"Wolf 1061",dist:14,angle:258,type:"M3V Red Dwarf",type_ru:"M3V Красный карлик",size:1.7,hab:true,constellation:"Ophiuchus",planets:"c: 4.3 M⊕, inner HZ edge — potential water world",planets_ru:"c: 4,3 M⊕, внутр. край зоны обит. — возможный водный мир"},
+  {name:"Ross 128 b",dist:11,angle:168,type:"M4V Red Dwarf",type_ru:"M4V Красный карлик",size:1.6,hab:true,constellation:"Virgo",planets:"b: 1.35 M⊕, HZ (9.9-day orbit) — temperate, low stellar activity",planets_ru:"b: 1,35 M⊕, зона обит. (9,9 дней) — умеренная, низкая активность звезды"},
+  {name:"Luyten's Star",dist:12.4,angle:135,type:"M3.5V Red Dwarf",type_ru:"M3V Красный карлик",size:1.7,hab:true,constellation:"Canis Minor",planets:"b(2.89 M⊕, HZ, 18.6-day orbit) c(SuperEarth)",planets_ru:"b(2,89 M⊕, зона обит., 18,6 дней) c(суперземля)"},
+  {name:"Proxima Centauri b",dist:4.24,angle:202,type:"M5.5Ve Red Dwarf",type_ru:"M5.5Ve Красный карлик",size:1.6,hab:true,constellation:"Centaurus",planets:"b(1.07 M⊕, HZ, 11.2-day orbit) c(7 M⊕, 1928-day orbit)",planets_ru:"b(1,07 M⊕, зона обит., 11,2 дня) c(7 M⊕, 1928 дней)"},
+  {name:"TRAPPIST-1",dist:40,angle:302,type:"M8V Ultra-cool Dwarf",type_ru:"M8V Сверххолодный карлик",size:1.6,hab:true,constellation:"Aquarius",planets:"7 Earth-sized: b c d e(HZ) f(HZ) g(HZ) h — record 3 in HZ",planets_ru:"7 землеразмерных: b c d e(зона обит.) f g h — рекорд 3 в зоне обит."},
+  {name:"LHS 1140",dist:49,angle:10,type:"M4.5V Red Dwarf",type_ru:"M4.5V Красный карлик",size:1.7,hab:true,constellation:"Cetus",planets:"b(1.73 R⊕, HZ, ESI 0.72) c(1.28 R⊕) — b possibly water world",planets_ru:"b(1,73 R⊕, зона обит., ИСЗ 0,72) c — b возможно водный мир"},
+  {name:"Teegarden's Star",dist:12.5,angle:25,type:"M7.0V Red Dwarf",type_ru:"M7.0V Красный карлик",size:1.6,hab:true,constellation:"Aries",planets:"b(1.05 M⊕, HZ, ESI 0.95!) c(1.11 M⊕, outer HZ)",planets_ru:"b(1,05 M⊕, зона обит., ИСЗ 0,95!) c(1,11 M⊕, внешн. зона обит.)"},
+  {name:"K2-18",dist:111,angle:155,type:"M2.5V Red Dwarf",type_ru:"M2.5V Красный карлик",size:1.7,hab:true,constellation:"Leo",planets:"b(2.27 R⊕, HZ, Hycean ocean world candidate — DMS detected 2023)",planets_ru:"b(2,27 R⊕, зона обит. — кандидат Hycean, диметилсульфид 2023)"},
+  {name:"HD 40307 g",dist:42,angle:225,type:"K2.5V Orange Dwarf",type_ru:"K2.5V Оранжевый карлик",size:1.9,hab:true,constellation:"Pictor",planets:"g(7.1 M⊕, HZ, superEarth) + 5 inner planets b c d e f",planets_ru:"g(7,1 M⊕, зона обит., суперземля) + 5 внутренних планет"},
+  {name:"Gliese 667C",dist:23,angle:213,type:"M1.5V Red Dwarf",type_ru:"M1.5V Красный карлик",size:1.7,hab:true,constellation:"Scorpius",planets:"e(1.1 M⊕, HZ) f(1.1 M⊕, HZ) c(3.8 M⊕, HZ) — triple-star system",planets_ru:"e f c — три планеты в зоне обит. тройной звезды"},
+  {name:"HD 85512",dist:36,angle:218,type:"K5V Orange Dwarf",type_ru:"K5V Оранжевый карлик",size:1.9,hab:true,constellation:"Vela",planets:"b(3.6 M⊕, inner HZ edge, ESI 0.77) — water possible if cloudy",planets_ru:"b(3,6 M⊕, внутр. край зоны обит., ИСЗ 0,77) — вода при облачности"},
+  {name:"HR 8799",dist:129,angle:15,type:"F0/A5V Debris Disk",type_ru:"F0/A5V — диск обломков",size:3.0,hab:false,constellation:"Pegasus",planets:"4 directly imaged giants: b c d e (10-7 MJ) — first multi-planet direct imaging",planets_ru:"4 газовых гиганта на фото: b c d e — первое мульти-планетное прямое фото"},
+  {name:"Beta Pictoris",dist:63,angle:240,type:"A6V Young Star",type_ru:"A6V Молодая звезда",size:3.0,hab:false,constellation:"Pictor",planets:"b(9 MJ, imaged) c(8.3 MJ, imaged) — 23 Myr young protoplanetary system",planets_ru:"b и c (фото) — молодая 23 млн лет протопланетная система"},
+  {name:"51 Pegasi",dist:50,angle:22,type:"G2IV Yellow Star",type_ru:"G2IV Жёлтый субгигант",size:2.3,hab:false,constellation:"Pegasus",planets:"b: first confirmed exoplanet around Sun-like star (1995, Nobel 2019) — hot Jupiter",planets_ru:"b: первая подтверждённая экзопланета у солнцеподобной звезды (1995, Нобель 2019)"},
+  {name:"Tau Boötis",dist:51,angle:145,type:"F7V + M2V Binary",type_ru:"F7V + M2V Двойная",size:2.6,hab:false,constellation:"Boötes",planets:"b: hot Jupiter (3.87 MJ, 3.3-day orbit) — magnetic field detected",planets_ru:"b: горячий юпитер (3,87 MJ, 3,3 дня) — обнаружено магнитное поле"},
+  {name:"GJ 876",dist:15,angle:333,type:"M4V Red Dwarf",type_ru:"M4V Красный карлик",size:1.7,hab:true,constellation:"Aquarius",planets:"d(6.8 M⊕, superEarth) b(2.1 MJ, HZ edge) c(0.71 MJ) e(gas)",planets_ru:"d(6,8 M⊕ суперземля) b c e — многопланетная система"},
+  {name:"55 Cancri e",dist:41,angle:125,type:"G8V Yellow Dwarf",type_ru:"G8V Жёлтый карлик",size:2.4,hab:false,constellation:"Cancer",planets:"e: lava world (2.1 R⊕, 18-hr year, 2600°C) — James Webb observed",planets_ru:"e: лавовый мир (2,1 R⊕, год 18 ч, 2600°C) — наблюдался Джеймс Уэбб"},
+  {name:"GJ 3470",dist:98,angle:120,type:"M1.5V Red Dwarf",type_ru:"M1.5V Красный карлик",size:1.7,hab:false,constellation:"Cancer",planets:"b: 13.9 M⊕ Neptune-like, rapidly losing atmosphere (photoevaporation)",planets_ru:"b: 13,9 M⊕ нептуно-подобная, стремительно теряет атмосферу"},
+  {name:"Upsilon And b",dist:44,angle:20,type:"F8V Yellow Dwarf",type_ru:"F8V Жёлтый карлик",size:2.8,hab:false,constellation:"Andromeda",planets:"4 gas giants b(hot J) c(1.8 MJ) d(3.8 MJ) e(1.06 MJ) — landmark multi-planet",planets_ru:"4 газовых гиганта b c d e — знаковая многопланетная система"},
+  {name:"47 UMa",dist:46,angle:142,type:"G1V Yellow Dwarf",type_ru:"G1V Жёлтый карлик",size:2.2,hab:true,constellation:"Ursa Major",planets:"b(2.53 MJ, 3-yr orbit) c(0.54 MJ) d(1.64 MJ) — Jupiter analogs, clear HZ",planets_ru:"b c d — аналоги Юпитера, свободная зона обитаемости"},
+  {name:"Tau Ceti e",dist:12,angle:190,type:"G8.5V Yellow Dwarf",type_ru:"G8.5V Жёлтый карлик",size:2.2,hab:true,constellation:"Cetus",planets:"e(3.93 M⊕, inner HZ) f(3.93 M⊕, outer HZ) — plus g h b c",planets_ru:"e(3,93 M⊕, внутр. зона обит.) f(внешн.) + g h b c"},
+  {name:"Mu Arae d",dist:50,angle:212,type:"G3IV Yellow Dwarf",type_ru:"G3IV Жёлтый карлик",size:2.4,hab:true,constellation:"Ara",planets:"d(14 M⊕ superEarth) b(1.7 MJ, 2-yr) c(0.52 MJ) e(1.8 MJ)",planets_ru:"d(14 M⊕ суперземля) b c e — многопланетная"},
+  {name:"WASP-39",dist:700,angle:245,type:"G-type Yellow Dwarf",type_ru:"G-тип Жёлтый карлик",size:2.2,hab:false,constellation:"Virgo",planets:"b: hot Saturn (0.28 MJ) — James Webb detected CO2 H2O SO2 (2022)",planets_ru:"b: горячий сатурн (0,28 MJ) — Джеймс Уэбб: CO₂ H₂O SO₂ (2022)"},
+  {name:"WASP-121",dist:870,angle:100,type:"F6V Yellow Dwarf",type_ru:"F6V Жёлтый карлик",size:2.8,hab:false,constellation:"Puppis",planets:"b: ultra-hot Jupiter (1.18 MJ, 1.27-day orbit) — iron/titanium atmosphere",planets_ru:"b: ультрагорячий юпитер — железо/титан в атмосфере"},
+  {name:"HD 189733",dist:63,angle:88,type:"K2V Orange Dwarf",type_ru:"K2V Оранжевый карлик",size:2.0,hab:false,constellation:"Vulpecula",planets:"b: azure blue hot Jupiter, silicate glass rain, 8700 km/h winds",planets_ru:"b: лазурно-синий горячий юпитер, дождь из стекла, ветры 8700 км/ч"},
+  {name:"HD 209458",dist:150,angle:355,type:"G0V Yellow Dwarf",type_ru:"G0V Жёлтый карлик",size:2.2,hab:false,constellation:"Pegasus",planets:"b 'Osiris': first transiting exoplanet detected, atmosphere evaporating",planets_ru:"b 'Осирис': первая транзитная экзопланета, испаряющаяся атмосфера"},
+  {name:"Gliese 163",dist:49,angle:255,type:"M3.5V Red Dwarf",type_ru:"M3.5V Красный карлик",size:1.7,hab:true,constellation:"Dorado",planets:"c(6.8 M⊕, inner HZ) b(10.6 M⊕, hot) d(29 M⊕, cold)",planets_ru:"c(6,8 M⊕, внутр. зона обит.) b(горячая) d(холодная)"},
+  {name:"Gliese 832 c",dist:16,angle:266,type:"M1.5V Red Dwarf",type_ru:"M1.5V Красный карлик",size:1.7,hab:true,constellation:"Grus",planets:"c(5.4 M⊕, inner HZ, ESI 0.81) b(0.64 MJ, Jupiter-like outer)",planets_ru:"c(5,4 M⊕, внутр. зона обит., ИСЗ 0,81) b(аналог Юпитера)"},
+  {name:"Epsilon Eridani b",dist:10.5,angle:195,type:"K2V Orange Dwarf",type_ru:"K2V Оранжевый карлик",size:2.0,hab:true,constellation:"Eridanus",planets:"b(0.78 MJ, Jupiter-like, 7.4-yr orbit) + asteroid belts analog",planets_ru:"b(0,78 MJ, аналог Юпитера, 7,4 года) + пояса астероидов"},
+  {name:"Kappa And",dist:170,angle:15,type:"B9IVn A-type",type_ru:"B9IVn A-тип",size:2.9,hab:false,constellation:"Andromeda",planets:"b: 13 MJ directly imaged (planet or brown dwarf, 1.1 Byr system)",planets_ru:"b: 13 MJ прямое фото (планета или коричневый карлик, 1,1 млрд лет)"},
+  {name:"GQ Lupi",dist:461,angle:206,type:"K7Ve T Tauri",type_ru:"K7Ve T Телец",size:2.0,hab:false,constellation:"Lupus",planets:"b(1-36 MJ directly imaged, 100 AU orbit) — protoplanetary system",planets_ru:"b(1–36 MJ прямое фото, 100 а.е.) — протопланетная система"},
+  {name:"DH Tauri",dist:466,angle:345,type:"M1Ve T Tauri",type_ru:"M1Ve T Телец",size:1.8,hab:false,constellation:"Taurus",planets:"b: directly imaged protoplanet (11 MJ, 330 AU) — still forming",planets_ru:"b: прямое фото протопланеты (11 MJ, 330 а.е.) — ещё формируется"},
+  {name:"2M1207",dist:173,angle:205,type:"M8 Brown Dwarf",type_ru:"M8 Коричневый карлик",size:1.6,hab:false,constellation:"Centaurus",planets:"b: first directly imaged exoplanet (5 MJ, 2004) — milestone discovery",planets_ru:"b: первая прямо сфотографированная экзопланета (5 MJ, 2004)"},
+  {name:"Fomalhaut b",dist:25,angle:215,type:"A3Va White Star",type_ru:"A3Va Белая звезда",size:3.2,hab:false,constellation:"Piscis Austrinus",planets:"b: directly imaged but may be disintegrating planetesimal not planet",planets_ru:"b: прямое фото, возможно распадающийся планетезималь"},
+  {name:"Vega",dist:25,angle:47,type:"A0Va Rapid Rotator",type_ru:"A0Va Быстрый ротатор",size:3.5,hab:false,constellation:"Lyra",planets:"Debris disk confirmed — suspected planets (Contact film star)",planets_ru:"Подтверждён диск обломков — предполагаемые планеты (из фильма Контакт)"},
+  {name:"Sirius A",dist:8.6,angle:156,type:"A1V White Star",type_ru:"A1V Белая звезда",size:3.0,hab:false,constellation:"Canis Major",planets:"None confirmed — too luminous, Sirius B is white dwarf companion",planets_ru:"Нет — слишком светлая, компаньон Сириус B — белый карлик"},
+  {name:"Aldebaran b",dist:65,angle:347,type:"K5III Red Giant",type_ru:"K5III Красный гигант",size:3.6,hab:false,constellation:"Taurus",planets:"b: 6.5 MJ giant on 629-day orbit — post-main-sequence system",planets_ru:"b: 6,5 MJ на 629-дневной орбите — система после главной последовательности"},
+  {name:"Pollux b",dist:34,angle:125,type:"K0III Orange Giant",type_ru:"K0III Оранжевый гигант",size:3.4,hab:false,constellation:"Gemini",planets:"b: 2.3 MJ confirmed giant (590-day orbit) — nearest confirmed exoplanet around giant",planets_ru:"b: 2,3 MJ (590 дней) — ближайшая экзопланета у гиганта"},
+  {name:"Gamma Cephei",dist:45,angle:5,type:"K1III + M4V Binary",type_ru:"K1III + M4V Двойная",size:3.2,hab:false,constellation:"Cepheus",planets:"b: 1.7 MJ (903-day orbit around primary) — binary system planet",planets_ru:"b: 1,7 MJ (903 дня вокруг первичной) — планета двойной системы"},
+  {name:"Iota Draconis",dist:101,angle:40,type:"K2III Orange Giant",type_ru:"K2III Оранжевый гигант",size:3.3,hab:false,constellation:"Draco",planets:"b: 8.9 MJ giant (511-day orbit) — eccentric orbit",planets_ru:"b: 8,9 MJ (511 дней) — вытянутая орбита"},
+  {name:"Xi Aquilae",dist:182,angle:73,type:"G9III Giant",type_ru:"G9III Гигант",size:3.3,hab:false,constellation:"Aquila",planets:"b: 2.8 MJ (137-day orbit) — planet orbiting a giant star",planets_ru:"b: 2,8 MJ (137 дней) — планета у звезды-гиганта"},
+  {name:"PSR 1257+12",dist:980,angle:178,type:"Millisecond Pulsar",type_ru:"Миллисекундный пульсар",size:1.5,hab:false,constellation:"Virgo",planets:"First exoplanets ever discovered: b c d (1992, Wolszczan & Frail) — pulsar planets",planets_ru:"Первые открытые экзопланеты: b c d (1992, Вольщан и Фрейл) — планеты у пульсара"},
+  {name:"Epsilon Ind A",dist:11.8,angle:320,type:"K5Ve Orange Dwarf",type_ru:"K5Ve Оранжевый карлик",size:2.0,hab:false,constellation:"Indus",planets:"b: directly imaged (6.3 MJ, 45 AU) — nearest directly imaged planet (2022)",planets_ru:"b: прямое фото (6,3 MJ, 45 а.е.) — ближайшая прямо снятая планета (2022)"},
+  {name:"AF Leporis",dist:87,angle:335,type:"F8V Young Star",type_ru:"F8V Молодая звезда",size:2.4,hab:false,constellation:"Lepus",planets:"b: directly imaged (2-6 MJ, 54 AU) — discovered 2023, young system",planets_ru:"b: прямое фото (2–6 MJ, 54 а.е.) — открыта 2023, молодая система"}
 ];
 
 // ══════════════════════════════════════════════════════
@@ -722,123 +840,292 @@ const STAR_INFO={
   "Solar System":{hz_in:0.95,hz_out:1.67,lum:1.0,
     desc:"Our Sun is a 4.6-billion-year-old G2V main-sequence star containing 99.86% of the solar system's mass. It fuses 600 million tonnes of hydrogen into helium every second, releasing energy equivalent to 384 yottawatts. The Sun's corona reaches temperatures of 1–3 million °C — paradoxically far hotter than the surface (5,500°C) — a mystery not yet fully solved. The solar wind carves out the heliosphere, a protective bubble extending ~120 AU that shields the solar system from galactic cosmic rays. Our radio signals have been spreading outward from here since 1895.",
     desc_ru:"Наше Солнце — звезда типа G2V возрастом 4,6 млрд лет, содержащая 99,86% массы Солнечной системы. Каждую секунду оно сплавляет 600 млн тонн водорода в гелий, выделяя 384 иоттаватт. Корона достигает 1–3 млн °C — парадоксально горячее поверхности (5500°C). Солнечный ветер образует гелиосферу — защитный пузырь до ~120 а.е. Наши радиосигналы распространяются отсюда с 1895 года."},
-  "Proxima Centauri":{hz_in:0.039,hz_out:0.068,lum:0.00155,
-    desc:"The nearest star to Earth at 4.24 light-years, Proxima is a tiny, cool M-dwarf (M5.5Ve) just 12% of the Sun's mass. It is part of the Alpha Centauri triple system, though gravitationally loosely bound and 0.13 ly from the AB pair. Proxima is a flare star that regularly emits intense ultraviolet bursts up to 10× the energy of equivalent solar flares — potentially stripping atmospheres of nearby planets. Its confirmed planets (b, c, d) make it one of the most studied nearby systems. Proxima b's habitable-zone orbit received our first radio signal in 2020.",
-    desc_ru:"Ближайшая к Земле звезда (4,24 св. лет). Крошечный, холодный красный карлик (M5.5Ve), 12% массы Солнца. Входит в тройную систему Альфа Центавра. Вспыхивающая звезда с мощными ультрафиолетовыми вспышками. Подтверждённые планеты b, c, d. Сигнал 1895 года достиг b в 2020 году."},
-  "Alpha Centauri A/B":{hz_in:0.0,hz_out:0.0,lum:1.5,
-    desc:"The closest star system to Earth at 4.37 light-years, consisting of two gravitationally bound stars: Alpha Cen A (G2V, nearly a solar twin, luminosity 1.52×Sun) and Alpha Cen B (K1V, 0.50×Sun). They orbit each other every 79.9 years at 11–36 AU separation. The binary nature severely complicates habitable-zone planet formation — gravitational perturbations would disrupt circular orbits. The system also has a third companion, Proxima Centauri, 0.13 ly away. An unconfirmed planet candidate (Alpha Cen Ab) remains controversial.",
-    desc_ru:"Ближайшая звёздная система к Земле (4,37 св. лет): Альфа Цен A (G2V, почти двойник Солнца, светимость 1,52×) и B (K1V, 0,50×). Орбитальный период 79,9 лет, разделение 11–36 а.е. Бинарность сильно усложняет формирование планет в зоне обитаемости. Третий компаньон — Проксима Центавра на расстоянии 0,13 св. лет."},
-  "Barnard's Star":{hz_in:0.018,hz_out:0.032,lum:0.00035,
-    desc:"The second-nearest star system to Earth at 5.96 light-years and the fastest-moving star in the sky relative to the Sun — moving at 10.3 arcseconds per year, it will reach its closest point (3.75 ly) in about 9,800 years. Barnard's Star is an ancient, metal-poor M4 red dwarf estimated at 7–12 billion years old — older than the Sun. A super-Earth candidate (Barnard b) was announced in 2018 at 0.4 AU but remains disputed; if real, its equilibrium temperature would be around −170°C.",
-    desc_ru:"Второй по близости звёздной системой к Земле (5,96 св. лет) и самой быстро движущейся относительно Солнца звездой — 10,3 угловых секунды в год. Древний, бедный металлами красный карлик, возраст 7–12 млрд лет — старше Солнца. Кандидат суперземля (Звезда Барнарда b) остаётся спорным."},
-  "Sirius A/B":{hz_in:4.94,hz_out:8.64,lum:25.4,
-    desc:"The brightest star in Earth's night sky (apparent magnitude −1.46). Sirius A is a luminous A1V blue-white main-sequence star 2.06 solar masses and 25.4× more luminous than the Sun. Its companion Sirius B is a white dwarf — the nearest white dwarf to Earth — that once was a massive star but exhausted its fuel and shed its outer layers, leaving a dense Earth-sized remnant. The white dwarf phase likely disrupted any planets during its red giant phase. At 8.6 ly, our signal arrived in 2003.",
-    desc_ru:"Ярчайшая звезда ночного неба (блеск −1,46). Сириус A — светящаяся бело-голубая звезда A1V, в 25,4 раза ярче Солнца. Сириус B — ближайший к Земле белый карлик. Фаза красного гиганта, вероятно, уничтожила любые планеты. На расстоянии 8,6 св. лет наш сигнал достиг их в 2003 году."},
-  "Epsilon Eridani":{hz_in:0.57,hz_out:1.0,lum:0.34,
-    desc:"One of the most Sun-like nearby stars (K2V, 0.82 solar masses) at 10.5 light-years. Epsilon Eridani is young for a star — only 400–800 million years old — and has been a prime SETI target since Project Ozma in 1960. It hosts a confirmed Jupiter-analog (ε Eri b) plus two asteroid belt analogs and a Kuiper Belt analog, making its architecture mirror our early solar system. The debris disks create intense bombardment conditions. Our signal arrived in 2026.",
-    desc_ru:"Одна из ближайших солнцеподобных звёзд (K2V, 0,82 массы Солнца) в 10,5 св. лет. Эпсилон Эридана молодая — 400–800 млн лет — и давно является приоритетной целью SETI. Подтверждённый аналог Юпитера плюс два пояса астероидов и аналог пояса Койпера. Наш сигнал достиг её в 2026 году."},
-  "Ross 128":{hz_in:0.059,hz_out:0.103,lum:0.00362,
-    desc:"Ross 128 is one of the quietest and least flare-active M-dwarf stars known — crucial for planetary habitability because its confirmed planet Ross 128 b orbits within the habitable zone. At 11 light-years, it is the second-nearest star with a confirmed habitable-zone rocky planet (after Proxima b). Ross 128 b receives about 1.38× Earth's solar flux; if it has a thick enough atmosphere and moderate greenhouse effect, surface liquid water may exist. Our signal arrived in 2006.",
-    desc_ru:"Росс 128 — один из наиболее тихих и наименее вспыхивающих красных карликов, известных науке — критически важно для обитаемости его планеты b. На расстоянии 11 св. лет это вторая ближайшая звезда с подтверждённой планетой в зоне обитаемости. Наш сигнал достиг её в 2006 году."},
-  "Tau Ceti":{hz_in:0.71,hz_out:1.24,lum:0.52,
-    desc:"At 11.9 light-years, Tau Ceti is the nearest Sun-like (G8.5V) solitary star — making it an iconic SETI target since 1960. It is metal-poor (only 30% of solar metallicity), which may mean its planets formed with less rocky material. The system has a massive debris disk 10× the mass of our Kuiper Belt, implying intense comet and asteroid bombardment that would challenge planetary habitability. Four confirmed super-Earths (g, h, e, f) were detected in 2017; e and f orbit near the habitable zone boundaries. Our signal arrived in 2021.",
-    desc_ru:"На расстоянии 11,9 св. лет Тау Кита — ближайшая солнцеподобная (G8.5V) одиночная звезда, иконическая цель SETI с 1960 года. Бедна металлами (30% солнечной металличности). Гигантский диск обломков в 10× массы нашего пояса Койпера создаёт интенсивную бомбардировку. Четыре подтверждённых суперземли. Наш сигнал достиг её в 2021 году."},
-  "Luyten's Star":{hz_in:0.032,hz_out:0.055,lum:0.00104,
-    desc:"Luyten's Star (also GJ 273) is an M3.5V red dwarf 12.4 light-years away with a confirmed super-Earth, GJ 273 b, in its habitable zone. It is relatively quiet for an M-dwarf, improving the prospects for atmospheric retention. In 2017, the METI organisation transmitted a message toward Luyten's Star — the first deliberately targeted interstellar transmission since Arecibo. A response, if ever sent, wouldn't arrive until 2042 at the earliest. Our signal arrived in 2021.",
-    desc_ru:"Звезда Луйтена (GJ 273) — красный карлик M3.5V в 12,4 св. лет с подтверждённой суперземлёй GJ 273 b в зоне обитаемости. В 2017 году организация METI направила к ней послание — первая целенаправленная межзвёздная передача после Аресибо. Ответ не придёт раньше 2042 года. Наш сигнал достиг её в 2021 году."},
-  "Teegarden's Star":{hz_in:0.027,hz_out:0.046,lum:0.000732,
-    desc:"Teegarden's Star is an ultra-cool M7 red dwarf at 12.5 light-years — so dim it went undiscovered until 2003 despite being one of the 25 nearest stars. What makes it extraordinary is having two confirmed Earth-mass planets (b and c) both within its habitable zone, with Earth Similarity Indices of 0.95 and 0.68 — placing Teegarden b in a statistical tie with TRAPPIST-1e for the most Earth-like known planet. The star is unusually quiet, with low flare activity. Our signal arrived in 2021.",
-    desc_ru:"Звезда Тигардена — ультрахолодный красный карлик M7 в 12,5 св. лет. Настолько тусклая, что не была открыта до 2003 года. Две подтверждённые планеты земной массы (b и c) в зоне обитаемости, ESI 0,95 и 0,68. Тигарден b делит первое место с TRAPPIST-1e по сходству с Землёй. Наш сигнал достиг её в 2021 году."},
-  "Gliese 876":{hz_in:0.109,hz_out:0.191,lum:0.0124,
-    desc:"Gliese 876 is a historically important M4V red dwarf at 15.3 light-years — it was the first M-dwarf ever found to host a gas giant (GJ 876 b, 1998). Its four known planets include two gas giants in a striking 2:1 orbital resonance (b and c orbit the star in roughly 60 and 30 days respectively), a rocky super-Earth (d) in a scorching 1.94-day orbit, and an outer cold giant (e). The resonance chain provides strong confirmation of gravitational interactions. Our signal arrived in 2026.",
-    desc_ru:"Глизе 876 — исторически важный красный карлик M4V в 15,3 св. лет — первый красный карлик, у которого обнаружен газовый гигант (GJ 876 b, 1998). Четыре известные планеты, включая два газовых гиганта в орбитальном резонансе 2:1. Наш сигнал достиг её в 2026 году."},
-  "Gliese 832":{hz_in:0.116,hz_out:0.203,lum:0.0140,
-    desc:"Gliese 832 is an M2V red dwarf 16.1 light-years away with a remarkably solar-system-like architecture: a Jupiter-analog (GJ 832 b) orbiting at 3.56 AU acts as a gravitational shield for the inner system, just as Jupiter does for Earth. A super-Earth (GJ 832 c) sits near the inner habitable zone edge. Simulations suggest an Earth-like planet could have a stable orbit at ~1 AU in this system. Our signal arrived in 2026.",
-    desc_ru:"Глизе 832 — красный карлик M2V в 16,1 св. лет с архитектурой, похожей на Солнечную систему: аналог Юпитера на 3,56 а.е. защищает внутреннюю систему. Суперземля c у края зоны обитаемости. Симуляции допускают устойчивую землеподобную планету на ~1 а.е. Наш сигнал достиг её в 2026 году."},
-  "Vega":{hz_in:6.21,hz_out:10.86,lum:40.1,
-    desc:"Vega is an A0Va star 25 light-years away — the brightest star in Lyra and once (and will again be) the northern pole star due to Earth's axial precession. Only 455 million years old, Vega is a rapid rotator spinning at 274 km/s — 91% of its breakup speed — which makes it visibly oblate: 19% wider at its equator than poles. The first star (after the Sun) confirmed to have an infrared excess from a debris disk (1983). Its habitable zone is at 2–3 AU but intense radiation limits planet habitability. In the 1997 film Contact, Vega was the source of an alien signal.",
-    desc_ru:"Вега — звезда A0Va в 25 св. лет — ярчайшая в Лире и бывшая (и будущая) Полярная звезда. Молодая (455 млн лет), быстро вращается (274 км/с), видимо сплюснута. Первая звезда после Солнца с подтверждённым ИК-избытком от диска обломков (1983). В фильме «Контакт» 1997 года именно Вега была источником инопланетного сигнала."},
-  "Gliese 667C":{hz_in:0.115,hz_out:0.201,lum:0.0137,
-    desc:"Gliese 667C is an M1.5V red dwarf in a hierarchical triple star system at 23.6 light-years — the innermost member, orbited by two K-type stars (A and B) at ~230 AU. It gained fame in 2012-2013 when studies claimed up to 7 planets in its habitable zone, though most are now considered unconfirmed. Two or three super-Earths remain as viable candidates, with GJ 667Cc the most well-supported habitable-zone planet. Views from its surface would show two bright stellar companions in the sky.",
-    desc_ru:"Глизе 667C — красный карлик M1.5V в тройной системе на расстоянии 23,6 св. лет. В 2012-2013 годах заявлялось до 7 планет в зоне обитаемости, большинство теперь не подтверждены. GJ 667Cc — наиболее обоснованная кандидат в зоне обит. С её поверхности были бы видны два ярких звёздных компаньона."},
-  "Fomalhaut":{hz_in:4.0,hz_out:6.99,lum:16.6,
-    desc:"Fomalhaut is a bright A3V star 25 light-years away, the 18th-brightest star in the night sky. Its spectacular ring system — a narrow, inclined ring of dust and ice 140 AU in diameter — was one of the first directly imaged in far-infrared. A bright point source 'Fomalhaut b' photographed by Hubble in 2008 was hailed as a directly imaged planet, but by 2020 it had faded and expanded into a cloud, now interpreted as a massive dust cloud from a catastrophic planetesimal collision — not a planet at all.",
-    desc_ru:"Фомальгаут — яркая звезда A3V в 25 св. лет, 18-я по яркости. Её кольцевая система — узкое наклонное кольцо из пыли и льда диаметром 140 а.е. 'Планета' Фомальгаут b, сфотографированная Хабблом в 2008 году, к 2020-му расширилась в облако — это было не планетой, а облаком обломков от столкновения."},
-  "TRAPPIST-1":{hz_in:0.022,hz_out:0.039,lum:0.000524,
-    desc:"TRAPPIST-1 is an ultra-cool M8V red dwarf only 9% the mass of the Sun at 40.7 light-years. It gained worldwide attention in 2017 when astronomers confirmed 7 Earth-sized planets in a remarkably compact system — all seven would fit inside Mercury's orbit around our Sun. Three planets (d, e, f, g) orbit within or near the habitable zone. Planet e has an Earth Similarity Index of 0.95, matching Teegarden b as the most Earth-like known world. All planets are tidally locked. The James Webb Space Telescope is actively studying the atmospheres of TRAPPIST-1 b and c.",
-    desc_ru:"TRAPPIST-1 — ультрахолодный красный карлик M8V в 40,7 св. лет. В 2017 году подтверждены 7 планет земного размера в компактной системе — все уместились бы внутри орбиты Меркурия. Три в зоне обитаемости. Планета e: ESI 0,95, самая землеподобная. Все планеты приливно заблокированы. JWST изучает их атмосферы."},
   "55 Cancri (Copernicus)":{hz_in:0.75,hz_out:1.31,lum:0.582,
     desc:"55 Cancri (also named Copernicus) is a G8V star 40 light-years away with 5 confirmed planets — one of the most thoroughly studied multi-planet systems. The innermost planet, 55 Cnc e (nicknamed Janssen), completes an orbit every 18 hours and is likely a lava ocean world. It was the first rocky exoplanet to have its thermal emission directly detected in optical wavelengths. Planet f orbits near the outer edge of the habitable zone. The system has a red dwarf binary companion at ~1,000 AU.",
     desc_ru:"55 Рака (Коперник) — звезда G8V в 40 св. лет с 5 подтверждёнными планетами. Планета e (Янссен) завершает орбиту за 18 часов — вероятно лавовый мир. Первая скальная экзопланета, у которой тепловое излучение зафиксировано в оптическом диапазоне. Планета f — вблизи внешнего края зоны обитаемости."},
-  "51 Pegasi":{hz_in:1.14,hz_out:2.0,lum:1.36,
-    desc:"51 Pegasi is a G5V solar analog star 50 light-years away that made history in 1995 when Michel Mayor and Didier Queloz announced the first confirmed exoplanet around a Sun-like star: 51 Peg b (named Dimidium). This hot Jupiter, half a Jupiter mass in a 4.23-day orbit, was so unexpected — 100× closer to its star than Jupiter is to the Sun — that the discovery was initially doubted. It permanently overturned theories of planetary formation and earned Mayor and Queloz the 2019 Nobel Prize in Physics. Our signal arrived in 2021.",
-    desc_ru:"51 Пегаса — солнечный аналог G5V в 50 св. лет. В 1995 году Майор и Кело объявили об открытии первой экзопланеты у солнцеподобной звезды: 51 Пег b (Димидиум). Этот горячий юпитер в 100× ближе к своей звезде, чем Юпитер к Солнцу. Открытие первоначально вызвало сомнения, но навсегда изменило теорию формирования планет. Нобелевская премия 2019 года."},
-  "Aldebaran":{hz_in:0.0,hz_out:0.0,lum:439.0,
-    desc:"Aldebaran (Alpha Tauri) is a K5III orange giant 65 light-years away — the brightest star in Taurus and the 14th-brightest in the night sky. It has expanded to ~44 solar radii as it exhausts its core hydrogen. The claimed planet Aldebaran b (5.8 Jupiter masses) was announced in 2015 but is now disputed — the radial velocity signal may be caused by stellar oscillations rather than a planetary companion. Pioneer 10, launched in 1972, is heading in this general direction and will pass within 2 light-years of Aldebaran in about 2 million years.",
-    desc_ru:"Альдебаран (Альфа Тельца) — оранжевый гигант K5III в 65 св. лет, 14-я по яркости. Расширился до ~44 радиусов Солнца. Заявленная планета b (5,8 масс Юпитера) теперь оспаривается. «Пионер-10», запущенный в 1972 году, летит в этом направлении и пройдёт в 2 св. лет от Альдебарана примерно через 2 млн лет."},
-  "HR 8799":{hz_in:2.18,hz_out:3.8,lum:4.92,
-    desc:"HR 8799 is a young (~30 million year old) F0V star 129 light-years away surrounded by two debris disks and four directly imaged giant planets — one of the most iconic discoveries in exoplanet science. The four planets (e, d, c, b) were photographed in 2008-2010, making this the first directly imaged multi-planet system. They appear as moving dots in time-lapse observations. All four are warm, self-luminous super-Jupiters still glowing from their formation heat. Atmospheric spectroscopy has detected water, methane, and carbon monoxide.",
-    desc_ru:"HR 8799 — молодая (30 млн лет) звезда F0V в 129 св. лет с четырьмя непосредственно сфотографированными гигантскими планетами. Первая мультипланетная система, снятая напрямую (2008-2010). Все четыре — тёплые суперюпитеры, ещё светящиеся от тепла формирования. В атмосфере обнаружены вода, метан и CO."},
-  "Dubhe":{hz_in:0.0,hz_out:0.0,lum:316.0,
-    desc:"Dubhe (Alpha Ursae Majoris) is a K0III orange giant at 124 light-years and the brighter of the two 'pointer stars' in the Big Dipper that point to Polaris. It is a spectroscopic binary: the giant star (23× solar radius) and an F-type main sequence companion orbit each other every 44.4 years. Dubhe A has long since left the main sequence, making any inner habitable-zone planets uninhabitable due to the giant's increased luminosity. Our signal arrived in 2024.",
-    desc_ru:"Дубхе (Альфа Большой Медведицы) — оранжевый гигант K0III в 124 св. лет, один из двух «указателей» Большого Ковша, направляющих к Полярной звезде. Спектральная двойная: гигант (23× радиус Солнца) и компаньон типа F с периодом 44,4 года. Наш сигнал достиг её в 2024 году."},
-  "Ain (ε Tau)":{hz_in:0.0,hz_out:0.0,lum:97.0,
-    desc:"Ain (Epsilon Tauri) is a K0III orange giant 155 light-years away in the Hyades open cluster — the nearest open star cluster to Earth. It made history in 2007 as the first exoplanet discovered in an open star cluster: Ain b (named Amateru) at 1.93 AU in a 595-day orbit. As Ain has evolved off the main sequence, any habitable-zone conditions of its earlier life have likely vanished. The Hyades cluster is ~625 million years old — old enough for complex chemistry but a challenging environment. Our signal arrives year 2050.",
-    desc_ru:"Айн (Эпсилон Тельца) — оранжевый гигант K0III в 155 св. лет в скоплении Гиады — ближайшем рассеянном скоплении к Земле. В 2007 году здесь открыта первая экзопланета в рассеянном скоплении: Айн b (Аматэру). Возраст скопления ~625 млн лет. Наш сигнал прибудет в 2050 году."},
-  "Kappa Andromedae":{hz_in:0.0,hz_out:0.0,lum:114.0,
-    desc:"Kappa Andromedae is a young B9IVn star 170 light-years away hosting one of the most massive directly imaged 'planet' or brown dwarf companions: Kappa And b at ~13 Jupiter masses, orbiting ~68 AU away. At 13 Jupiter masses it sits right at the deuterium-burning limit — the traditional boundary between 'super-Jupiter' and 'brown dwarf'. The system is only ~30 million years old and Kappa And b is self-luminous from formation heat. Our signal arrives in 2065.",
-    desc_ru:"Каппа Андромеды — молодая звезда B9IVn в 170 св. лет с одним из самых массивных непосредственно снятых спутников: Каппа Анд b (~13 масс Юпитера, ~68 а.е.). На границе между суперюпитером и коричневым карликом. Возраст системы ~30 млн лет. Наш сигнал прибудет в 2065 году."},
-  "Mirach":{hz_in:0.0,hz_out:0.0,lum:1900.0,
-    desc:"Mirach (Beta Andromedae) is an M0III red giant 197 light-years away, one of the brightest stars in Andromeda. It is a well-known 'guide star' — from Mirach, amateur astronomers can easily star-hop to the Andromeda Galaxy (M31), the Triangulum Galaxy (M33), and several other galaxies. Its enormous luminosity (1,900× the Sun) over ~100 solar radii has consumed any inner planetary system long ago. The first of our radio signals will reach Mirach in approximately 2092.",
-    desc_ru:"Мирах (Бета Андромеды) — красный гигант M0III в 197 св. лет, один из ярчайших в Андромеде. Широко используется как «путеводная звезда» для поиска галактики Андромеды (M31). Огромная светимость (1900× Солнца) давно уничтожила любые внутренние планеты. Первый радиосигнал достигнет Мираха примерно в 2092 году."},
-  "Scheat":{hz_in:0.0,hz_out:0.0,lum:1500.0,
-    desc:"Scheat (Beta Pegasi) is an M2.5 semi-regular pulsating variable giant at 200 light-years, forming one corner of the Great Square of Pegasus. It pulsates every ~38 days with luminosity varying between 400 and 1,500 solar luminosities. Such variable conditions would be catastrophic for any planetary atmosphere. It is estimated to be ~1 billion years old but evolving rapidly toward an asymptotic giant branch phase. Our signal arrives in 2095.",
-    desc_ru:"Шеат (Бета Пегаса) — полуправильная пульсирующая переменная M2.5 в 200 св. лет, угол Большого Квадрата Пегаса. Пульсирует каждые ~38 дней, светимость меняется от 400 до 1500 солнечных. Наш сигнал прибудет в 2095 году."},
-  "Spica":{hz_in:0.0,hz_out:0.0,lum:20000.0,
-    desc:"Spica (Alpha Virginis) is the 15th-brightest star in the night sky at 250 light-years and actually a double star system of two massive blue-white stars (B1III and B2V) orbiting each other every 4 Earth days at only 18 million km separation — about 12% of Mercury's distance from the Sun. Together they are ~20,000 times more luminous than the Sun. The bright-blue colour led Hipparchus to discover the precession of the equinoxes around 127 BC. Our signal won't arrive until approximately 2145.",
-    desc_ru:"Спика (Альфа Девы) — 15-я по яркости звезда ночного неба (250 св. лет), двойная система двух массивных бело-голубых звёзд, вращающихся каждые 4 дня. Вместе в ~20 000 раз ярче Солнца. Синий цвет привёл Гиппарха к открытию прецессии равноденствий ок. 127 г. до н.э. Наш сигнал прибудет около 2145 года."},
-  "Canopus":{hz_in:0.0,hz_out:0.0,lum:10700.0,
-    desc:"Canopus (Alpha Carinae) is the second-brightest star in the night sky (apparent magnitude −0.74) at 310 light-years — a white-yellow F9 supergiant 65 solar radii across and 10,700× more luminous than the Sun. Because of its exceptional brightness and position near the south celestial pole, Canopus has been used for spacecraft navigation for decades. The Voyager 2, Cassini, and many other probes used it as a navigational reference. Our signal arrives in 2205.",
-    desc_ru:"Канопус (Альфа Киля) — вторая по яркости звезда (блеск −0,74) в 310 св. лет — белый сверхгигант F9, 65 радиусов Солнца, в 10 700 раз ярче его. Канопус используется как навигационный ориентир для космических аппаратов: «Вояджер-2», «Кассини» и другие. Наш сигнал прибудет в 2205 году."},
-  "Polaris":{hz_in:0.0,hz_out:0.0,lum:2500.0,
-    desc:"Polaris (Alpha Ursae Minoris) is the current pole star — located within 0.7° of the celestial north pole — at 433 light-years. It is an F7Ib yellow supergiant and a Cepheid variable pulsating every 3.97 days with ~3% brightness variation. Polaris is actually a triple system: a close companion (Polaris Ab, F6V) orbiting every 30 years, and a wide companion (Polaris B, F3V) at ~2,400 AU. Because of Earth's axial precession, Polaris won't be the pole star forever — by AD 14,000, Vega will take its place. Our signal won't arrive until 2328.",
-    desc_ru:"Полярная (Альфа Малой Медведицы) — текущая Полярная звезда в 433 св. лет. Жёлтый сверхгигант F7Ib и цефеида с периодом 3,97 дня. Тройная система. Из-за прецессии земной оси к 14 000 году н.э. Полярной стане Вега. Наш сигнал прибудет в 2328 году."},
-  "Betelgeuse":{hz_in:0.0,hz_out:0.0,lum:100000.0,
-    desc:"Betelgeuse (Alpha Orionis) is one of the largest and most luminous stars visible to the naked eye — a massive M2Iab red supergiant 700 light-years away that is approaching the end of its life. It is enormous: if placed at the Sun's position, it would extend beyond Jupiter's orbit. Betelgeuse is expected to end its life in a spectacular core-collapse Type II supernova within the next 100,000 years (possibly much sooner). The 'Great Dimming' of 2019-2020, when it faded to 60% of normal, turned out to be caused by a massive dust ejection. The explosion will be visible in daylight from Earth. Our signal won't arrive until 2595.",
-    desc_ru:"Бетельгейзе (Альфа Ориона) — огромная красная сверхзвезда M2Iab в 700 св. лет, приближающаяся к концу жизни. Если поместить её на место Солнца, она протянулась бы до орбиты Юпитера. Ожидается взрыв сверхновой типа II в ближайшие 100 000 лет. «Великое потускнение» 2019-2020 годов было вызвано мощным выбросом пыли. Взрыв будет виден днём с Земли. Наш сигнал прибудет в 2595 году."},
-  "GJ 1061":{hz_in:0.039,hz_out:0.068,lum:0.00155,
-    desc:"GJ 1061 is an M5.5V red dwarf only 11.9 light-years away — one of the 20 nearest stars to Earth. It hosts three super-Earths, with two (c and d) in or near the habitable zone. The star is significantly less active than many M-dwarfs, making atmospheric retention more feasible. Our signal has been there since 2007.",
-    desc_ru:"GJ 1061 — красный карлик M5.5V всего в 11,9 св. лет — одна из 20 ближайших к Земле звёзд. Три суперземли, две из которых в зоне обитаемости. Звезда менее активна, чем многие красные карлики. Наш сигнал там с 2007 года."},
-  "Wolf 1061":{hz_in:0.083,hz_out:0.145,lum:0.0071,
-    desc:"Wolf 1061 is a quiet M3V red dwarf at 13.8 light-years hosting three planets, with both c and d in or near the habitable zone. Its low UV output compared to more active M-dwarfs makes it a strong candidate for atmospheric retention. Wolf 1061c has an ESI of 0.80, making it one of the nearest potentially habitable planets. Our signal has been there since 2009.",
-    desc_ru:"Волк 1061 — тихий красный карлик M3V в 13,8 св. лет с тремя планетами, из которых c и d в зоне обитаемости. Низкий УФ-поток. Волк 1061c (ИСЗ 0,80) — одна из ближайших потенциально обитаемых планет. Наш сигнал там с 2009 года."},
-  "LHS 1140":{hz_in:0.054,hz_out:0.094,lum:0.00298,
-    desc:"LHS 1140 is an M4.5V red dwarf at 40.7 light-years hosting LHS 1140 b — a dense, rocky super-Earth in the habitable zone considered one of the top JWST atmospheric characterisation targets. Its higher density than expected for its size implies a large iron core and rocky composition, making it a strong candidate for having retained an atmosphere. ESI 0.75. Our signal arrived in 2021.",
-    desc_ru:"LHS 1140 — красный карлик M4.5V в 40,7 св. лет. LHS 1140 b — плотная скальная суперземля в зоне обитаемости, один из приоритетных объектов JWST для изучения атмосфер. Высокая плотность указывает на крупное железное ядро и скальный состав. ИСЗ 0,75. Наш сигнал прибыл в 2021 году."},
-  "Gliese 163":{hz_in:0.135,hz_out:0.236,lum:0.019,
-    desc:"Gliese 163 is an M3.5V red dwarf at 49 light-years with three known planets. GJ 163 c sits on the outer edge of the habitable zone with 6.8 Earth masses — large enough to maintain a substantial atmosphere. Discovered by the HARPS spectrograph in 2013. If a greenhouse effect is active, the surface could support liquid water. Our signal arrived in 2021.",
-    desc_ru:"Глизе 163 — красный карлик M3.5V в 49 св. лет с тремя известными планетами. GJ 163 c находится у внешнего края зоны обитаемости, 6,8 масс Земли — достаточно для значительной атмосферы. При парниковом эффекте поверхность может поддерживать жидкую воду. Наш сигнал прибыл в 2021 году."},
-  "TOI-700":{hz_in:0.148,hz_out:0.26,lum:0.0229,
-    desc:"TOI-700 is an M2V red dwarf at 101 light-years discovered by TESS to host four planets. Both TOI-700 d and e are confirmed Earth-sized planets in the habitable zone — among the best-confirmed Earth-sized HZ planets known. TOI-700 e (1.08 R⊕, inner HZ) is particularly notable. The star is quiet with low flare activity. Our signal arrives in 2021.",
-    desc_ru:"TOI-700 — красный карлик M2V в 101 св. лет, открытый TESS. Четыре планеты: TOI-700 d и e — подтверждённые землеразмерные в зоне обитаемости. TOI-700 e (1,08 R⊕, внутр. зона обит.) особенно примечательна. Тихая звезда. Наш сигнал прибывает в 2021 году."},
-  "K2-18":{hz_in:0.128,hz_out:0.223,lum:0.0169,
-    desc:"K2-18 hosts a sub-Neptune planet (K2-18 b) in its habitable zone that in 2023 became the first exoplanet where JWST detected signatures potentially consistent with biological activity — specifically, carbon dioxide, methane, and tentative hints of dimethyl sulfide. While not confirmed as biological, this makes K2-18 b the leading candidate for a 'hycean world': a planet with a hydrogen-rich atmosphere over a global liquid water ocean. Our signal arrives in 2021.",
-    desc_ru:"K2-18 содержит суб-Нептун (K2-18 b) в зоне обитаемости. В 2023 году Уэбб обнаружил там CO₂, метан и предварительные признаки диметилсульфида — первого потенциально биологического сигнала от экзопланеты. Возможно «гисеанский мир»: богатая водородом атмосфера над глобальным водным океаном. Наш сигнал прибывает в 2021 году."},
-  "Kepler-186":{hz_in:0.199,hz_out:0.347,lum:0.041,
-    desc:"Kepler-186 is historically important as the host of Kepler-186f — the first Earth-sized (1.17 R⊕) planet confirmed in the habitable zone of another star (2014). The M1V host star is quiet. Kepler-186f sits at the outer edge of the HZ receiving 32% of Earth's solar flux, likely requiring a greenhouse effect for liquid water. A landmark discovery in the search for Earth analogues. Our signal won't arrive until 2390.",
-    desc_ru:"Kepler-186 — историческая система: здесь находится Kepler-186f — первая землеразмерная (1,17 R⊕) планета, подтверждённая в зоне обитаемости другой звезды (2014 г.). Тихий красный карлик M1V. Kepler-186f — внешний край зоны обит., получает 32% потока Земли. Наш сигнал прибудет в 2390 году."},
-  "Kepler-22":{hz_in:0.801,hz_out:1.402,lum:0.668,
-    desc:"Kepler-22 is a G5V solar analog hosting Kepler-22b — the first confirmed planet in the habitable zone of a Sun-like star (announced December 2011). The planet's size (2.38 R⊕) suggests it may be a sub-Neptune or water world rather than rocky. The nearly year-long orbit and Sun-like host make this system reminiscent of our own solar system. Our signal won't arrive until 2515.",
-    desc_ru:"Kepler-22 — аналог Солнца G5V, хозяин Kepler-22b — первой подтверждённой планеты в зоне обитаемости солнцеподобной звезды (декабрь 2011 г.). Размер (2,38 R⊕) предполагает суб-Нептун или водяной мир. Наш сигнал прибудет в 2515 году."},
-  "Kepler-438":{hz_in:0.131,hz_out:0.228,lum:0.0177,
-    desc:"Kepler-438 hosts Kepler-438b, with an ESI of 0.88 — one of the most Earth-like confirmed exoplanets found by Kepler. Its size (1.12 R⊕) and equilibrium temperature (276 K) are remarkably close to Earth's. The main risk factor is stellar flares: the K8 host emits superflares 100 times more powerful than solar flares every ~100 days, potentially stripping the atmosphere. Our signal won't arrive until 2535.",
-    desc_ru:"Kepler-438 содержит Kepler-438b с ИСЗ 0,88 — одну из наиболее землеподобных планет Кеплера. Размер (1,12 R⊕) и температура (276 К) близки к земным. Риск — супервспышки звезды каждые ~100 дней. Наш сигнал прибудет в 2535 году."},
-  "Kepler-62":{hz_in:0.486,hz_out:0.851,lum:0.246,
-    desc:"Kepler-62 is a K2V star hosting five planets, with both Kepler-62e and 62f in the habitable zone. This 7-billion-year-old star is older and quieter than the Sun. Kepler-62f (ESI 0.67) receives only 41% of Earth's flux but computer simulations show it can maintain liquid water under CO₂-rich atmospheres. Our signal won't arrive until 2885.",
-    desc_ru:"Kepler-62 — звезда K2V с пятью планетами, две из которых (62e и 62f) в зоне обитаемости. Возраст 7 млрд лет, тише Солнца. Kepler-62f (ИСЗ 0,67) получает 41% потока Земли, но симуляции показывают возможность жидкой воды при CO₂-атмосфере. Наш сигнал прибудет в 2885 году."},
-  "Kepler-442":{hz_in:0.462,hz_out:0.808,lum:0.222,
-    desc:"Kepler-442 hosts one of the most Earth-like confirmed exoplanets with an ESI of 0.84. The planet receives 70% of Earth's solar flux from a quiet K5V orange dwarf — a more stable long-term host than G-type stars. Its size (1.34 R⊕) is consistent with a rocky composition, and climate models suggest the habitable zone is robust across a range of atmospheric scenarios. Longer-lived K-dwarf host stars are now considered optimal for complex life evolution. Our signal won't arrive until 3101.",
-    desc_ru:"Kepler-442 содержит одну из наиболее землеподобных экзопланет (ИСЗ 0,84). Планета получает 70% потока Земли от тихого оранжевого карлика K5V — более стабильного долгосрочного хозяина, чем G-звёзды. Размер (1,34 R⊕) совместим со скальным составом. K-карлики считаются оптимальными для эволюции сложной жизни. Наш сигнал прибудет в 3101 году."},
+  // ── HZ data for all new stars ─────────────────────────────────────────────
+  "GJ 357":{hz_in:0.0604,hz_out:0.1057,lum:0.0038,
+    desc:"M2.5 dwarf 31 ly, d in outer HZ (6.1 M⊕).",
+    desc_ru:"M2.5 карлик 31 св. лет, d в внешн. зоне обит."},
+  "Ross 128 b":{hz_in:0.059,hz_out:0.1032,lum:0.00362,
+    desc:"M4 dwarf 11 ly, b in HZ (9.9-day orbit).",
+    desc_ru:"M4 карлик 11 св. лет, b в зоне обит."},
+  "Luyten's Star":{hz_in:0.0316,hz_out:0.0553,lum:0.00104,
+    desc:"M3.5 dwarf 12.4 ly, b in HZ.",
+    desc_ru:"M3.5 карлик 12,4 св. лет, b в зоне обит."},
+  "Proxima Centauri b":{hz_in:0.0386,hz_out:0.0675,lum:0.00155,
+    desc:"Nearest star 4.24 ly, b in HZ (11.2-day orbit).",
+    desc_ru:"Ближайшая звезда 4,24 св. лет, b в зоне обит."},
+  "TOI-715":{hz_in:0.0302,hz_out:0.0529,lum:0.00095,
+    desc:"M4 dwarf, b and c candidate in HZ.",
+    desc_ru:"M4 карлик, b и кандидат c в зоне обит."},
+  "Wolf 1061":{hz_in:0.0826,hz_out:0.1445,lum:0.0071,
+    desc:"M3 dwarf 14 ly, c at inner HZ edge.",
+    desc_ru:"M3 карлик 14 св. лет, c у края зоны обит."},
+  "Gliese 667":{hz_in:0.1148,hz_out:0.2007,lum:0.0137,
+    desc:"K triple 23 ly, 3 planets in HZ around C.",
+    desc_ru:"K тройная 23 св. лет, 3 планеты в зоне обит. C."},
+  "Gliese 832 c":{hz_in:0.116,hz_out:0.2029,lum:0.014,
+    desc:"M1.5 dwarf 16 ly, c inner HZ ESI 0.81.",
+    desc_ru:"M1.5 карлик 16 св. лет, c зона обит., ИСЗ 0,81."},
+  "GJ 876":{hz_in:0.1092,hz_out:0.191,lum:0.0124,
+    desc:"M4 dwarf 15 ly, d superEarth + giants.",
+    desc_ru:"M4 карлик 15 св. лет, d суперземля + гиганты."},
+  "Teegarden's Star":{hz_in:0.0265,hz_out:0.0464,lum:0.000732,
+    desc:"M7 dwarf 12.5 ly, b ESI 0.95!",
+    desc_ru:"M7 карлик 12,5 св. лет, b ИСЗ 0,95!"},
+  "LHS 1140":{hz_in:0.0535,hz_out:0.0936,lum:0.00298,
+    desc:"M4.5 dwarf 49 ly, b in HZ, possible water world.",
+    desc_ru:"M4.5 карлик 49 св. лет, b в зоне обит., возм. водный мир."},
+  "Gliese 163":{hz_in:0.1352,hz_out:0.2364,lum:0.019,
+    desc:"M3.5 dwarf 49 ly, c in inner HZ.",
+    desc_ru:"M3.5 карлик 49 св. лет, c в внутр. зоне обит."},
+  "82 Eridani":{hz_in:0.7906,hz_out:1.3827,lum:0.65,
+    desc:"G8V 20 ly with 3 super-Earths.",
+    desc_ru:"G8V 20 св. лет, 3 суперземли."},
+  "HD 40307 g":{hz_in:0.4814,hz_out:0.8419,lum:0.241,
+    desc:"K2.5V 42 ly, g in HZ (7.1 M⊕).",
+    desc_ru:"K2.5V 42 св. лет, g в зоне обит."},
+  "HD 69830":{hz_in:0.7659,hz_out:1.3394,lum:0.61,
+    desc:"K0V 41 ly with 3 Neptunes.",
+    desc_ru:"K0V 41 св. лет, 3 нептуна."},
+  "61 Virginis":{hz_in:0.8912,hz_out:1.5587,lum:0.826,
+    desc:"G7V 28 ly, 3 super-Earths.",
+    desc_ru:"G7V 28 св. лет, 3 суперземли."},
+  "47 Ursae Majoris":{hz_in:1.2519,hz_out:2.1895,lum:1.63,
+    desc:"G1V 46 ly, 3 Jupiter analogs, clear HZ.",
+    desc_ru:"G1V 46 св. лет, 3 аналога Юпитера, чистая зона обит."},
+  "47 UMa":{hz_in:1.2519,hz_out:2.1895,lum:1.63,
+    desc:"G1V 46 ly, Jupiter analogs.",
+    desc_ru:"G1V 46 св. лет, аналоги Юпитера."},
+  "Mu Arae":{hz_in:1.3516,hz_out:2.3639,lum:1.9,
+    desc:"G3IV 51 ly, 4 planets inc. d superEarth.",
+    desc_ru:"G3IV 51 св. лет, 4 планеты, d суперземля."},
+  "Mu Arae d":{hz_in:1.3516,hz_out:2.3639,lum:1.9,
+    desc:"G3IV 51 ly, 4 planets.",
+    desc_ru:"G3IV 51 св. лет, 4 планеты."},
+  "HD 10700":{hz_in:0.7071,hz_out:1.2367,lum:0.52,
+    desc:"G8.5V 12 ly (Tau Ceti), e and f near HZ.",
+    desc_ru:"G8.5V 12 св. лет (Тау Кита), e f у зоны обит."},
+  "Tau Ceti e":{hz_in:0.7071,hz_out:1.2367,lum:0.52,
+    desc:"G8.5V 12 ly, e in inner HZ.",
+    desc_ru:"G8.5V 12 св. лет, e в внутр. зоне обит."},
+  "Epsilon Eridani b":{hz_in:0.5718,hz_out:1.0,lum:0.34,
+    desc:"K2V 10.5 ly with Jupiter-like b.",
+    desc_ru:"K2V 10,5 св. лет, b аналог Юпитера."},
+  "Kappa1 Ceti":{hz_in:0.9507,hz_out:1.6627,lum:0.94,
+    desc:"G5V young Sun 30 ly, SETI target.",
+    desc_ru:"G5V молодое Солнце 30 св. лет, цель SETI."},
+  "Sigma Draconis":{hz_in:0.643,hz_out:1.1246,lum:0.43,
+    desc:"K0V 19 ly, no confirmed planets.",
+    desc_ru:"K0V 19 св. лет, нет подтверждённых планет."},
+  "Delta Pavonis":{hz_in:1.0831,hz_out:1.8943,lum:1.22,
+    desc:"G8IV 20 ly, prime SETI target.",
+    desc_ru:"G8IV 20 св. лет, приоритетная цель SETI."},
+  "Beta Hydri":{hz_in:1.8319,hz_out:3.2039,lum:3.49,
+    desc:"G2IV subgiant 24 ly.",
+    desc_ru:"G2IV субгигант 24 св. лет."},
+  "Eta Cassiopeiae":{hz_in:1.0786,hz_out:1.8865,lum:1.21,
+    desc:"G0V binary 19 ly.",
+    desc_ru:"G0V двойная 19 св. лет."},
+  "61 Cygni":{hz_in:0.3836,hz_out:0.6708,lum:0.153,
+    desc:"K5 binary 11 ly.",
+    desc_ru:"K5 двойная 11 св. лет."},
+  "70 Ophiuchi":{hz_in:0.643,hz_out:1.1246,lum:0.43,
+    desc:"K binary 17 ly.",
+    desc_ru:"K двойная 17 св. лет."},
+  "Xi Bootis":{hz_in:0.643,hz_out:1.1246,lum:0.43,
+    desc:"G8Ve binary 22 ly.",
+    desc_ru:"G8Ve двойная 22 св. лет."},
+  "Mu Herculis":{hz_in:1.5811,hz_out:2.7653,lum:2.6,
+    desc:"G5IV subgiant 27 ly.",
+    desc_ru:"G5IV субгигант 27 св. лет."},
+  "Beta Canum Ven.":{hz_in:1.047,hz_out:1.8311,lum:1.14,
+    desc:"G0V 27 ly, SETI target.",
+    desc_ru:"G0V 27 св. лет, цель SETI."},
+  "Iota Persei":{hz_in:1.2326,hz_out:2.1557,lum:1.58,
+    desc:"G0V 34 ly.",
+    desc_ru:"G0V 34 св. лет."},
+  "Zeta Tucanae":{hz_in:1.047,hz_out:1.8311,lum:1.14,
+    desc:"F9.5V 28 ly.",
+    desc_ru:"F9.5V 28 св. лет."},
+  "Alpha Mensae":{hz_in:0.9146,hz_out:1.5996,lum:0.87,
+    desc:"G6V 33 ly.",
+    desc_ru:"G6V 33 св. лет."},
+  "Gamma Leporis":{hz_in:1.2748,hz_out:2.2295,lum:1.69,
+    desc:"F7V 29 ly.",
+    desc_ru:"F7V 29 св. лет."},
+  "Pi3 Orionis":{hz_in:1.5504,hz_out:2.7116,lum:2.5,
+    desc:"F6V 26 ly.",
+    desc_ru:"F6V 26 св. лет."},
+  "Zeta Reticuli":{hz_in:0.8858,hz_out:1.5492,lum:0.816,
+    desc:"G2V binary 39 ly.",
+    desc_ru:"G2V двойная 39 св. лет."},
+  "Iota Horologii":{hz_in:1.2634,hz_out:2.2096,lum:1.66,
+    desc:"F8V 56 ly with hot Jupiter.",
+    desc_ru:"F8V 56 св. лет, горячий юпитер."},
+  "Tau Boötis":{hz_in:1.7153,hz_out:3.0,lum:3.06,
+    desc:"F7V binary 51 ly, hot Jupiter.",
+    desc_ru:"F7V двойная 51 св. лет, горячий юпитер."},
+  "Upsilon Andromedae":{hz_in:1.8579,hz_out:3.2494,lum:3.59,
+    desc:"F8V binary 44 ly, 4 gas giants.",
+    desc_ru:"F8V двойная 44 св. лет, 4 газовых гиганта."},
+  "Upsilon And b":{hz_in:1.8579,hz_out:3.2494,lum:3.59,
+    desc:"F8V binary 44 ly.",
+    desc_ru:"F8V двойная 44 св. лет."},
+  "Gamma Cephei":{hz_in:2.4219,hz_out:4.2357,lum:6.1,
+    desc:"K1III binary 45 ly with giant planet.",
+    desc_ru:"K1III двойная 45 св. лет, планета-гигант."},
+  "51 Pegasi":{hz_in:1.1435,hz_out:2.0,lum:1.36,
+    desc:"G2IV 50 ly, first confirmed exoplanet host.",
+    desc_ru:"G2IV 50 св. лет, первая с подтверждённой экзопланетой."},
+  "Kepler-16":{hz_in:0.6445,hz_out:1.1272,lum:0.432,
+    desc:"K7+M7 binary 196 ly, Tatooine circumbinary planet.",
+    desc_ru:"K7+M7 двойная 196 св. лет, планета «Татуин»."},
+  "Kepler-69":{hz_in:0.8771,hz_out:1.5339,lum:0.8,
+    desc:"G4V 2430 ly, c candidate in inner HZ.",
+    desc_ru:"G4V 2430 св. лет, c кандидат в зоне обит."},
+  "Kepler-296":{hz_in:0.299,hz_out:0.523,lum:0.093,
+    desc:"M1+M3 binary 1670 ly, e and f in HZ.",
+    desc_ru:"M1+M3 двойная 1670 св. лет, e и f в зоне обит."},
+  "Kepler-1649":{hz_in:0.1348,hz_out:0.2358,lum:0.01891,
+    desc:"M1.5V 302 ly, c nearly Earth-sized in HZ.",
+    desc_ru:"M1.5V 302 св. лет, c почти земного размера в зоне обит."},
+  "Kepler-283":{hz_in:0.7487,hz_out:1.3095,lum:0.583,
+    desc:"K1V 1740 ly, c in outer HZ.",
+    desc_ru:"K1V 1740 св. лет, c в внешн. зоне обит."},
+  "Kepler-1544":{hz_in:0.7557,hz_out:1.3218,lum:0.594,
+    desc:"K0V 1700 ly, b in inner HZ.",
+    desc_ru:"K0V 1700 св. лет, b в внутр. зоне обит."},
+  "Kepler-440":{hz_in:0.4418,hz_out:0.7727,lum:0.203,
+    desc:"K5V 1610 ly, b in HZ.",
+    desc_ru:"K5V 1610 св. лет, b в зоне обит."},
+  "HD 189733":{hz_in:0.5801,hz_out:1.0146,lum:0.35,
+    desc:"K2V binary 63 ly, famous hot Jupiter.",
+    desc_ru:"K2V двойная 63 св. лет, знаменитый горячий юпитер."},
+  "HD 209458":{hz_in:1.2558,hz_out:2.1963,lum:1.64,
+    desc:"G0V 150 ly, first transiting exoplanet.",
+    desc_ru:"G0V 150 св. лет, первый транзитный экзопланет."},
+  "WASP-39":{hz_in:0.9456,hz_out:1.6539,lum:0.93,
+    desc:"G 700 ly, Webb CO2 detection.",
+    desc_ru:"G 700 св. лет, CO₂ обнаружен Уэббом."},
+  "WASP-12":{hz_in:1.4544,hz_out:2.5437,lum:2.2,
+    desc:"G0V 870 ly, ultra-hot Jupiter.",
+    desc_ru:"G0V 870 св. лет, ультрагорячий юпитер."},
+  "WASP-121":{hz_in:1.5191,hz_out:2.6568,lum:2.4,
+    desc:"F6V 870 ly, iron/titanium atmosphere.",
+    desc_ru:"F6V 870 св. лет, Fe/Ti атмосфера."},
+  "GJ 3470":{hz_in:0.1729,hz_out:0.3024,lum:0.0311,
+    desc:"M1.5V 98 ly, evaporating Neptune.",
+    desc_ru:"M1.5V 98 св. лет, испаряющийся нептун."},
+  "55 Cancri e":{hz_in:0.7481,hz_out:1.3083,lum:0.582,
+    desc:"G8V binary 41 ly, 5 planets inc. lava world.",
+    desc_ru:"G8V двойная 41 св. лет, 5 планет, лавовый мир."},
+  "55 Cnc b / Copernicus":{hz_in:0.7481,hz_out:1.3083,lum:0.582,
+    desc:"G8V binary 41 ly, 5 planets.",
+    desc_ru:"G8V двойная 41 св. лет, 5 планет."},
+  "55 Cnc (Copernicus)":{hz_in:0.7481,hz_out:1.3083,lum:0.582,
+    desc:"G8V binary 41 ly, 5 planets.",
+    desc_ru:"G8V двойная 41 св. лет, 5 планет."},
+  "HR 8799":{hz_in:0.0,hz_out:0.0,lum:4.92,
+    desc:"F0V 129 ly, 4 directly imaged giant planets.",
+    desc_ru:"F0V 129 св. лет, 4 прямо сфотографированных гиганта."},
+  "Beta Pictoris":{hz_in:0.0,hz_out:0.0,lum:8.7,
+    desc:"A6V 63 ly, young protoplanetary system.",
+    desc_ru:"A6V 63 св. лет, молодая протопланетная система."},
+  "Fomalhaut b":{hz_in:0.0,hz_out:0.0,lum:16.6,
+    desc:"A3Va 25 ly, debris disk.",
+    desc_ru:"A3Va 25 св. лет, диск обломков."},
+  "GQ Lupi":{hz_in:0.8771,hz_out:1.5339,lum:0.8,
+    desc:"T Tauri 461 ly, protoplanetary.",
+    desc_ru:"T Телец 461 св. лет, протопланетная."},
+  "DH Tauri":{hz_in:0.5801,hz_out:1.0146,lum:0.35,
+    desc:"T Tauri 466 ly, protoplanet imaged.",
+    desc_ru:"T Телец 466 св. лет, снят протопланет."},
+  "2M1207":{hz_in:0.046,hz_out:0.0804,lum:0.0022,
+    desc:"M8 brown dwarf 173 ly, first directly imaged planet.",
+    desc_ru:"M8 коричневый карлик 173 св. лет, первая снятая напрямую планета."},
+  "AF Leporis":{hz_in:1.7431,hz_out:3.0486,lum:3.16,
+    desc:"F8V 87 ly, young star, directly imaged planet.",
+    desc_ru:"F8V 87 св. лет, молодая, прямое фото планеты."},
+  "Epsilon Ind A":{hz_in:0.4599,hz_out:0.8044,lum:0.22,
+    desc:"K5Ve 12 ly, nearest directly imaged planet (2022).",
+    desc_ru:"K5Ve 12 св. лет, ближайшая прямо снятая планета (2022)."},
+  "Arcturus":{hz_in:0.0,hz_out:0.0,lum:170.0,
+    desc:"K0III orange giant 37 ly.",
+    desc_ru:"K0III оранжевый гигант 37 св. лет."},
+  "Pollux":{hz_in:0.0,hz_out:0.0,lum:32.0,
+    desc:"K0III giant 34 ly, 2.3 MJ planet.",
+    desc_ru:"K0III гигант 34 св. лет, планета 2,3 MJ."},
+  "Pollux b":{hz_in:0.0,hz_out:0.0,lum:32.0,
+    desc:"K0III giant 34 ly.",
+    desc_ru:"K0III гигант 34 св. лет."},
+  "Capella":{hz_in:0.0,hz_out:0.0,lum:78.7,
+    desc:"G8+G0 giant binary 43 ly.",
+    desc_ru:"G8+G0 двойная гигантов 43 св. лет."},
+  "Aldebaran b":{hz_in:0.0,hz_out:0.0,lum:439.0,
+    desc:"K5III giant 65 ly.",
+    desc_ru:"K5III гигант 65 св. лет."},
+  "Iota Draconis":{hz_in:0.0,hz_out:0.0,lum:53.5,
+    desc:"K2III 101 ly, giant planet.",
+    desc_ru:"K2III 101 св. лет, планета-гигант."},
+  "Xi Aquilae":{hz_in:0.0,hz_out:0.0,lum:37.5,
+    desc:"G9III giant 182 ly.",
+    desc_ru:"G9III гигант 182 св. лет."},
+  "Altair":{hz_in:0.0,hz_out:0.0,lum:10.4,
+    desc:"A7V white star 17 ly, rapid rotator.",
+    desc_ru:"A7V белая 17 св. лет, быстрый ротатор."},
+  "Regulus":{hz_in:0.0,hz_out:0.0,lum:360.0,
+    desc:"B7V blue-white 79 ly.",
+    desc_ru:"B7V сине-белая 79 св. лет."},
+  "Procyon":{hz_in:0.0,hz_out:0.0,lum:6.93,
+    desc:"F5IV subgiant 11.5 ly.",
+    desc_ru:"F5IV субгигант 11,5 св. лет."},
+  "Castor":{hz_in:0.0,hz_out:0.0,lum:52.0,
+    desc:"6-star system 51 ly.",
+    desc_ru:"6-кратная система 51 св. лет."},
+  "Sirius A":{hz_in:0.0,hz_out:0.0,lum:25.4,
+    desc:"A1V 8.6 ly, too luminous for HZ.",
+    desc_ru:"A1V 8,6 св. лет, слишком яркая."},
+  "Sirius B":{hz_in:0.0,hz_out:0.0,lum:0.026,
+    desc:"DA2 white dwarf 8.6 ly.",
+    desc_ru:"DA2 белый карлик 8,6 св. лет."},
+  "Alpha Centauri A":{hz_in:0.0,hz_out:0.0,lum:1.519,
+    desc:"G2V 4.24 ly, HZ disrupted by binary.",
+    desc_ru:"G2V 4,24 св. лет, зона обит. дестабилизирована."},
+  "Alpha Centauri B":{hz_in:0.0,hz_out:0.0,lum:0.5,
+    desc:"K1V 4.24 ly, binary disruption.",
+    desc_ru:"K1V 4,24 св. лет, дестабилизирована двойной."},
+  "Kappa And":{hz_in:0.0,hz_out:0.0,lum:114.0,
+    desc:"B9IVn 170 ly, too hot.",
+    desc_ru:"B9IVn 170 св. лет, слишком горячая."},
+  "Rigel":{hz_in:0.0,hz_out:0.0,lum:120000.0,
+    desc:"B8Ia supergiant 860 ly.",
+    desc_ru:"B8Ia сверхгигант 860 св. лет."},
+  "Deneb":{hz_in:0.0,hz_out:0.0,lum:200000.0,
+    desc:"A2Ia supergiant 2600 ly.",
+    desc_ru:"A2Ia сверхгигант 2600 св. лет."},
+  "Alnilam":{hz_in:0.0,hz_out:0.0,lum:375000.0,
+    desc:"B0Ia 2000 ly, Orion's Belt.",
+    desc_ru:"B0Ia 2000 св. лет, Пояс Ориона."},
+  "Eta Carinae":{hz_in:0.0,hz_out:0.0,lum:5000000.0,
+    desc:"LBV 7500 ly, pre-supernova.",
+    desc_ru:"LBV 7500 св. лет, перед сверхновой."},
+  "Achernar":{hz_in:0.0,hz_out:0.0,lum:3150.0,
+    desc:"B6Vep 139 ly, most oblate known star.",
+    desc_ru:"B6Vep 139 св. лет, самая сплющенная."},
+  "PSR 1257+12":{hz_in:0.0,hz_out:0.0,lum:0.0003,
+    desc:"Millisecond pulsar 980 ly.",
+    desc_ru:"Миллисекундный пульсар 980 св. лет."},
+  "HD 101501":{hz_in:0.8836,hz_out:1.5454,lum:0.812,
+    desc:"G8V 30 ly.",
+    desc_ru:"G8V 30 св. лет."},
+  "36 Ophiuchi":{hz_in:0.643,hz_out:1.1246,lum:0.43,
+    desc:"K triple 20 ly.",
+    desc_ru:"K тройная 20 св. лет."},
+  "Vega":{hz_in:0.0,hz_out:0.0,lum:40.1,
+    desc:"A0Va 25 ly, too hot, debris disk.",
+    desc_ru:"A0Va 25 св. лет, слишком горячая, диск обломков."},
   "Kepler-452":{hz_in:1.056,hz_out:1.847,lum:1.16,
     desc:"Kepler-452 hosts 'Earth's cousin' — the first super-Earth found in the habitable zone of a G2V solar twin (announced July 2015). Kepler-452b orbits at 1.05 AU with a 385-day year, receiving 10% more stellar flux than Earth. The host star is 1.5 billion years older than the Sun — giving life far longer to evolve. At 1.63 R⊕, it is likely rocky or ocean-covered. As the star ages, it will eventually drive the planet out of the HZ. Our signal won't arrive until 3297.",
     desc_ru:"Kepler-452 — хозяин «кузена Земли»: первой суперземли в зоне обитаемости двойника Солнца G2V (июль 2015 г.). Kepler-452b вращается на 1,05 а.е., год — 385 дней, получает на 10% больше потока. Звезда на 1,5 млрд лет старше Солнца. При 1,63 R⊕ вероятно скальная или покрытая океаном. Наш сигнал прибудет в 3297 году."}
@@ -857,6 +1144,13 @@ let mode='galaxy';
 let currentStar=null,selPlanet=null;
 let playing=false,playTimer=null;
 let sysMoonObjs=[];
+// Camera lock: when true, camera orbits the center (normal). When false, free-look/pan.
+let cameraLocked=true;
+let galaxyLookAt=new THREE.Vector3(0,0,0);
+let galaxyLookTarget=new THREE.Vector3(0,0,0);
+let galaxyLookResting=new THREE.Vector3(0,0,0); // persists after flythrough ends
+// Flythrough: animate zoom into a target before transition
+let flythrough=null; // {target:Vector3, startR, endR, startTheta, startPhi, endTheta, endPhi, t, duration, onDone}
 let sysHZMesh=null;
 let sysProbeObjs=[];   // Voyager & other probes in Solar System view
 
@@ -984,8 +1278,8 @@ glc.addEventListener('webglcontextrestored',()=>{updateBubble();updateGlows();},
 
 const galaxyScene=new THREE.Scene();
 const systemScene=new THREE.Scene();
-const galaxyCam=new THREE.PerspectiveCamera(60,1,0.1,50000);
-const systemCam=new THREE.PerspectiveCamera(55,1,0.01,10000);
+const galaxyCam=new THREE.PerspectiveCamera(60,1,0.001,50000000);
+const systemCam=new THREE.PerspectiveCamera(55,1,0.01,50000);
 
 // Camera control state
 const ctrl={theta:0.4,phi:1.25,r:520,tTheta:0.4,tPhi:1.25,tR:520,autoRotSpd:0.00018};
@@ -1106,7 +1400,7 @@ function star3DPos(s){
 // Build star meshes
 stars.forEach(s=>{
   const pos=star3DPos(s);
-  const sz=s.size; // no isSun size boost — Solar System is now size:2, same scale as neighbors
+  const sz=s.size*0.45; // smaller stars so crowded areas remain clickable
   const vc=new THREE.Color(starVisCol(s));
   const mesh=new THREE.Mesh(
     new THREE.SphereGeometry(sz,12,8),
@@ -1117,7 +1411,7 @@ stars.forEach(s=>{
   galaxyScene.add(mesh);
 
   // glow sprite — textured circle, not solid square
-  const glowSz=sz*12;
+  const glowSz=sz*10;
   const glow=new THREE.Sprite(makeGlowMat(starMapCol(s),0.45));
   glow.scale.set(glowSz,glowSz,1);
   glow.position.copy(pos);
@@ -1125,7 +1419,7 @@ stars.forEach(s=>{
 
   // invisible hit sphere (larger for touch)
   const hit=new THREE.Mesh(
-    new THREE.SphereGeometry(Math.max(sz*3,12),8,8),
+    new THREE.SphereGeometry(Math.max(sz*4,10),8,8),
     new THREE.MeshBasicMaterial({visible:false})
   );
   hit.position.copy(pos);
@@ -1249,6 +1543,37 @@ let sgrAHit=null;
      desc:"M101 is a grand face-on spiral with highly asymmetric arms — one side is significantly brighter than the other, likely due to a gravitational interaction with companion galaxies. It has an unusually high number of giant HII regions (over 3,000 star-forming nebulae catalogued). Supernova 2011fe in M101 was one of the nearest and best-studied Type Ia supernovae in decades.",
      desc_ru:"M101 — большая спираль лицом к нам с асимметричными рукавами. Более 3000 catalogued-областей HII. SN 2011fe в M101 была одной из ближайших и лучше изученных сверхновых типа Ia за последние десятилетия.",
      x:-250000,y:180000,z:150000,color:0xb8c8e0,sz:26000,arms:5,type3d:'spiral'},
+    // Additional well-known galaxies
+    {name:"Bode's Galaxy (M81)",name_ru:"Галактика Боде (M81)",dist_mly:11.8,
+     type:"Grand design spiral — SA(s)ab",type_ru:"Большая спираль — SA(s)ab",
+     stars:"~250 billion",stars_ru:"~250 млрд",
+     desc:"One of the brightest galaxies in the sky, M81 is engaged in a gravitational tug-of-war with nearby M82 (Cigar Galaxy). This interaction has triggered star formation in both galaxies. M81 hosts a 70-million solar mass central black hole. It is one of the most studied spiral galaxies and a favourite of amateur astronomers.",
+     desc_ru:"Одна из ярчайших галактик неба, M81 находится в гравитационном взаимодействии с M82. Это вызвало вспышки звездообразования. Центральная чёрная дыра 70 млн масс Солнца.",
+     x:-90000,y:120000,z:-130000,color:0xffe0b0,sz:22000,arms:2,type3d:'spiral'},
+    {name:"Cigar Galaxy (M82)",name_ru:"Галактика Сигара (M82)",dist_mly:12.0,
+     type:"Starburst irregular — Irr II",type_ru:"Вспыхивающая неправильная — Irr II",
+     stars:"~30 billion",stars_ru:"~30 млрд",
+     desc:"M82 is the archetypal starburst galaxy — its core produces stars 10× faster than the Milky Way. Superwinds driven by thousands of simultaneous supernovae blast hot gas 10,000 light-years out of the galaxy. In 2014, the closest Type Ia supernova in decades (SN 2014J) exploded here. M81 and M82 are a famous interacting pair.",
+     desc_ru:"M82 — классическая галактика вспышки звездообразования: ядро производит звёзды в 10 раз быстрее Млечного Пути. Сверхветры выбрасывают горячий газ на 10 000 световых лет. В 2014 году здесь взорвалась SN 2014J — ближайшая сверхновая Ia за последние десятилетия.",
+     x:-88000,y:128000,z:-138000,color:0xff8844,sz:14000,type3d:'irregular'},
+    {name:"Black Eye Galaxy (M64)",name_ru:"Галактика Чёрный Глаз (M64)",dist_mly:17.0,
+     type:"Spiral — SA(rs)ab",type_ru:"Спираль — SA(rs)ab",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"The Black Eye Galaxy is famous for its dark dust band across the inner region, absorbing light from the bright nucleus — creating the 'black eye' appearance. Remarkably, its inner disc rotates opposite to the outer disc, probably from absorbing a smaller galaxy. This counter-rotation drives intense star formation at the boundary.",
+     desc_ru:"Галактика Чёрный Глаз знаменита тёмной пылевой полосой перед ярким ядром. Внутренний диск вращается противоположно внешнему — вероятно, результат поглощения меньшей галактики. Контрвращение провоцирует интенсивное звездообразование на границе.",
+     x:100000,y:180000,z:-250000,color:0xd0a870,sz:18000,arms:2,type3d:'spiral'},
+    {name:"Sunflower Galaxy (M63)",name_ru:"Галактика Подсолнух (M63)",dist_mly:27.0,
+     type:"Spiral — SA(rs)bc",type_ru:"Спираль — SA(rs)bc",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"M63 is a grand design spiral in the M51 group with a bright core and patchy, flocculent spiral arms resembling a sunflower. It is the first object discovered by Pierre Méchain (1779). It has been host to one supernova (1971I) and shows evidence of past minor mergers in its outer stellar halo.",
+     desc_ru:"M63 — большая спираль в группе M51 с клочковатыми спиральными рукавами. Первый объект, открытый Пьером Мешеном (1779 г.). Одна сверхновая в истории (1971I).",
+     x:-180000,y:200000,z:-100000,color:0xd8c8a0,sz:18000,arms:3,type3d:'spiral'},
+    {name:"Antennae Galaxies (NGC 4038/39)",name_ru:"Галактики Антенны (NGC 4038/39)",dist_mly:45.0,
+     type:"Interacting pair",type_ru:"Взаимодействующая пара",
+     stars:"~300 billion",stars_ru:"~300 млрд",
+     desc:"The Antennae are two colliding spiral galaxies in the process of merging — one of the nearest and youngest galaxy mergers known. The collision has triggered one of the most intense starbursts ever observed, creating thousands of massive young star clusters. Long tidal tails (the 'antennae') extend for 100,000 light-years.",
+     desc_ru:"Антенны — две сталкивающиеся галактики, ближайшее и молодое слияние. Столкновение запустило один из наиболее интенсивных взрывов звездообразования, создав тысячи массивных молодых кластеров. Приливные хвосты протянулись на 100 000 световых лет.",
+     x:200000,y:-180000,z:350000,color:0xff9966,sz:28000,type3d:'irregular'},
   ];
 
   // ── Build realistic point-cloud galaxy ────────────────────────────────────
@@ -1350,12 +1675,12 @@ let sgrAHit=null;
     extGalaxyHits.push(hit);
   }
 
-  // Bring Andromeda closer so it's visible from the default camera position
-  // and boost its size so it dominates the sky like the real Andromeda
-  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).x=-50000;
-  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).y=55000;
-  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).z=-190000;
-  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).sz=65000;
+  // Andromeda: bring close enough to be visible without zooming out
+  // At r=520 default camera, objects at ~30000 units are clearly visible
+  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).x=-18000;
+  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).y=22000;
+  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).z=-75000;
+  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).sz=38000;
 
   // Bring LMC/SMC closer too — they should be prominent
   GALAXY_DATA.find(g=>g.name.includes('Large Magellanic')).x=-5000;
@@ -1553,6 +1878,9 @@ function buildSystem(star){
   // clear old planets
   sysPlanetObjs.forEach(o=>{systemScene.remove(o.mesh);systemScene.remove(o.hit);systemScene.remove(o.ring);if(o.glow)systemScene.remove(o.glow);if(o.pRingMesh)systemScene.remove(o.pRingMesh);});
   sysPlanetObjs=[];
+  // clear asteroid/Kuiper belt points (Solar System only — always remove old ones)
+  if(window._beltData){systemScene.remove(window._beltData.pts);window._beltData=null;}
+  if(window._kbData){systemScene.remove(window._kbData.pts);window._kbData=null;}
   // clear old moons
   sysMoonObjs.forEach(o=>{systemScene.remove(o.mesh);systemScene.remove(o.ring);if(o.hit)systemScene.remove(o.hit);});
   sysMoonObjs=[];
@@ -1827,9 +2155,116 @@ function buildSystem(star){
       // Hit sphere
       const phit=new THREE.Mesh(new THREE.SphereGeometry(60,6,6),new THREE.MeshBasicMaterial({visible:false}));
       phit.position.copy(probePos);phit.userData={probe};systemScene.add(phit);
-      phit.position.copy(probePos);phit.userData={probe};systemScene.add(phit);
       // Store launchPos so updateOrbits can keep trail start fixed
       sysProbeObjs.push({mesh:pmesh,glow:pglow,trail,hit:phit,probe,launchPos});
+    });
+
+    // ── Asteroid Belt & Kuiper Belt — Solar System ONLY ──────
+    if(star.isSun){
+    // ── Asteroid Belt (2.2–3.2 AU) — animated prograde orbits ─────────────────
+    // Kepler's 3rd law: period (days) = 365.25 * a^1.5 where a in AU
+    // Orbital speed: v = 2π * a / T  AU/day, prograde (counter-clockwise from top)
+    // Store angles separately so updateOrbits can animate them
+    const beltN=1200;
+    const beltAngles=new Float32Array(beltN);
+    const beltOmega=new Float32Array(beltN);  // rad/day
+    const beltR=new Float32Array(beltN);      // scene units
+    const beltY=new Float32Array(beltN);      // vertical offset
+    const beltGeo=new THREE.BufferGeometry();
+    const beltPos=new Float32Array(beltN*3);
+    for(let i=0;i<beltN;i++){
+      const au=2.2+Math.pow(Math.random(),1.3)*1.0; // bias inner
+      const period=365.25*Math.pow(au,1.5);
+      beltAngles[i]=Math.random()*Math.PI*2;
+      beltOmega[i]=(2*Math.PI/period); // rad/day, prograde
+      beltR[i]=orbitScene(au);
+      const incRad=(Math.random()-0.5)*0.36; // up to ~21° inclination
+      beltY[i]=Math.sin(incRad)*beltR[i]*0.15;
+      beltPos[i*3]=Math.cos(beltAngles[i])*beltR[i];
+      beltPos[i*3+1]=beltY[i];
+      beltPos[i*3+2]=Math.sin(beltAngles[i])*beltR[i];
+    }
+    beltGeo.setAttribute('position',new THREE.BufferAttribute(beltPos,3));
+    const beltMat=new THREE.PointsMaterial({color:0x998870,size:1.0,sizeAttenuation:false,transparent:true,opacity:0.6});
+    const beltPts=new THREE.Points(beltGeo,beltMat);
+    systemScene.add(beltPts);
+    window._beltData={pts:beltPts,angles:beltAngles,omega:beltOmega,R:beltR,Y:beltY,N:beltN};
+
+    // ── Kuiper Belt (30–55 AU) — thin prograde disc ────────────────────────
+    const kbN=700;
+    const kbAngles=new Float32Array(kbN);
+    const kbOmega=new Float32Array(kbN);
+    const kbR=new Float32Array(kbN);
+    const kbGeo=new THREE.BufferGeometry();
+    const kbPos=new Float32Array(kbN*3);
+    for(let i=0;i<kbN;i++){
+      const au=30+Math.random()*25;
+      const period=365.25*Math.pow(au,1.5);
+      kbAngles[i]=Math.random()*Math.PI*2;
+      kbOmega[i]=(2*Math.PI/period);
+      kbR[i]=orbitScene(au);
+      kbPos[i*3]=Math.cos(kbAngles[i])*kbR[i];
+      kbPos[i*3+1]=(Math.random()-0.5)*kbR[i]*0.025;
+      kbPos[i*3+2]=Math.sin(kbAngles[i])*kbR[i];
+    }
+    kbGeo.setAttribute('position',new THREE.BufferAttribute(kbPos,3));
+    const kbPts=new THREE.Points(kbGeo,new THREE.PointsMaterial({color:0x7090b8,size:0.85,sizeAttenuation:false,transparent:true,opacity:0.42}));
+    systemScene.add(kbPts);
+    window._kbData={pts:kbPts,angles:kbAngles,omega:kbOmega,R:kbR,N:kbN};
+    } // end if(star.isSun) for belts
+
+    // ── Major Asteroids & Comets ────────────────────────────────────────────
+    const SMALL_BODIES=[
+      {name:"Ceres",name_ru:"Церера",type:"Dwarf Planet",type_ru:"Карликовая планета",orbit:2.77,period:1682,color:0xb8a888,
+       desc:"The largest object in the asteroid belt (diameter 945 km) and the only dwarf planet in the inner solar system. Visited by NASA's Dawn spacecraft 2015–2018. Bright spots in Occator Crater are sodium carbonate deposits from ancient brine upwelling — evidence of a subsurface ocean in the past.",
+       desc_ru:"Крупнейший объект в поясе астероидов (диаметр 945 км) и единственная карликовая планета во внутренней Солнечной системе. Посещена зондом Dawn в 2015–2018 гг. Яркие пятна в кратере Окатор — карбонат натрия из древнего рассола."},
+      {name:"Vesta",name_ru:"Веста",type:"Asteroid",type_ru:"Астероид",orbit:2.36,period:1325,color:0xa09080,
+       desc:"The second-largest asteroid (530 km) and one of the brightest objects in the night sky. Has a differentiated interior like a rocky planet. Dawn orbited Vesta 2011–2012, revealing a giant impact crater at the south pole and evidence of ancient volcanic activity.",
+       desc_ru:"Второй по величине астероид (530 км) и один из ярчайших объектов ночного неба. Дифференцированное внутреннее строение как у каменистой планеты. Dawn вращался вокруг Весты в 2011–2012 гг."},
+      {name:"Pallas",name_ru:"Паллада",type:"Asteroid",type_ru:"Астероид",orbit:2.77,period:1686,color:0x907880,
+       desc:"The third-largest asteroid (~512 km) with a highly inclined orbit (34.8°) — most tilted of the major asteroids. Its unusual orbital inclination may indicate it formed in the outer solar system before being perturbed inward.",
+       desc_ru:"Третий по величине астероид (~512 км) с наклонённой орбитой (34,8°). Необычный наклон может указывать на формирование во внешней Солнечной системе."},
+      {name:"Halley's Comet",name_ru:"Комета Галлея",type:"Short-period Comet",type_ru:"Короткопериодическая комета",orbit:17.8,period:27507,color:0x88ccff,
+       desc:"The most famous periodic comet, returning every 75–76 years. Last visible 1986 (next: ~2061). The nucleus is a 15×8 km peanut-shaped body of black dust and ice. Edmond Halley proved it was the same comet observed in 1531, 1607, and 1682. Ancient records date its observations back to 240 BC.",
+       desc_ru:"Самая известная периодическая комета, возвращающаяся каждые 75–76 лет. Последнее появление: 1986 (следующее: ~2061). Ядро — тело 15×8 км из чёрной пыли и льда. Эдмонд Галлей доказал, что это та же комета 1531, 1607 и 1682 гг."},
+      {name:"Hale-Bopp",name_ru:"Хейла-Боппа",type:"Long-period Comet",type_ru:"Долгопериодическая комета",orbit:186,period:2533*365,color:0x99ddff,
+       desc:"One of the brightest comets of the 20th century, spectacularly visible to the naked eye throughout 1996–1997. The nucleus is exceptionally large (~60 km). It has two distinct tails — a white dust tail and a blue ion tail — and was also the first comet with a confirmed third tail (sodium tail). Next return: ~4530 CE.",
+       desc_ru:"Одна из ярчайших комет XX века, хорошо видимая невооружённым глазом в 1996–1997 гг. Ядро исключительно крупное (~60 км). Два хвоста: белый пылевой и синий ионный. Следующее возвращение: ~4530 г."},
+      {name:"67P / Churyumov-G",name_ru:"67P / Чурюмов-Г",type:"Short-period Comet",type_ru:"Короткопериодическая комета",orbit:3.46,period:2354,color:0x7aabee,
+       desc:"The comet explored by ESA's Rosetta mission (2014–2016) — the first spacecraft to orbit and land on a comet. The Philae lander discovered organic molecules, and Rosetta detected molecular oxygen in the coma — suggesting the comet preserved primordial solar system material from 4.6 billion years ago.",
+       desc_ru:"Комета, исследованная миссией ESA Rosetta (2014–2016) — первый аппарат на орбите кометы и первая посадка. Зонд Philae обнаружил органические молекулы. Розетта зафиксировала молекулярный кислород — ранний материал Солнечной системы."},
+      {name:"Apophis",name_ru:"Апофис",type:"Near-Earth Asteroid",type_ru:"Астероид, сближающийся с Землёй",orbit:0.922,period:324,color:0xcc8844,
+       desc:"A 340-metre near-Earth asteroid that caused brief global alarm in 2004 when early observations gave it a 2.7% chance of hitting Earth in 2029. Improved observations ruled out any impact risk until at least 2100. It will pass just 31,860 km from Earth on April 13, 2029 — visible to the naked eye and inside the orbit of geostationary satellites.",
+       desc_ru:"Астероид диаметром 340 м, вызвавший тревогу в 2004 году: ранние наблюдения давали 2,7% вероятности столкновения в 2029 г. Риск снят. 13 апреля 2029 г. пройдёт в 31 860 км от Земли — виден невооружённым глазом, ближе геостационарных спутников."},
+      {name:"Oumuamua",name_ru:"Оумуамуа",type:"Interstellar Object",type_ru:"Межзвёздный объект",orbit:8.67,period:null,color:0xdd9955,
+       desc:"The first known interstellar object to pass through the solar system (discovered 2017). Its extreme elongation (estimated 10:1 length-to-width ratio), unusual non-gravitational acceleration, and reddish surface remain controversial. Some researchers proposed an artificial thin-film solar sail; consensus favors a fragment of nitrogen ice from an extrasolar Pluto-like body.",
+       desc_ru:"Первый известный межзвёздный объект через Солнечную систему (обнаружен в 2017 г.). Крайняя вытянутость, необычное негравитационное ускорение и красноватая поверхность остаются предметом дискуссий. Консенсус: фрагмент азотного льда с объекта типа Плутона другой планетной системы."},
+    ];
+
+    // Add small body meshes
+    let sysSmallBodyObjs=window._sysSmallBodyObjs||[];
+    sysSmallBodyObjs.forEach(o=>{systemScene.remove(o.mesh);if(o.hit)systemScene.remove(o.hit);});
+    sysSmallBodyObjs=[];window._sysSmallBodyObjs=sysSmallBodyObjs;
+
+    SMALL_BODIES.forEach(b=>{
+      if(b.orbit>maxOrb*1.5)return; // skip if way outside scene
+      const angle=Math.random()*Math.PI*2;
+      const r=orbitScene(b.orbit);
+      const py=(Math.random()-0.5)*r*0.06;
+      const pos=new THREE.Vector3(Math.cos(angle)*r,py,Math.sin(angle)*r);
+      const isBig=b.name==='Ceres'||b.name==='Vesta';
+      const sz=isBig?1.2:0.8;
+      const mesh=new THREE.Mesh(new THREE.SphereGeometry(sz,6,5),new THREE.MeshBasicMaterial({color:b.color}));
+      mesh.position.copy(pos);systemScene.add(mesh);
+      // Glow for comets
+      if(b.type.includes('Comet')||b.type.includes('Interstellar')){
+        const cg=new THREE.Sprite(makeGlowMat(b.color,0.6));
+        cg.scale.set(8,8,1);cg.position.copy(pos);systemScene.add(cg);
+      }
+      const hit=new THREE.Mesh(new THREE.SphereGeometry(Math.max(sz*3,8),6,6),new THREE.MeshBasicMaterial({visible:false}));
+      hit.position.copy(pos);hit.userData={smallBody:b};systemScene.add(hit);
+      const omega=b.period?(2*Math.PI/b.period):0;
+      sysSmallBodyObjs.push({mesh,hit,body:b,angle,omega,orbitR:r,py});
     });
   }
 }
@@ -1857,27 +2292,51 @@ function focusOnObject(pos,distance){
 }
 
 function updateCam(){
+  // Adjust galaxy camera near clip dynamically to avoid z-fighting at any zoom level
+  if(mode==='galaxy'){
+    const r=ctrl.r;
+    galaxyCam.near=Math.max(0.001, r*0.0001);
+    galaxyCam.updateProjectionMatrix();
+  }
+  // ── Flythrough animation ──────────────────────────────
+  if(flythrough){
+    flythrough.t=Math.min(1,flythrough.t+0.016/flythrough.duration);
+    const ease=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    const e=ease(flythrough.t);
+    ctrl.tR=flythrough.startR+(flythrough.endR-flythrough.startR)*e;
+    ctrl.tTheta=flythrough.startTheta+(flythrough.endTheta-flythrough.startTheta)*e;
+    ctrl.tPhi=flythrough.startPhi+(flythrough.endPhi-flythrough.startPhi)*e;
+    if(flythrough.target){
+      galaxyLookTarget.lerp(flythrough.target,0.12);
+    }
+    if(flythrough.t>=1){const cb=flythrough.onDone;if(flythrough.target)galaxyLookResting.copy(flythrough.target);flythrough=null;if(cb)cb();}
+  }
+
   const c=(mode==='system')?sysCtrl:ctrl;
-  if(mode==='galaxy'&&opts.autoRot)c.tTheta+=c.autoRotSpd||0.00018;
+  if(mode==='galaxy'&&opts.autoRot&&cameraLocked&&!flythrough)c.tTheta+=c.autoRotSpd||0.00018;
   const lf=0.07;
   c.theta+=(c.tTheta-c.theta)*lf;
   c.phi+=(c.tPhi-c.phi)*lf;
   c.r+=(c.tR-c.r)*lf;
   const cam=(mode==='system')?systemCam:galaxyCam;
   if(mode==='system'){
-    // Lerp look-at point toward target
     sysLookAt.lerp(sysLookTarget,lf);
     const sp=Math.sin(c.phi),cp=Math.cos(c.phi),st=Math.sin(c.theta),ct=Math.cos(c.theta);
-    cam.position.set(
-      sysLookAt.x+c.r*sp*ct,
-      sysLookAt.y+c.r*cp,
-      sysLookAt.z+c.r*sp*st
-    );
+    cam.position.set(sysLookAt.x+c.r*sp*ct,sysLookAt.y+c.r*cp,sysLookAt.z+c.r*sp*st);
     cam.lookAt(sysLookAt);
   } else {
+    // Galaxy: free-look or locked
+    if(!cameraLocked){
+      galaxyLookAt.lerp(galaxyLookTarget,lf);
+    } else if(flythrough&&flythrough.target){
+      galaxyLookAt.lerp(flythrough.target,0.10);
+    } else {
+      // Stay at resting look position (set when flythrough ends or on enter/exit)
+      galaxyLookAt.lerp(galaxyLookResting,lf*0.5);
+    }
     const sp=Math.sin(c.phi),cp=Math.cos(c.phi),st=Math.sin(c.theta),ct=Math.cos(c.theta);
-    cam.position.set(c.r*sp*ct,c.r*cp,c.r*sp*st);
-    cam.lookAt(0,0,0);
+    cam.position.set(galaxyLookAt.x+c.r*sp*ct,galaxyLookAt.y+c.r*cp,galaxyLookAt.z+c.r*sp*st);
+    cam.lookAt(galaxyLookAt);
   }
 }
 
@@ -1886,8 +2345,9 @@ let lastTs=0; // used by animate loop
 function updateOrbits(ts){
   const dt=(ts-lastTs)/1000;lastTs=ts;
   // Advance sysJD if playing
+  const sysJDDelta=sysPlaying?SYS_SPEEDS[sysSpeedIdx]*dt:0;
   if(sysPlaying){
-    sysJD+=SYS_SPEEDS[sysSpeedIdx]*dt;
+    sysJD+=sysJDDelta;
     const sliderEl=document.getElementById('sysTimeSlider');
     if(sliderEl)sliderEl.value=jdToSlider(sysJD);
     const lblEl=document.getElementById('sysDateLbl');
@@ -1938,6 +2398,35 @@ function updateOrbits(ts){
     }
     pa[3]=pos.x; pa[4]=pos.y; pa[5]=pos.z;
     o.trail.geometry.attributes.position.needsUpdate=true;
+  });
+  // Belt animation — prograde orbits using Keplerian speeds
+  if(window._beltData){
+    const bd=window._beltData;
+    const posArr=bd.pts.geometry.attributes.position.array;
+    for(let i=0;i<bd.N;i++){
+      bd.angles[i]+=bd.omega[i]*sysJDDelta; // rad/day * days = rad
+      posArr[i*3]=Math.cos(bd.angles[i])*bd.R[i];
+      posArr[i*3+2]=Math.sin(bd.angles[i])*bd.R[i];
+    }
+    bd.pts.geometry.attributes.position.needsUpdate=true;
+  }
+  if(window._kbData){
+    const kd=window._kbData;
+    const posArr=kd.pts.geometry.attributes.position.array;
+    for(let i=0;i<kd.N;i++){
+      kd.angles[i]+=kd.omega[i]*sysJDDelta;
+      posArr[i*3]=Math.cos(kd.angles[i])*kd.R[i];
+      posArr[i*3+2]=Math.sin(kd.angles[i])*kd.R[i];
+    }
+    kd.pts.geometry.attributes.position.needsUpdate=true;
+  }
+  // Small bodies orbit animation
+  (window._sysSmallBodyObjs||[]).forEach(o=>{
+    if(o.omega){o.angle+=o.omega*sysJDDelta;}
+    const x=Math.cos(o.angle)*o.orbitR;
+    const z=Math.sin(o.angle)*o.orbitR;
+    o.mesh.position.set(x,o.py,z);
+    if(o.hit)o.hit.position.set(x,o.py,z);
   });
 }
 
@@ -2073,6 +2562,27 @@ function animate(ts){
 const fadeEl=document.getElementById('fadeEl');
 const sysUI=document.getElementById('sysUI');
 
+// Smooth zoom flythrough to a 3D galaxy-space position, then call onDone
+function zoomToGalaxyObject(targetPos,onDone){
+  const startR=ctrl.r, startTheta=ctrl.theta, startPhi=ctrl.phi;
+  // Direction from current look-at toward target
+  const dx=targetPos.x-galaxyLookAt.x;
+  const dy=targetPos.y-galaxyLookAt.y;
+  const dz=targetPos.z-galaxyLookAt.z;
+  const dist=Math.hypot(dx,dy,dz);
+  // Face the target: theta is azimuth in XZ, phi is elevation
+  const targetTheta=Math.atan2(dz,dx)+Math.PI/2;
+  const targetPhi=Math.max(0.3,Math.min(Math.PI-0.3,Math.PI/2-Math.atan2(dy,Math.hypot(dx,dz))));
+  flythrough={
+    target:targetPos.clone(),           // lookAt will lerp here
+    startR, endR:Math.max(40,dist*0.05),// zoom in close
+    startTheta, endTheta:targetTheta,
+    startPhi, endPhi:targetPhi,
+    t:0, duration:1.4,
+    onDone
+  };
+}
+
 function enterSystem(star){
   currentStar=star;
   fadeEl.classList.add('show');
@@ -2082,6 +2592,7 @@ function enterSystem(star){
     sysLookAt.set(0,0,0);sysLookTarget.set(0,0,0);
     buildSystem(star);
     mode='system';lastTs=performance.now();
+    cameraLocked=true;syncLockBtn();
     document.body.classList.add('in-system');
     sysUI.classList.add('show');
     document.getElementById('sysTitleEl').textContent=star.name.toUpperCase();
@@ -2100,6 +2611,9 @@ function exitSystem(){
   sysPlaying=false;
   setTimeout(()=>{
     mode='galaxy';
+    cameraLocked=true;
+    galaxyLookAt.set(0,0,0);galaxyLookTarget.set(0,0,0);galaxyLookResting.set(0,0,0);
+    syncLockBtn();
     document.body.classList.remove('in-system');
     sysUI.classList.remove('show');
     document.getElementById('legendEl').style.display='';
@@ -2110,6 +2624,38 @@ function exitSystem(){
 }
 
 document.getElementById('sysBack').addEventListener('click',exitSystem);
+
+// ── Camera lock/free toggle ────────────────────────────
+const lockBtn=document.getElementById('lockBtn');
+
+function syncLockBtn(){
+  const free=!cameraLocked;
+  lockBtn.textContent=free?'🔓':'🔒';
+  lockBtn.classList.toggle('free',free);
+}
+
+// Home button — zoom to Solar System and lock camera
+addTap(document.getElementById('homeBtn'),()=>{
+  if(mode==='system'){exitSystem();return;}
+  // Find Solar System star object
+  const sunObj=starGalaxyObjs.find(o=>o.star&&o.star.isSun);
+  if(!sunObj)return;
+  cameraLocked=true;syncLockBtn();
+  const sunPos=sunObj.mesh.position.clone();
+  // Zoom flythrough toward Sun, then lock camera there
+  zoomToGalaxyObject(sunPos,()=>{
+    // After arriving, set resting look-at to Solar System
+    galaxyLookResting.copy(sunPos);
+    galaxyLookTarget.copy(sunPos);
+  });
+});
+
+addTap(lockBtn,()=>{
+  cameraLocked=!cameraLocked;
+  if(mode==='galaxy'&&!cameraLocked){galaxyLookTarget.copy(galaxyLookAt);}
+  if(mode==='system'&&!cameraLocked){sysLookTarget.copy(sysLookAt);}
+  syncLockBtn();
+});
 
 // ── System time bar wiring ────────────────────────────
 document.getElementById('sysTimeSlider').addEventListener('input',e=>{
@@ -2135,7 +2681,8 @@ const mouse=new THREE.Vector2();
 
 function getHitTargets(){
   if(mode==='galaxy')return [...starGalaxyObjs.map(o=>o.hit),(window._extGalaxyHits||[]),sgrAHit].flat().filter(Boolean);
-  return [...sysMoonObjs.map(o=>o.hit),...sysPlanetObjs.map(o=>o.hit),sysCentralHit,...sysProbeObjs.map(o=>o.hit)].filter(Boolean);
+  const sb=(window._sysSmallBodyObjs||[]).map(o=>o.hit);
+  return [...sysMoonObjs.map(o=>o.hit),...sysPlanetObjs.map(o=>o.hit),sysCentralHit,...sysProbeObjs.map(o=>o.hit),...sb].filter(Boolean);
 }
 
 function handleTap(cx,cy){
@@ -2148,9 +2695,22 @@ function handleTap(cx,cy){
   if(!hits.length)return;
   const ud=hits[0].object.userData;
   if(mode==='galaxy'){
-    if(ud.isSgrA){openSgrA();}
-    else if(ud.galaxy){openGalaxy(ud.galaxy);}
-    else if(ud.star){enterSystem(ud.star);}
+    if(ud.isSgrA){
+      // Zoom into galactic center before opening info
+      const gc=window._GC||{x:1200,y:0,z:7000};
+      const gcPos=new THREE.Vector3(gc.x,gc.y,gc.z);
+      zoomToGalaxyObject(gcPos,()=>{openSgrA();});
+    }
+    else if(ud.galaxy){
+      // Zoom toward galaxy then open info
+      const gpos=new THREE.Vector3(ud.galaxy.x,ud.galaxy.y,ud.galaxy.z);
+      zoomToGalaxyObject(gpos,()=>{openGalaxy(ud.galaxy);});
+    }
+    else if(ud.star){
+      const sObj=starGalaxyObjs.find(o=>o.star===ud.star);
+      if(sObj){zoomToGalaxyObject(sObj.mesh.position,()=>enterSystem(ud.star));}
+      else{enterSystem(ud.star);}
+    }
   } else if(mode==='system'){
     if(ud.moon){
       const mObj=sysMoonObjs.find(o=>o.moon===ud.moon);
@@ -2169,6 +2729,10 @@ function handleTap(cx,cy){
       const oS=window._orbitScene||(()=>400);
       if(pObj){focusOnObject(pObj.mesh.position.clone(),Math.max(oS(5),80));}
       openProbe(ud.probe);
+    } else if(ud.smallBody){
+      const sbObj=(window._sysSmallBodyObjs||[]).find(o=>o.body===ud.smallBody);
+      if(sbObj){focusOnObject(sbObj.mesh.position.clone(),30);}
+      openSmallBody(ud.smallBody);
     }
   }
 }
@@ -2182,11 +2746,24 @@ window.addEventListener('mousemove',e=>{
   const dx=e.clientX-lastMouse.x,dy=e.clientY-lastMouse.y;
   if(Math.hypot(dx,dy)>4)dragMoved=true;
   const c=mode==='system'?sysCtrl:ctrl;
-  c.tTheta-=dx*0.005;c.tPhi=Math.max(0.2,Math.min(Math.PI-0.2,c.tPhi+dy*0.005));
+  // Drag always rotates (theta/phi) in both locked and unlocked modes.
+  // Thumbstick handles panning the look-at point when unlocked.
+  c.tTheta-=dx*0.005;
+  c.tPhi=Math.max(0.2,Math.min(Math.PI-0.2,c.tPhi+dy*0.005));
   lastMouse={x:e.clientX,y:e.clientY};
 });
 window.addEventListener('mouseup',e=>{if(isDragging&&!dragMoved)handleTap(e.clientX,e.clientY);isDragging=false;});
-glc.addEventListener('wheel',e=>{e.preventDefault();const c=mode==='system'?sysCtrl:ctrl;c.tR=Math.max(30,Math.min(6000,c.tR+e.deltaY*0.6));},{passive:false});
+glc.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const c=mode==='system'?sysCtrl:ctrl;
+  if(mode==='system'){
+    c.tR=Math.max(2,Math.min(6000,c.tR+e.deltaY*0.5));
+  } else {
+    // Galaxy mode: no min/max — zoom in infinitely toward any galaxy
+    const factor=e.deltaY>0?1.12:0.89; // multiplicative so zoom feels same at any distance
+    c.tR=Math.max(0.5,c.tR*factor);
+  }
+},{passive:false});
 
 function anySheetOpen(){
   return sheet.classList.contains('sheet-open')||
@@ -2208,13 +2785,15 @@ glc.addEventListener('touchmove',e=>{
     const dx=t.clientX-prev.x,dy=t.clientY-prev.y;
     if(Math.hypot(dx,dy)>3)dragMoved=true;
     const c=mode==='system'?sysCtrl:ctrl;
-    c.tTheta-=dx*0.006;c.tPhi=Math.max(0.2,Math.min(Math.PI-0.2,c.tPhi+dy*0.006));
+    // Single-finger drag always rotates (theta/phi)
+    c.tTheta-=dx*0.006;
+    c.tPhi=Math.max(0.2,Math.min(Math.PI-0.2,c.tPhi+dy*0.006));
     touchPrev[t.identifier]={x:t.clientX,y:t.clientY};
   } else if(e.touches.length===2){
     const a=e.touches[0],b=e.touches[1];
     const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
     const c=mode==='system'?sysCtrl:ctrl;
-    c.tR=Math.max(30,Math.min(6000,c.tR*(pinchStartDist/d)));
+    c.tR=mode==="system"?Math.max(2,Math.min(6000,c.tR*(pinchStartDist/d))):Math.max(0.5,c.tR*(pinchStartDist/d));
     pinchStartDist=d;dragMoved=true;
   }
 },{passive:false});
@@ -2262,6 +2841,26 @@ function openMoon(m){
   pSheet.classList.add('sheet-open');
 }
 function openProbe(probe){renderProbe(probe);pSheet.classList.add('sheet-open');}
+
+function openSmallBody(b){
+  const isRu=lang==='ru';
+  const nm=isRu?b.name_ru:b.name;
+  const tp=isRu?b.type_ru:b.type;
+  const desc=isRu?b.desc_ru:b.desc;
+  const colHex=b.color?('#'+b.color.toString(16).padStart(6,'0')):'#aabb88';
+  plHead.innerHTML=`
+    <div class="pt-badge" style="background:${colHex}22;border:1px solid ${colHex}55;color:${colHex}">☄️ ${tp}</div>
+    <div class="sh-name">${nm}</div>`;
+  const distAU=b.orbit.toFixed(3);
+  const periodStr=b.period?b.period+' '+(isRu?'сут.':'days'):isRu?'Гиперболическая':'Hyperbolic';
+  plBody.innerHTML=`
+    <div class="mgrid">
+      <div class="mcard"><div class="mc-lbl">${isRu?'Орбита (а.е.)':'Orbit (AU)'}</div><div class="mc-val gold">${distAU} AU</div></div>
+      <div class="mcard"><div class="mc-lbl">${isRu?'Период':'Period'}</div><div class="mc-val cyan">${periodStr}</div></div>
+    </div>
+    <div class="info-card"><div class="ic-body">${desc}</div></div>`;
+  pSheet.classList.add('sheet-open');
+}
 
 function openGalaxy(gd){
   const isRu=lang==='ru';
@@ -2357,6 +2956,7 @@ function addTap(el,fn){
 }
 addTap(document.getElementById('shDrag'),closeSheet);
 addTap(document.getElementById('plDrag'),closePlanet);
+addTap(document.getElementById('plClose'),closePlanet);
 
 function swipeClose(el,closeFn){
   let y0=0;
@@ -2646,7 +3246,12 @@ document.getElementById('chartTabs').addEventListener('click',e=>{
   buildChart();
 });
 
-function updateHeader(){const b=dynBub();document.getElementById('hR').textContent=Math.floor(b);document.getElementById('hS').textContent=stars.filter(s=>s.dist<=b||s.dist===0).length;document.getElementById('hH').textContent=stars.filter(s=>(s.dist<=b||s.dist===0)&&s.hab).length;}
+function updateHeader(){
+  const b=dynBub();
+  const habCount=stars.filter(s=>(s.dist<=b||s.dist===0)&&s.hab).length;
+  const hH=document.getElementById('hH');
+  if(hH){hH.textContent=habCount>0?habCount:'';}
+}
 
 // ══════════════════════════════════════════════════════
 // FLASH
