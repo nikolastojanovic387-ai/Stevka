@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -65,12 +66,13 @@ header{flex-shrink:0;height:52px;display:flex;align-items:center;justify-content
 #sysTitleEl{position:absolute;top:15px;left:50%;transform:translateX(-50%);font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:#fff;letter-spacing:2px;white-space:nowrap;text-shadow:0 0 20px rgba(0,229,255,0.5);pointer-events:none;}
 .tap-hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(138,176,204,0.35);pointer-events:none;white-space:nowrap;}
 /* Legend */
-.legend{position:absolute;left:8px;bottom:8px;display:flex;flex-direction:column;gap:4px;background:rgba(2,11,24,0.82);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:7px 9px;pointer-events:none;}
+.legend{position:relative;left:auto;bottom:auto;display:flex;flex-direction:column;gap:4px;background:rgba(2,11,24,0.82);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:7px 9px;pointer-events:none;}
 .leg-row{display:flex;align-items:center;gap:6px;font-size:10px;color:rgba(138,176,204,0.75);}
 .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .mfab{position:absolute;right:8px;bottom:8px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.28);border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);cursor:pointer;min-height:38px;display:flex;align-items:center;touch-action:manipulation;}
 .mfab.free{background:rgba(255,202,40,0.15);border-color:rgba(255,202,40,0.4);color:var(--gold);}
 #lockBtn{bottom:54px;padding:0;width:38px;height:38px;justify-content:center;font-size:16px;letter-spacing:0;}
+#objFab{position:relative!important;}
 #fadeEl{position:absolute;inset:0;background:#010812;opacity:0;pointer-events:none;transition:opacity 0.35s;z-index:20;}
 #fadeEl.show{opacity:1;pointer-events:all;}
 #yearFlash{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(3,13,30,0.92);border:1px solid rgba(0,229,255,0.3);border-radius:12px;padding:6px 16px;pointer-events:none;font-family:'Orbitron',monospace;font-size:12px;color:var(--cyan);opacity:0;transition:opacity 0.3s;z-index:50;white-space:nowrap;}
@@ -236,6 +238,17 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
   <div class="hbtn" id="chartBtn" title="Life probability chart" style="font-size:15px;border-color:rgba(0,180,255,0.2);">📊</div>
   <div class="hbtn" id="optBtn">⚙️</div>
 </header>
+<!-- Mini joystick: fixed top-right, below header, only visible when unlocked -->
+<div id="miniJoy" style="display:none;position:fixed;right:10px;top:58px;z-index:50;pointer-events:all;touch-action:none;">
+  <div style="position:relative;width:72px;height:72px;">
+    <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(0,229,255,0.22);backdrop-filter:blur(8px);"></div>
+    <div id="miniKnob" style="position:absolute;width:26px;height:26px;left:23px;top:23px;border-radius:50%;background:rgba(0,229,255,0.25);border:1.5px solid rgba(0,229,255,0.6);"></div>
+    <div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);font-size:8px;color:rgba(0,229,255,0.45);pointer-events:none;">↑</div>
+    <div style="position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:8px;color:rgba(0,229,255,0.45);pointer-events:none;">↓</div>
+    <div style="position:absolute;left:3px;top:50%;transform:translateY(-50%);font-size:8px;color:rgba(0,229,255,0.45);pointer-events:none;">←</div>
+    <div style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:8px;color:rgba(0,229,255,0.45);pointer-events:none;">→</div>
+  </div>
+</div>
 
 <div id="wrap">
   <canvas id="glc"></canvas>
@@ -245,12 +258,18 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
     <div id="sysTitleEl"></div>
     <div class="tap-hint" data-i18n="tap_hint">Tap ★ or planet · drag · pinch</div>
   </div>
-  <div class="legend" id="legendEl">
-    <div class="leg-row"><div class="leg-dot" style="background:#ffca28;box-shadow:0 0 6px #ffca28aa"></div><span data-i18n="l1">🌿 Habitable zone planet</span></div>
-    <div class="leg-row"><div class="leg-dot" style="background:#00e5ff;box-shadow:0 0 6px #00e5ffaa"></div><span data-i18n="l2">📡 Radio reached</span></div>
-    <div class="leg-row"><div class="leg-dot" style="background:#ff4060;box-shadow:0 0 4px #ff406066"></div><span data-i18n="l4">🔕 Not reached yet</span></div>
+  <!-- Left column: Stars → Objects → Legend (top to bottom) -->
+  <div style="position:absolute;left:8px;bottom:8px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;">
+    <div class="mfab" id="listFab" style="right:auto;font-size:10px;letter-spacing:0.5px;padding:7px 10px;position:relative;">⭐ <span data-i18n="stars_btn_lbl">STARS</span></div>
+    <div class="mfab" id="objFab" style="right:auto;font-size:10px;letter-spacing:0.5px;padding:7px 10px;position:relative;">🌌 <span data-i18n="objects_btn_lbl">OBJECTS</span></div>
+    <div class="legend" id="legendEl">
+      <div class="leg-row"><div class="leg-dot" style="background:#ffca28;box-shadow:0 0 6px #ffca28aa"></div><span data-i18n="l1">🌿 Habitable zone planet</span></div>
+      <div class="leg-row"><div class="leg-dot" style="background:#00e5ff;box-shadow:0 0 6px #00e5ffaa"></div><span data-i18n="l2">📡 Radio reached</span></div>
+      <div class="leg-row"><div class="leg-dot" style="background:#ff4060;box-shadow:0 0 4px #ff406066"></div><span data-i18n="l4">🔕 Not reached yet</span></div>
+    </div>
   </div>
-  <div class="mfab" id="listFab" data-i18n="all_stars">☰ ALL STARS</div>
+  <!-- fabGroup kept for JS hide/show compatibility (empty, hidden) -->
+  <div id="fabGroup" style="display:none;"></div>
   <div class="mfab" id="homeBtn" style="right:8px;bottom:100px;font-size:16px;padding:0;width:38px;height:38px;justify-content:center;">🏠</div>
   <div class="mfab" id="lockBtn" style="right:8px;bottom:54px;font-size:16px;padding:0;width:38px;height:38px;justify-content:center;">🔒</div>
 
@@ -261,8 +280,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 <div class="year-bar" id="yearBar">
   <div class="play-btn" id="playBtn">▶</div>
   <div class="yr-num" id="yrNum">2026</div>
-  <div class="slider-wrap"><input type="range" id="yrSlider" min="1895" max="2200" value="2026"></div>
-  <div class="yr-end">2200</div>
+  <div class="slider-wrap"><input type="range" id="yrSlider" min="1895" max="3000" value="2026"></div>
+  <div class="yr-end">3000</div>
 </div>
 <div class="year-bar" id="sysTimeBar" style="display:none;">
   <div id="sysPlayBtn" class="play-btn">▶</div>
@@ -301,7 +320,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
         <div class="pr-btn" data-year="1969" data-i18n="pr1">1969 — Moon Landing</div>
         <div class="pr-btn sp" data-year="2026" data-i18n="pr2">2026 — Today</div>
         <div class="pr-btn" data-year="2100" data-i18n="pr3">2100 — Future</div>
-        <div class="pr-btn" data-year="2200" data-i18n="pr4">2200 — Max</div>
+        <div class="pr-btn" data-year="3000" data-i18n="pr4">3000 — Max</div>
       </div>
     </div>
     <div class="opt-section">
@@ -335,6 +354,12 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
     <div class="lfc" data-lf="far" data-i18n="lf_x">⟶ En Route</div>
   </div>
   <div class="list-body" id="listBody"></div>
+</div>
+
+<div id="objOverlay" style="position:fixed;left:0;right:0;bottom:0;z-index:200;background:var(--panel);border-top:1px solid rgba(0,229,255,0.22);border-radius:20px 20px 0 0;transform:translateY(110%);transition:transform 0.38s cubic-bezier(0.32,0.72,0,1);backdrop-filter:blur(20px);max-height:88vh;display:flex;flex-direction:column;">
+  <div class="ov-head"><div class="ov-title" data-i18n="obj_title">OBJECTS &amp; GALAXIES</div><div class="ov-close" id="objClose">✕</div></div>
+  <div class="search-bar"><input id="objSearch" data-i18n-ph="obj_srch" placeholder="Search objects…"></div>
+  <div class="list-body" id="objBody"></div>
 </div>
 
 <div id="chartOverlay">
@@ -390,6 +415,10 @@ const LANG={en:{
   pl_days:'days',pl_au:'AU',pl_unk:'Unknown',pl_no:'No confirmed planets.',
   pt_rocky:'Rocky',pt_hot:'Lava / Hot',pt_sup:'Super-Earth',pt_earth:'Earth-like',pt_sub:'Sub-Earth',pt_mini:'Mini-Neptune',pt_ice:'Ice Giant',pt_gas:'Gas Giant',pt_jup:'Hot Jupiter',pt_bd:'Super-Jupiter',
   moon_rad:'Radius',moon_dist:'Distance',moon_per:'Period',
+  obj_title:'OBJECTS & GALAXIES',stars_btn:'⭐ STARS',objects_btn:'🌌 OBJECTS',objects_btn_lbl:'OBJECTS',stars_btn_lbl:'STARS',
+  obj_srch:'Search objects…',
+  neb_type:'Nebula',bh_type:'Black Hole',void_type:'Supervoid',
+  pr4:'3000 — Max',orbit_lbl:'Orbit (AU)',period_lbl:'Period',type_lbl:'Type',dist_lbl:'Distance',
 },ru:{
   brand:'КОСМОС',p_ly:'СГ Радиус',p_reach:'Достигнуто',p_hab:'Обитаемых',
   back_map:'КАРТА',tap_hint:'Нажмите ★ или планету · перетащите · щипок для зума',
@@ -418,6 +447,12 @@ const LANG={en:{
   pl_days:'сут.',pl_au:'а.е.',pl_unk:'Неизвестно',pl_no:'Нет подтверждённых планет.',
   pt_rocky:'Скальная',pt_hot:'Лавовый мир',pt_sup:'Суперземля',pt_earth:'Землеподобная',pt_sub:'Суб-Земля',pt_mini:'Мини-Нептун',pt_ice:'Ледяной гигант',pt_gas:'Газовый гигант',pt_jup:'Горячий юпитер',pt_bd:'Суперюпитер',
   moon_rad:'Радиус',moon_dist:'Расстояние',moon_per:'Период',
+  obj_title:'ОБЪЕКТЫ И ГАЛАКТИКИ',stars_btn:'⭐ ЗВЁЗДЫ',objects_btn:'🌌 ОБЪЕКТЫ',objects_btn_lbl:'ОБЪЕКТЫ',stars_btn_lbl:'ЗВЁЗДЫ',
+  obj_srch:'Поиск объектов…',
+  neb_type:'Туманность',bh_type:'Чёрная дыра',void_type:'Суперпустота',
+  pr4:'3000 — Максимум',
+  orbit_lbl:'Орбита (а.е.)',period_lbl:'Период',
+  type_lbl:'Тип',dist_lbl:'Расстояние',
 }};
 const CONS_RU={Centaurus:'Центавр',Ophiuchus:'Змееносец',Leo:'Лев','Ursa Major':'Большая Медведица','Canis Major':'Большой Пёс',Cetus:'Кит',Eridanus:'Эридан',Cygnus:'Лебедь','Canis Minor':'Малый Пёс',Indus:'Индеец',Grus:'Журавль',Aquila:'Орёл',Pavo:'Павлин',Cassiopeia:'Кассиопея',Scorpius:'Скорпион',Lyra:'Лира',Gemini:'Близнецы',Cancer:'Рак',Pictor:'Живописец',Andromeda:'Андромеда',Pegasus:'Пегас',Taurus:'Телец',Virgo:'Дева',Draco:'Дракон',Hydrus:'Южная Гидра',Aquarius:'Водолей',Aries:'Овен',Carina:'Киль','Ursa Minor':'Малая Медведица',Orion:'Орион',Vela:'Паруса',Boötes:'Волопас',Auriga:'Возничий','Piscis Austrinus':'Южная Рыба'};
 let lang='en';
@@ -719,7 +754,6 @@ const stars=[
   {name:"Mu Arae",dist:50.6,angle:212,type:"G3IV Yellow Dwarf",type_ru:"G3IV Жёлтый карлик",size:2.4,hab:true,constellation:"Ara",planets:"4 planets: b(1.7MJ) c(10.5M⊕) d(0.52MJ) e(1.81MJ)",planets_ru:"4 планеты: b, c (суперземля), d, e"},
   {name:"Iota Horologii",dist:56.2,angle:270,type:"F8V Yellow Dwarf",type_ru:"F8V Жёлтый карлик",size:2.3,hab:false,constellation:"Horologium",planets:"1 hot Jupiter: b (2.26 MJ, 311-day orbit)",planets_ru:"1 горячий юпитер: b (2,26 MJ, 311-дневная орбита)"},
   {name:"Beta Pictoris",dist:63.4,angle:240,type:"A6V White Star",type_ru:"A6V Белая звезда",size:3.0,hab:false,constellation:"Pictor",planets:"b (9 MJ, directly imaged) + c (8 MJ) — young 23M yr system",planets_ru:"b и c (прямое фото) — молодая система 23 млн лет"},
-  {name:"Fomalhaut",dist:25.0,angle:215,type:"A3Va White Star",type_ru:"A3Va Белая звезда",size:3.2,hab:false,constellation:"Piscis Austrinus",planets:"Fomalhaut b (candidate, possibly disintegrating, 2 MJ)",planets_ru:"Фомальгаут b (кандидат, возможно распадается)"},
   {name:"HD 189733",dist:63.0,angle:88,type:"K2V + M4V Binary",type_ru:"K2V + M4V Двойная",size:2.0,hab:false,constellation:"Vulpecula",planets:"b: closest hot Jupiter to Earth, azure blue, 1150°C winds 8700 km/h",planets_ru:"b: ближайший горячий юпитер, лазурно-синий, ветры 8700 км/ч"},
   {name:"WASP-12",dist:870,angle:105,type:"G0V Yellow Dwarf",type_ru:"G0V Жёлтый карлик",size:2.2,hab:false,constellation:"Auriga",planets:"b: ultra-hot Jupiter being devoured by its star (1.1-day orbit)",planets_ru:"b: ультрагорячий юпитер, поглощаемый звездой (орбита 1,1 сут.)"},
   {name:"Regulus",dist:79.0,angle:163,type:"B7V Blue-White",type_ru:"B7V Сине-белая",size:3.4,hab:false,constellation:"Leo",planets:"None — rapid rotator (86% breakup speed)",planets_ru:"Нет — быстрый ротатор (86% скорости разрыва)"},
@@ -733,7 +767,6 @@ const stars=[
   {name:"Achernar",dist:139,angle:270,type:"B6Vep Blue Star",type_ru:"B6Vep Синяя звезда",size:3.8,hab:false,constellation:"Eridanus",planets:"None — oblate rapid rotator, most flattened known star",planets_ru:"Нет — сильно сплющенная, самая сплюснутая из известных звёзд"},
   {name:"Rigel",dist:860,angle:325,type:"B8Ia Blue Supergiant",type_ru:"B8Ia Синий сверхгигант",size:5.0,hab:false,constellation:"Orion",planets:"None — 120,000× solar luminosity",planets_ru:"Нет — светимость 120 000 Солнц"},
   {name:"Capella",dist:42.9,angle:115,type:"G8III + G0III Binary",type_ru:"G8III + G0III Двойная",size:3.5,hab:false,constellation:"Auriga",planets:"No confirmed planets (both are giant stars)",planets_ru:"Нет — обе звезды гиганты"},
-  {name:"Aldebaran",dist:65.3,angle:347,type:"K5III Red Giant",type_ru:"K5III Красный гигант",size:3.6,hab:false,constellation:"Taurus",planets:"b: super-Jupiter (6.5 MJ) in wide orbit",planets_ru:"b: суперюпитер (6,5 MJ) на широкой орбите"},
   {name:"HD 10700",dist:11.9,angle:190,type:"G8.5V Yellow Dwarf",type_ru:"G8.5V Жёлтый карлик",size:2.2,hab:true,constellation:"Cetus",planets:"4 super-Earths: g h e f — two near HZ (Tau Ceti)",planets_ru:"4 суперземли: g h e f — две у зоны обит. (Тау Кита)"},
   {name:"Alnilam",dist:2000,angle:330,type:"B0Ia Blue Supergiant",type_ru:"B0Ia Синий сверхгигант",size:5.0,hab:false,constellation:"Orion",planets:"None — Orion's Belt center star",planets_ru:"Нет — центральная звезда Пояса Ориона"},
   {name:"Eta Carinae",dist:7500,angle:225,type:"LBV Blue Variable",type_ru:"LBV Переменная голубая",size:5.0,hab:false,constellation:"Carina",planets:"None — 5 million solar luminosities, pre-supernova",planets_ru:"Нет — 5 млн светимостей Солнца, pre-сверхновая"},
@@ -748,36 +781,17 @@ const stars=[
   // ── 500–2500 ly: important studied stars with confirmed planets ────────────
   {name:"55 Cnc (Copernicus)",dist:41,angle:126,type:"G8V + M3.5V Binary",type_ru:"G8V + M3.5V Двойная",size:2.4,hab:true,constellation:"Cancer",planets:"5 planets: e(lava world,18-hr year) b c f(HZ edge) d(giant)",planets_ru:"5 планет: e(лавовый мир) b c f(зона обит.) d(гигант)"},
   {name:"Kepler-16",dist:196,angle:56,type:"K7V + M7V Binary",type_ru:"K7V + M7V Двойная",size:1.8,hab:false,constellation:"Cygnus",planets:"b: circumbinary 'Tatooine' planet (0.33 MJ, outer HZ edge)",planets_ru:"b: циркумбинарная планета «Татуин» (0,33 MJ, край зоны обит.)"},
-  {name:"Kepler-22",dist:638,angle:55,type:"G5V Yellow Dwarf",type_ru:"G5V Жёлтый карлик",size:2.3,hab:true,constellation:"Cygnus",planets:"b: first confirmed HZ planet of a Sun-like star (2.4 R⊕, 290-day orbit)",planets_ru:"b: первая подтверждённая планета в зоне обит. солнцеподобной звезды (2,4 R⊕)"},
-  {name:"Kepler-62",dist:1200,angle:62,type:"K2V Orange Dwarf",type_ru:"K2V Оранжевый карлик",size:2.2,hab:true,constellation:"Lyra",planets:"e(1.61 R⊕ inner HZ) f(1.41 R⊕ outer HZ, ESI 0.67) + b c d",planets_ru:"e(1,61 R⊕) f(1,41 R⊕, зона обит., ИСЗ 0,67) + b c d"},
   {name:"Kepler-69",dist:2430,angle:58,type:"G4V Yellow Dwarf",type_ru:"G4V Жёлтый карлик",size:2.3,hab:true,constellation:"Cygnus",planets:"c (1.54 R⊕, inner HZ — Venus analog candidate) + b(hot)",planets_ru:"c (1,54 R⊕, внутр. зона обит. — кандидат типа Венеры) + b"},
   {name:"Kepler-296",dist:1670,angle:71,type:"M1V + M3V Binary",type_ru:"M1V + M3V Двойная",size:1.8,hab:true,constellation:"Cygnus",planets:"e(1.75 R⊕, HZ) f(1.8 R⊕, HZ) — both in habitable zone",planets_ru:"e(1,75 R⊕, зона обит.) f(1,8 R⊕, зона обит.) — обе в зоне обит."},
-  {name:"Kepler-438",dist:470,angle:74,type:"K8V Orange Dwarf",type_ru:"K8V Оранжевый карлик",size:2.0,hab:true,constellation:"Lyra",planets:"b: 1.12 R⊕, ESI 0.88 — most Earth-like Kepler planet by size",planets_ru:"b: 1,12 R⊕, ИСЗ 0,88 — наиболее землеподобная по размеру"},
   {name:"Kepler-440",dist:1610,angle:67,type:"K5V Orange Dwarf",type_ru:"K5V Оранжевый карлик",size:2.0,hab:true,constellation:"Lyra",planets:"b (1.86 R⊕, HZ, ESI 0.73 — potential surface water)",planets_ru:"b (1,86 R⊕, зона обит., ИСЗ 0,73 — возможная поверхностная вода)"},
-  {name:"Kepler-442",dist:1194,angle:79,type:"K5V Orange Dwarf",type_ru:"K5V Оранжевый карлик",size:2.1,hab:true,constellation:"Lyra",planets:"b: 1.34 R⊕, ESI 0.84, 112-day orbit — highly habitable candidate",planets_ru:"b: 1,34 R⊕, ИСЗ 0,84, орбита 112 дней — высокоперспективный кандидат"},
-  {name:"Kepler-452",dist:1402,angle:58,type:"G2V Yellow Dwarf",type_ru:"G2V Жёлтый карлик",size:2.3,hab:true,constellation:"Cygnus",planets:"b: 1.63 R⊕, 385-day orbit, Earth's cousin around a G-type star",planets_ru:"b: 1,63 R⊕, орбита 385 дней, «кузен Земли» у G-звезды"},
   {name:"Kepler-1649",dist:302,angle:74,type:"M1.5V Red Dwarf",type_ru:"M1.5V Красный карлик",size:1.8,hab:true,constellation:"Cygnus",planets:"c: 1.06 R⊕, 19.5-day orbit, ESI 0.90 — nearly Earth-sized in HZ",planets_ru:"c: 1,06 R⊕, орбита 19,5 дней, ИСЗ 0,90 — почти земного размера в зоне обит."},
-  {name:"Kepler-186",dist:582,angle:72,type:"M1V Red Dwarf",type_ru:"M1V Красный карлик",size:1.7,hab:true,constellation:"Cygnus",planets:"f: first Earth-sized planet in HZ of a different star (1.11 R⊕, 130-day orbit)",planets_ru:"f: первая землеразмерная планета в зоне обит. другой звезды (1,11 R⊕, 130 дней)"},
   {name:"Kepler-283",dist:1740,angle:65,type:"K1V Orange Dwarf",type_ru:"K1V Оранжевый карлик",size:2.1,hab:true,constellation:"Cygnus",planets:"c: 1.82 R⊕, outer HZ (ESI 0.68) + b (inner)",planets_ru:"c: 1,82 R⊕, внешн. зона обит. (ИСЗ 0,68) + b (внутр.)"},
   {name:"Kepler-1544",dist:1700,angle:68,type:"K0V Orange Dwarf",type_ru:"K0V Оранжевый карлик",size:2.1,hab:true,constellation:"Cygnus",planets:"b: 1.79 R⊕, inner HZ (168-day orbit)",planets_ru:"b: 1,79 R⊕, внутр. зона обит. (орбита 168 дней)"},
-  {name:"TOI-700",dist:101,angle:258,type:"M2V Red Dwarf",type_ru:"M2V Красный карлик",size:1.7,hab:true,constellation:"Dorado",planets:"d(1.14 R⊕, HZ, confirmed TESS) e(1.08 R⊕, optimistic HZ)",planets_ru:"d(1,14 R⊕, зона обит., TESS) e(1,08 R⊕, оптимист. зона обит.)"},
   {name:"TOI-715",dist:137,angle:285,type:"M4V Red Dwarf",type_ru:"M4V Красный карлик",size:1.7,hab:true,constellation:"Sculptor",planets:"b: 1.55 R⊕, HZ (19.3-day orbit) + candidate c(1.07 R⊕, HZ)",planets_ru:"b: 1,55 R⊕, зона обит. + кандидат c(1,07 R⊕, зона обит.)"},
   {name:"GJ 357",dist:31,angle:148,type:"M2.5V Red Dwarf",type_ru:"M2.5V Красный карлик",size:1.7,hab:true,constellation:"Hydra",planets:"d: 6.1 M⊕, outer HZ (55.7-day orbit) + b(hot Earth) c",planets_ru:"d: 6,1 M⊕, внешн. зона обит. (55,7 дней) + b(горячая Земля) c"},
-  {name:"GJ 1061",dist:12,angle:258,type:"M5.5V Red Dwarf",type_ru:"M5.5V Красный карлик",size:1.6,hab:true,constellation:"Horologium",planets:"c(1.74 M⊕, inner HZ) d(1.68 M⊕, outer HZ) b(hot)",planets_ru:"c(1,74 M⊕, внутр. зона обит.) d(1,68 M⊕, внешн. зона обит.) b(горячая)"},
-  {name:"Wolf 1061",dist:14,angle:258,type:"M3V Red Dwarf",type_ru:"M3V Красный карлик",size:1.7,hab:true,constellation:"Ophiuchus",planets:"c: 4.3 M⊕, inner HZ edge — potential water world",planets_ru:"c: 4,3 M⊕, внутр. край зоны обит. — возможный водный мир"},
   {name:"Ross 128 b",dist:11,angle:168,type:"M4V Red Dwarf",type_ru:"M4V Красный карлик",size:1.6,hab:true,constellation:"Virgo",planets:"b: 1.35 M⊕, HZ (9.9-day orbit) — temperate, low stellar activity",planets_ru:"b: 1,35 M⊕, зона обит. (9,9 дней) — умеренная, низкая активность звезды"},
-  {name:"Luyten's Star",dist:12.4,angle:135,type:"M3.5V Red Dwarf",type_ru:"M3V Красный карлик",size:1.7,hab:true,constellation:"Canis Minor",planets:"b(2.89 M⊕, HZ, 18.6-day orbit) c(SuperEarth)",planets_ru:"b(2,89 M⊕, зона обит., 18,6 дней) c(суперземля)"},
   {name:"Proxima Centauri b",dist:4.24,angle:202,type:"M5.5Ve Red Dwarf",type_ru:"M5.5Ve Красный карлик",size:1.6,hab:true,constellation:"Centaurus",planets:"b(1.07 M⊕, HZ, 11.2-day orbit) c(7 M⊕, 1928-day orbit)",planets_ru:"b(1,07 M⊕, зона обит., 11,2 дня) c(7 M⊕, 1928 дней)"},
-  {name:"TRAPPIST-1",dist:40,angle:302,type:"M8V Ultra-cool Dwarf",type_ru:"M8V Сверххолодный карлик",size:1.6,hab:true,constellation:"Aquarius",planets:"7 Earth-sized: b c d e(HZ) f(HZ) g(HZ) h — record 3 in HZ",planets_ru:"7 землеразмерных: b c d e(зона обит.) f g h — рекорд 3 в зоне обит."},
-  {name:"LHS 1140",dist:49,angle:10,type:"M4.5V Red Dwarf",type_ru:"M4.5V Красный карлик",size:1.7,hab:true,constellation:"Cetus",planets:"b(1.73 R⊕, HZ, ESI 0.72) c(1.28 R⊕) — b possibly water world",planets_ru:"b(1,73 R⊕, зона обит., ИСЗ 0,72) c — b возможно водный мир"},
-  {name:"Teegarden's Star",dist:12.5,angle:25,type:"M7.0V Red Dwarf",type_ru:"M7.0V Красный карлик",size:1.6,hab:true,constellation:"Aries",planets:"b(1.05 M⊕, HZ, ESI 0.95!) c(1.11 M⊕, outer HZ)",planets_ru:"b(1,05 M⊕, зона обит., ИСЗ 0,95!) c(1,11 M⊕, внешн. зона обит.)"},
-  {name:"K2-18",dist:111,angle:155,type:"M2.5V Red Dwarf",type_ru:"M2.5V Красный карлик",size:1.7,hab:true,constellation:"Leo",planets:"b(2.27 R⊕, HZ, Hycean ocean world candidate — DMS detected 2023)",planets_ru:"b(2,27 R⊕, зона обит. — кандидат Hycean, диметилсульфид 2023)"},
   {name:"HD 40307 g",dist:42,angle:225,type:"K2.5V Orange Dwarf",type_ru:"K2.5V Оранжевый карлик",size:1.9,hab:true,constellation:"Pictor",planets:"g(7.1 M⊕, HZ, superEarth) + 5 inner planets b c d e f",planets_ru:"g(7,1 M⊕, зона обит., суперземля) + 5 внутренних планет"},
-  {name:"Gliese 667C",dist:23,angle:213,type:"M1.5V Red Dwarf",type_ru:"M1.5V Красный карлик",size:1.7,hab:true,constellation:"Scorpius",planets:"e(1.1 M⊕, HZ) f(1.1 M⊕, HZ) c(3.8 M⊕, HZ) — triple-star system",planets_ru:"e f c — три планеты в зоне обит. тройной звезды"},
-  {name:"HD 85512",dist:36,angle:218,type:"K5V Orange Dwarf",type_ru:"K5V Оранжевый карлик",size:1.9,hab:true,constellation:"Vela",planets:"b(3.6 M⊕, inner HZ edge, ESI 0.77) — water possible if cloudy",planets_ru:"b(3,6 M⊕, внутр. край зоны обит., ИСЗ 0,77) — вода при облачности"},
-  {name:"HR 8799",dist:129,angle:15,type:"F0/A5V Debris Disk",type_ru:"F0/A5V — диск обломков",size:3.0,hab:false,constellation:"Pegasus",planets:"4 directly imaged giants: b c d e (10-7 MJ) — first multi-planet direct imaging",planets_ru:"4 газовых гиганта на фото: b c d e — первое мульти-планетное прямое фото"},
-  {name:"Beta Pictoris",dist:63,angle:240,type:"A6V Young Star",type_ru:"A6V Молодая звезда",size:3.0,hab:false,constellation:"Pictor",planets:"b(9 MJ, imaged) c(8.3 MJ, imaged) — 23 Myr young protoplanetary system",planets_ru:"b и c (фото) — молодая 23 млн лет протопланетная система"},
-  {name:"51 Pegasi",dist:50,angle:22,type:"G2IV Yellow Star",type_ru:"G2IV Жёлтый субгигант",size:2.3,hab:false,constellation:"Pegasus",planets:"b: first confirmed exoplanet around Sun-like star (1995, Nobel 2019) — hot Jupiter",planets_ru:"b: первая подтверждённая экзопланета у солнцеподобной звезды (1995, Нобель 2019)"},
   {name:"Tau Boötis",dist:51,angle:145,type:"F7V + M2V Binary",type_ru:"F7V + M2V Двойная",size:2.6,hab:false,constellation:"Boötes",planets:"b: hot Jupiter (3.87 MJ, 3.3-day orbit) — magnetic field detected",planets_ru:"b: горячий юпитер (3,87 MJ, 3,3 дня) — обнаружено магнитное поле"},
   {name:"GJ 876",dist:15,angle:333,type:"M4V Red Dwarf",type_ru:"M4V Красный карлик",size:1.7,hab:true,constellation:"Aquarius",planets:"d(6.8 M⊕, superEarth) b(2.1 MJ, HZ edge) c(0.71 MJ) e(gas)",planets_ru:"d(6,8 M⊕ суперземля) b c e — многопланетная система"},
   {name:"55 Cancri e",dist:41,angle:125,type:"G8V Yellow Dwarf",type_ru:"G8V Жёлтый карлик",size:2.4,hab:false,constellation:"Cancer",planets:"e: lava world (2.1 R⊕, 18-hr year, 2600°C) — James Webb observed",planets_ru:"e: лавовый мир (2,1 R⊕, год 18 ч, 2600°C) — наблюдался Джеймс Уэбб"},
@@ -788,9 +802,7 @@ const stars=[
   {name:"Mu Arae d",dist:50,angle:212,type:"G3IV Yellow Dwarf",type_ru:"G3IV Жёлтый карлик",size:2.4,hab:true,constellation:"Ara",planets:"d(14 M⊕ superEarth) b(1.7 MJ, 2-yr) c(0.52 MJ) e(1.8 MJ)",planets_ru:"d(14 M⊕ суперземля) b c e — многопланетная"},
   {name:"WASP-39",dist:700,angle:245,type:"G-type Yellow Dwarf",type_ru:"G-тип Жёлтый карлик",size:2.2,hab:false,constellation:"Virgo",planets:"b: hot Saturn (0.28 MJ) — James Webb detected CO2 H2O SO2 (2022)",planets_ru:"b: горячий сатурн (0,28 MJ) — Джеймс Уэбб: CO₂ H₂O SO₂ (2022)"},
   {name:"WASP-121",dist:870,angle:100,type:"F6V Yellow Dwarf",type_ru:"F6V Жёлтый карлик",size:2.8,hab:false,constellation:"Puppis",planets:"b: ultra-hot Jupiter (1.18 MJ, 1.27-day orbit) — iron/titanium atmosphere",planets_ru:"b: ультрагорячий юпитер — железо/титан в атмосфере"},
-  {name:"HD 189733",dist:63,angle:88,type:"K2V Orange Dwarf",type_ru:"K2V Оранжевый карлик",size:2.0,hab:false,constellation:"Vulpecula",planets:"b: azure blue hot Jupiter, silicate glass rain, 8700 km/h winds",planets_ru:"b: лазурно-синий горячий юпитер, дождь из стекла, ветры 8700 км/ч"},
   {name:"HD 209458",dist:150,angle:355,type:"G0V Yellow Dwarf",type_ru:"G0V Жёлтый карлик",size:2.2,hab:false,constellation:"Pegasus",planets:"b 'Osiris': first transiting exoplanet detected, atmosphere evaporating",planets_ru:"b 'Осирис': первая транзитная экзопланета, испаряющаяся атмосфера"},
-  {name:"Gliese 163",dist:49,angle:255,type:"M3.5V Red Dwarf",type_ru:"M3.5V Красный карлик",size:1.7,hab:true,constellation:"Dorado",planets:"c(6.8 M⊕, inner HZ) b(10.6 M⊕, hot) d(29 M⊕, cold)",planets_ru:"c(6,8 M⊕, внутр. зона обит.) b(горячая) d(холодная)"},
   {name:"Gliese 832 c",dist:16,angle:266,type:"M1.5V Red Dwarf",type_ru:"M1.5V Красный карлик",size:1.7,hab:true,constellation:"Grus",planets:"c(5.4 M⊕, inner HZ, ESI 0.81) b(0.64 MJ, Jupiter-like outer)",planets_ru:"c(5,4 M⊕, внутр. зона обит., ИСЗ 0,81) b(аналог Юпитера)"},
   {name:"Epsilon Eridani b",dist:10.5,angle:195,type:"K2V Orange Dwarf",type_ru:"K2V Оранжевый карлик",size:2.0,hab:true,constellation:"Eridanus",planets:"b(0.78 MJ, Jupiter-like, 7.4-yr orbit) + asteroid belts analog",planets_ru:"b(0,78 MJ, аналог Юпитера, 7,4 года) + пояса астероидов"},
   {name:"Kappa And",dist:170,angle:15,type:"B9IVn A-type",type_ru:"B9IVn A-тип",size:2.9,hab:false,constellation:"Andromeda",planets:"b: 13 MJ directly imaged (planet or brown dwarf, 1.1 Byr system)",planets_ru:"b: 13 MJ прямое фото (планета или коричневый карлик, 1,1 млрд лет)"},
@@ -798,7 +810,6 @@ const stars=[
   {name:"DH Tauri",dist:466,angle:345,type:"M1Ve T Tauri",type_ru:"M1Ve T Телец",size:1.8,hab:false,constellation:"Taurus",planets:"b: directly imaged protoplanet (11 MJ, 330 AU) — still forming",planets_ru:"b: прямое фото протопланеты (11 MJ, 330 а.е.) — ещё формируется"},
   {name:"2M1207",dist:173,angle:205,type:"M8 Brown Dwarf",type_ru:"M8 Коричневый карлик",size:1.6,hab:false,constellation:"Centaurus",planets:"b: first directly imaged exoplanet (5 MJ, 2004) — milestone discovery",planets_ru:"b: первая прямо сфотографированная экзопланета (5 MJ, 2004)"},
   {name:"Fomalhaut b",dist:25,angle:215,type:"A3Va White Star",type_ru:"A3Va Белая звезда",size:3.2,hab:false,constellation:"Piscis Austrinus",planets:"b: directly imaged but may be disintegrating planetesimal not planet",planets_ru:"b: прямое фото, возможно распадающийся планетезималь"},
-  {name:"Vega",dist:25,angle:47,type:"A0Va Rapid Rotator",type_ru:"A0Va Быстрый ротатор",size:3.5,hab:false,constellation:"Lyra",planets:"Debris disk confirmed — suspected planets (Contact film star)",planets_ru:"Подтверждён диск обломков — предполагаемые планеты (из фильма Контакт)"},
   {name:"Sirius A",dist:8.6,angle:156,type:"A1V White Star",type_ru:"A1V Белая звезда",size:3.0,hab:false,constellation:"Canis Major",planets:"None confirmed — too luminous, Sirius B is white dwarf companion",planets_ru:"Нет — слишком светлая, компаньон Сириус B — белый карлик"},
   {name:"Aldebaran b",dist:65,angle:347,type:"K5III Red Giant",type_ru:"K5III Красный гигант",size:3.6,hab:false,constellation:"Taurus",planets:"b: 6.5 MJ giant on 629-day orbit — post-main-sequence system",planets_ru:"b: 6,5 MJ на 629-дневной орбите — система после главной последовательности"},
   {name:"Pollux b",dist:34,angle:125,type:"K0III Orange Giant",type_ru:"K0III Оранжевый гигант",size:3.4,hab:false,constellation:"Gemini",planets:"b: 2.3 MJ confirmed giant (590-day orbit) — nearest confirmed exoplanet around giant",planets_ru:"b: 2,3 MJ (590 дней) — ближайшая экзопланета у гиганта"},
@@ -1128,7 +1139,31 @@ const STAR_INFO={
     desc_ru:"A0Va 25 св. лет, слишком горячая, диск обломков."},
   "Kepler-452":{hz_in:1.056,hz_out:1.847,lum:1.16,
     desc:"Kepler-452 hosts 'Earth's cousin' — the first super-Earth found in the habitable zone of a G2V solar twin (announced July 2015). Kepler-452b orbits at 1.05 AU with a 385-day year, receiving 10% more stellar flux than Earth. The host star is 1.5 billion years older than the Sun — giving life far longer to evolve. At 1.63 R⊕, it is likely rocky or ocean-covered. As the star ages, it will eventually drive the planet out of the HZ. Our signal won't arrive until 3297.",
-    desc_ru:"Kepler-452 — хозяин «кузена Земли»: первой суперземли в зоне обитаемости двойника Солнца G2V (июль 2015 г.). Kepler-452b вращается на 1,05 а.е., год — 385 дней, получает на 10% больше потока. Звезда на 1,5 млрд лет старше Солнца. При 1,63 R⊕ вероятно скальная или покрытая океаном. Наш сигнал прибудет в 3297 году."}
+    desc_ru:"Kepler-452 — хозяин «кузена Земли»: первой суперземли в зоне обитаемости двойника Солнца G2V (июль 2015 г.). Kepler-452b вращается на 1,05 а.е., год — 385 дней, получает на 10% больше потока. Звезда на 1,5 млрд лет старше Солнца. При 1,63 R⊕ вероятно скальная или покрытая океаном. Наш сигнал прибудет в 3297 году."},
+
+  // ── Remapped star names for HZ lookup ───────────────────────────────────────
+  "Ain (ε Tau)":{hz_in:9.6576,hz_out:16.8907,lum:97.0,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Alpha Centauri A/B":{hz_in:1.201,hz_out:2.1004,lum:1.5,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Barnard's Star":{hz_in:0.0183,hz_out:0.0321,lum:0.00035,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Epsilon Eridani":{hz_in:0.5718,hz_out:1.0,lum:0.34,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "GJ 1061":{hz_in:0.0377,hz_out:0.066,lum:0.00148,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Gliese 667C":{hz_in:0.1148,hz_out:0.2007,lum:0.0137,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Fomalhaut":{hz_in:3.9952,hz_out:6.9874,lum:16.6,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Aldebaran":{hz_in:0.0,hz_out:0.0,lum:439.0,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Dubhe":{hz_in:0.0,hz_out:0.0,lum:316.0,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Betelgeuse":{hz_in:0.0,hz_out:0.0,lum:100000.0,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
+  "Canopus":{hz_in:0.0,hz_out:0.0,lum:10700.0,
+    desc:"See related entry.",desc_ru:"См. связанную запись."},
 };
 
 // Temperature conversion helper
@@ -1317,7 +1352,7 @@ const sysCtrl={theta:0.5,phi:1.2,r:300,tTheta:0.5,tPhi:1.2,tR:300};
   }
 
   // Layer 1: main disk + halo (tiny dots, size 0.75)
-  const n1=8000;
+  const n1=18000;
   const pos1=new Float32Array(n1*3);const col1=new Float32Array(n1*3);
   let placed=0,tries=0;
   while(placed<n1&&tries<n1*8){
@@ -1342,7 +1377,7 @@ const sysCtrl={theta:0.5,phi:1.2,r:300,tTheta:0.5,tPhi:1.2,tR:300};
   galaxyScene.add(new THREE.Points(geo1,new THREE.PointsMaterial({size:0.75,vertexColors:true,sizeAttenuation:false})));
 
   // Layer 2: sparse bright foreground stars (size 1.4)
-  const n2=600;
+  const n2=1400;
   const pos2=new Float32Array(n2*3);const col2=new Float32Array(n2*3);
   let p2=0,t2=0;
   while(p2<n2&&t2<n2*8){
@@ -1478,10 +1513,165 @@ let sgrAHit=null;
   core.scale.set(1400,1400,1);core.position.set(gc.x,gc.y,gc.z);
   galaxyScene.add(core);
   // Faint anti-center direction: cool blue-white haze on the opposite side
-  const acX=-gc.x*0.7,acZ=-gc.z*0.7;
-  const antictr=new THREE.Sprite(makeGlowMat(0x99bbff,0.12));
-  antictr.scale.set(2500,2500,1);antictr.position.set(acX,0,acZ);
-  galaxyScene.add(antictr);
+  // Anti-galactic center marker removed — was causing unwanted glow near Orion
+
+  // ── FAMOUS GALAXY-VIEW OBJECTS: Nebulae, black holes, voids ───────────────
+  (()=>{
+    // Orion Nebula M42 — star-forming region visible in our galaxy
+    // Direction: approx -Z, slightly below plane
+    // Build a nebula from colored point cloud + bright core glow
+    function makeNebula(pos,innerColor,outerColor,sz,N){
+      const rng2=(s)=>{let h=s;return()=>{h=Math.imul(h,1664525)+1013904223>>>0;return h/0x100000000;};};
+      const rng=rng2((pos.x*7+pos.y*13+pos.z*17)|0);
+      const geo=new THREE.BufferGeometry();
+      const pts=new Float32Array(N*3);const col=new Float32Array(N*3);
+      const ic=new THREE.Color(innerColor),oc=new THREE.Color(outerColor);
+      for(let i=0;i<N;i++){
+        const u=rng(),v=rng(),w=rng();
+        const ph=Math.acos(2*u-1),th=v*Math.PI*2;
+        const r=Math.pow(w,0.4)*sz; // concentrate toward center
+        pts[i*3]=pos.x+r*Math.sin(ph)*Math.cos(th);
+        pts[i*3+1]=pos.y+r*Math.cos(ph)*0.6;
+        pts[i*3+2]=pos.z+r*Math.sin(ph)*Math.sin(th);
+        const t=r/sz; // 0=core 1=outer
+        col[i*3]=ic.r*(1-t)+oc.r*t; col[i*3+1]=ic.g*(1-t)+oc.g*t; col[i*3+2]=ic.b*(1-t)+oc.b*t;
+      }
+      geo.setAttribute('position',new THREE.BufferAttribute(pts,3));
+      geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+      galaxyScene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:1.5,vertexColors:true,sizeAttenuation:false,transparent:true,opacity:0.85})));
+      // Bright core
+      const core=new THREE.Sprite(makeGlowMat(innerColor,0.9));
+      core.scale.set(sz*0.35,sz*0.35,1);core.position.copy(pos);galaxyScene.add(core);
+    }
+    const orionPos=new THREE.Vector3(-1400, -800, -4200);
+    makeNebula(orionPos,0xff8844,0xff4400,280,600);
+    const orionHit=new THREE.Mesh(new THREE.SphereGeometry(250,8,8),new THREE.MeshBasicMaterial({visible:false}));
+    orionHit.position.copy(orionPos);orionHit.userData={nebulaName:"Orion Nebula (M42)",nebulaName_ru:"Туманность Ориона (M42)",nebulaDist:"1,344 ly",nebulaType:"Emission/Reflection Nebula",nebulaType_ru:"Эмиссионная/отражательная туманность",nebulaDesc:"The Orion Nebula is the brightest and most-studied nebula in the sky. At 1,344 light-years, it is the nearest massive star-forming region to Earth. Within its glowing gas cloud, thousands of young stars are being born. The Trapezium Cluster at its heart drives ultraviolet radiation that lights the nebula. Hubble found over 150 protoplanetary discs (proplyds) here — solar systems in formation. It is easily visible to the naked eye as a fuzzy star in Orion's sword.",nebulaDesc_ru:"Туманность Ориона — ярчайшая и наиболее изученная туманность неба. На расстоянии 1344 световых лет — ближайшая к Земле массивная область звездообразования. В облаке газа рождаются тысячи молодых звёзд. Трапеция в центре освещает туманность ультрафиолетом. Хаббл обнаружил более 150 проплидов — протопланетных дисков."};
+    galaxyScene.add(orionHit);
+
+    // Crab Nebula M1 — supernova remnant
+    const crabPos=new THREE.Vector3(2200, 500, -5800);
+    makeNebula(crabPos,0x88ccff,0x2244aa,200,400);
+    const crabHit=new THREE.Mesh(new THREE.SphereGeometry(180,8,8),new THREE.MeshBasicMaterial({visible:false}));
+    crabHit.position.copy(crabPos);crabHit.userData={nebulaName:"Crab Nebula (M1)",nebulaName_ru:"Крабовидная туманность (M1)",nebulaDist:"6,523 ly",nebulaType:"Supernova Remnant / Pulsar Wind Nebula",nebulaType_ru:"Остаток сверхновой / пульсарная туманность",nebulaDesc:"The Crab Nebula is the expanding remnant of Supernova 1054 AD, recorded by Chinese and Arab astronomers. At its heart lies a pulsar spinning 30 times per second — the collapsed neutron star core of the original massive star. The Crab Pulsar was the first optical pulsar discovered and is the most luminous gamma-ray pulsar known. The nebula expands at 1,500 km/s and is still used to calibrate X-ray telescopes.",nebulaDesc_ru:"Крабовидная туманность — расширяющийся остаток сверхновой 1054 г., зафиксированной китайскими и арабскими астрономами. В центре — пульсар, вращающийся 30 раз в секунду. Первый оптически обнаруженный пульсар."};
+    galaxyScene.add(crabHit);
+
+    // Eta Carinae Nebula — massive star about to explode
+    const etaPos=new THREE.Vector3(-3500, -1200, 8200);
+    makeNebula(etaPos,0xff9900,0xff3300,350,500);
+    const etaHit=new THREE.Mesh(new THREE.SphereGeometry(220,8,8),new THREE.MeshBasicMaterial({visible:false}));
+    etaHit.position.copy(etaPos);etaHit.userData={nebulaName:"Eta Carinae / Carina Nebula",nebulaName_ru:"Эта Киля / Туманность Киля",nebulaDist:"7,500 ly",nebulaType:"Emission Nebula / LBV Star",nebulaType_ru:"Эмиссионная туманность / Яркая голубая переменная",nebulaDesc:"Eta Carinae is one of the most massive and luminous stars known — 5 million times the Sun's luminosity. In 1843 it briefly became the second brightest star in the sky. It is expected to explode as a hypernova or supernova soon in astronomical terms. The surrounding Carina Nebula spans 300 light-years and contains dozens of massive O-type stars.",nebulaDesc_ru:"Эта Киля — одна из наиболее массивных звёзд (5 млн светимостей Солнца). В 1843 году стала второй по яркости на небе. Ожидается взрыв гиперновой. Окружающая Туманность Киля охватывает 300 световых лет."};
+    galaxyScene.add(etaHit);
+
+    // ── FAMOUS BLACK HOLES ─────────────────────────────────────────────────
+    function makeBlackHole(pos, sz, accretionColor, info){
+      // Dark core with vivid accretion disk ring effect
+      const ring1=new THREE.Sprite(makeGlowMat(accretionColor,0.7));
+      ring1.scale.set(sz*2,sz*2,1);ring1.position.copy(pos);galaxyScene.add(ring1);
+      const ring2=new THREE.Sprite(makeGlowMat(0xffffff,0.5));
+      ring2.scale.set(sz*0.5,sz*0.5,1);ring2.position.copy(pos);galaxyScene.add(ring2);
+      const hit=new THREE.Mesh(new THREE.SphereGeometry(sz*1.5,8,8),new THREE.MeshBasicMaterial({visible:false}));
+      hit.position.copy(pos);hit.userData=info;galaxyScene.add(hit);
+      (window._extraGalaxyHits=window._extraGalaxyHits||[]).push(hit);
+      return hit;
+    }
+
+    // M87* — first imaged black hole (in Virgo Cluster)
+    const m87Pos=new THREE.Vector3(180000, 30000, -380000);
+    const m87Hit=makeBlackHole(m87Pos, 12000, 0xffaa00, {
+      nebulaName:"Messier 87 / M87* Black Hole",
+      nebulaName_ru:"Мессье 87 / Чёрная дыра M87*",
+      nebulaDist:"55 million ly",
+      nebulaType:"Elliptical Galaxy / Radio Galaxy",
+      nebulaType_ru:"Эллиптическая галактика / Радиогалактика",
+      nebulaDesc:"M87 hosts the first black hole ever directly imaged — the Event Horizon Telescope released its iconic 'shadow' photo in April 2019. The black hole M87* has a mass of 6.5 billion solar masses. A relativistic jet of plasma shoots out 5,000 light-years. M87 is the dominant member of the Virgo Cluster containing thousands of galaxies.",
+      nebulaDesc_ru:"M87 содержит первую в истории сфотографированную чёрную дыру: снимок Event Horizon Telescope вышел в апреле 2019 года. Масса чёрной дыры M87* — 6,5 млрд масс Солнца. Релятивистский джет протяжённостью 5000 световых лет. M87 — главный член скопления Девы."
+    });
+
+    // TON 618 — one of the most massive black holes known
+    const ton618Pos=new THREE.Vector3(-320000, 90000, -1100000);
+    makeBlackHole(ton618Pos, 18000, 0xff6600, {
+      nebulaName:"TON 618 (Ultramassive Black Hole)",
+      nebulaName_ru:"TON 618 (Ультрамассивная чёрная дыра)",
+      nebulaDist:"10.4 billion ly",
+      nebulaType:"Quasar / Ultramassive Black Hole",
+      nebulaType_ru:"Квазар / Ультрамассивная чёрная дыра",
+      nebulaDesc:"TON 618 is a hyperluminous quasar located 10.4 billion light-years away and one of the most massive black holes ever discovered, with a mass of 66 billion solar masses. Its event horizon is larger than our entire solar system. The quasar was so luminous that it outshone its entire host galaxy. TON 618 was observed as it was when the universe was only 3 billion years old.",
+      nebulaDesc_ru:"TON 618 — сверхяркий квазар в 10,4 млрд световых лет и одна из наиболее массивных чёрных дыр: 66 млрд масс Солнца. Горизонт событий крупнее всей Солнечной системы. Квазар превосходил по яркости свою галактику. Наблюдался, когда вселенной было лишь 3 млрд лет."
+    });
+
+    // Holmberg 15A* — another ultramassive
+    const holm15Pos=new THREE.Vector3(200000, -50000, 680000);
+    makeBlackHole(holm15Pos, 14000, 0xffaa44, {
+      nebulaName:"Holmberg 15A* (40 Billion M☉)",
+      nebulaName_ru:"Гольмберг 15A* (40 млрд M☉)",
+      nebulaDist:"700 million ly",
+      nebulaType:"Ultramassive Black Hole",
+      nebulaType_ru:"Ультрамассивная чёрная дыра",
+      nebulaDesc:"The black hole at the center of Holmberg 15A has an estimated mass of 40 billion solar masses — one of the heaviest known black holes. Its enormous mass was confirmed in 2019 by stellar dynamics measurements. At 700 million light-years, it sits at the center of a giant cD elliptical galaxy in the Abell 85 cluster.",
+      nebulaDesc_ru:"Чёрная дыра в центре Гольмберга 15A — одна из наиболее тяжёлых известных: ~40 млрд масс Солнца (подтверждено в 2019 г.). Находится в центре гигантской эллиптической галактики в скоплении Абель 85."
+    });
+
+    // Sgr A* region already handled — add Holm 15A type label visual
+    // NGC 1277 compact galaxy black hole
+    const ngc1277Pos=new THREE.Vector3(130000, 20000, -420000);
+    makeBlackHole(ngc1277Pos, 9000, 0xee8833, {
+      nebulaName:"NGC 1277 Black Hole (17 Billion M☉)",
+      nebulaName_ru:"NGC 1277 чёрная дыра (17 млрд M☉)",
+      nebulaDist:"220 million ly",
+      nebulaType:"Overmassive Black Hole / Compact Galaxy",
+      nebulaType_ru:"Сверхмассивная ЧД / Компактная галактика",
+      nebulaDesc:"NGC 1277 is a small but compact lenticular galaxy in the Perseus Cluster housing a black hole of 17 billion solar masses — constituting 59% of the galaxy's bulge mass. This 'overmassive' black hole is far larger relative to its host galaxy than any other known. It may be a 'relic galaxy' — a massive elliptical from the early universe that stopped growing.",
+      nebulaDesc_ru:"NGC 1277 — маленькая, но компактная линзообразная галактика в скоплении Персея с чёрной дырой 17 млрд масс Солнца (59% массы балджа). «Сверхмассивная» относительно хозяйки. Возможно «реликтовая галактика» — ранняя эллиптическая, прекратившая рост."
+    });
+
+    // Boötes Void
+    const voidPos=new THREE.Vector3(-600000, 80000, -400000);
+    const voidPts=[];for(let i=0;i<=64;i++){const a=(i/64)*Math.PI*2;voidPts.push(new THREE.Vector3(Math.cos(a)*180000+voidPos.x,Math.sin(a)*60000+voidPos.y,voidPos.z));}
+    const voidRing=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(voidPts),new THREE.LineBasicMaterial({color:0x334466,transparent:true,opacity:0.25,depthWrite:false}));
+    galaxyScene.add(voidRing);
+    const voidLabel=new THREE.Sprite(makeGlowMat(0x223355,0.08));
+    voidLabel.scale.set(320000,160000,1);voidLabel.position.copy(voidPos);galaxyScene.add(voidLabel);
+    const voidHit=new THREE.Mesh(new THREE.SphereGeometry(150000,8,8),new THREE.MeshBasicMaterial({visible:false}));
+    voidHit.position.copy(voidPos);voidHit.userData={nebulaName:"Boötes Void (The Great Nothing)",nebulaName_ru:"Пустота Волопаса (Великое Ничто)",nebulaDist:"700 million ly (diameter 330 Mly)",nebulaType:"Supervoid",nebulaType_ru:"Суперпустота",nebulaDesc:"The Boötes Void is one of the largest known structures in the universe — an almost spherical region of space approximately 330 million light-years across containing very few galaxies. If the Milky Way were inside the void, we would not have discovered other galaxies until the 1980s. It was discovered by Robert Kirshner in 1981. Only 60 galaxies were found inside it — compared to the expected 2,000.",nebulaDesc_ru:"Пустота Волопаса — почти сферическая область диаметром ~330 млн световых лет, содержащая мало галактик. Обнаружена Кришнером в 1981 г. Найдено лишь 60 галактик вместо ожидаемых 2000."};
+    galaxyScene.add(voidHit);
+    window._extraGalaxyHits=(window._extraGalaxyHits||[]);
+    [orionHit,crabHit,etaHit,m87Hit,voidHit].forEach(h=>window._extraGalaxyHits.push(h));
+  })();
+  // ── Local Group dwarf galaxies (real positions) ─────────────────────────
+  (()=>{
+    const dwarf_data=[
+      {name:"Sagittarius Dwarf Spheroidal",x:1800,y:-3200,z:3000,sz:1800,col:0xd8c090,
+       info:"Being tidally disrupted by the Milky Way (70,000 ly). Its stars are being stripped into a stellar stream wrapped around our galaxy."},
+      {name:"Sculptor Dwarf",x:32626,y:-22527,z:8742,sz:1200,col:0xc0b090,
+       info:"Dwarf spheroidal 290,000 ly away. One of the first dwarf spheroidals discovered (1938)."},
+      {name:"Fornax Dwarf",x:40716,y:-36477,z:34044,sz:1400,col:0xc8b898,
+       info:"Dwarf spheroidal 460,000 ly away. Has 6 globular clusters — unusual for its small size."},
+      {name:"Leo I Dwarf",x:-63538,y:15676,z:33642,sz:1100,col:0xb8a888,
+       info:"One of the most distant MW satellites (820,000 ly). Shows signs of recent star formation."},
+      {name:"Leo II Dwarf",x:-65417,y:27253,z:13428,sz:900,col:0xb0a880,
+       info:"Dwarf spheroidal 690,000 ly. Predominantly old stellar population."},
+      {name:"Ursa Minor Dwarf",x:-7358,y:25812,z:-7974,sz:1000,col:0xb8b0a0,
+       info:"Dwarf spheroidal 200,000 ly. Unusually high dark matter content for its luminosity."},
+      {name:"Draco Dwarf",x:-3326,y:30835,z:-19055,sz:900,col:0xb0a890,
+       info:"Dwarf spheroidal 260,000 ly. Nearly all stars formed >10 billion years ago."},
+      {name:"Canes Venatici I",x:-55789,y:39977,z:-22540,sz:1300,col:0xb8c0b0,
+       info:"Ultra-faint dwarf galaxy 700,000 ly away. Discovered 2006 from SDSS digital sky surveys."},
+      {name:"IC 10 Starburst",x:45458,y:76561,z:262,sz:2200,col:0xff8866,
+       info:"Starburst dwarf 2.2 Mly away. Highest star-formation rate per unit mass of any known galaxy."}
+    ];
+    dwarf_data.forEach(d=>{
+      const sp=new THREE.Sprite(makeGlowMat(d.col,0.28));
+      sp.scale.set(d.sz,d.sz,1);sp.position.set(d.x,d.y,d.z);galaxyScene.add(sp);
+      const hit=new THREE.Mesh(new THREE.SphereGeometry(d.sz*0.4,6,6),new THREE.MeshBasicMaterial({visible:false}));
+      hit.position.set(d.x,d.y,d.z);
+      hit.userData={nebulaName:d.name,nebulaName_ru:d.name,nebulaDist:"Local Group",nebulaType:"Dwarf Galaxy",nebulaType_ru:"Карликовая галактика",nebulaDesc:d.info,nebulaDesc_ru:d.info};
+      galaxyScene.add(hit);
+      (window._extraGalaxyHits=window._extraGalaxyHits||[]).push(hit);
+    });
+  })();
+
+
 
   // ── DISTANT GALAXIES ─────────────────────────────────────────────────────
   const extGalaxyHits=[];
@@ -1494,25 +1684,25 @@ let sgrAHit=null;
      stars:"~30 billion",stars_ru:"~30 млрд",
      desc:"The LMC is the largest satellite galaxy of the Milky Way, visible to the naked eye from the Southern Hemisphere as a detached cloud of stars. It contains the Tarantula Nebula — the most active star-forming region in the Local Group. In 1987, Supernova 1987A exploded here — the closest supernova observed since the invention of the telescope.",
      desc_ru:"Большое Магелланово Облако — крупнейшая галактика-спутник Млечного Пути, видимая невооружённым глазом из Южного полушария. Содержит Туманность Тарантул — наиболее активную область звездообразования в Местной группе. В 1987 году здесь вспыхнула SN 1987A — ближайшая наблюдаемая сверхновая с момента изобретения телескопа.",
-     x:-8000,y:-18000,z:26000,color:0xd8c8a0,sz:3800,type3d:'irregular'},
+     x:-5500,y:-14000,z:20000,color:0xd8c8a0,sz:6000,type3d:'irregular'},
     {name:"Small Magellanic Cloud",name_ru:"Малое Магелланово Облако",dist_mly:0.20,
      type:"Irregular dwarf galaxy",type_ru:"Неправильная карликовая галактика",
      stars:"~3 billion",stars_ru:"~3 млрд",
      desc:"The SMC is a satellite galaxy of the Milky Way, forming a pair with the LMC. Henrietta Swan Leavitt discovered the period-luminosity relationship for Cepheid variable stars here in 1908 — a crucial tool that allowed Edwin Hubble to measure the true scale of the universe. The two Magellanic Clouds are connected by a stream of gas called the Magellanic Stream.",
      desc_ru:"ММО — галактика-спутник Млечного Пути, образующая пару с Большим Магеллановым Облаком. Генриетта Суон Ливитт открыла здесь зависимость период-светимость для цефеид в 1908 году — ключевой инструмент, позволивший Хабблу измерить истинный масштаб вселенной.",
-     x:-11500,y:-22500,z:33000,color:0xc8c0b0,sz:2200,type3d:'irregular'},
+     x:-9000,y:-18000,z:28000,color:0xc8c0b0,sz:3200,type3d:'irregular'},
     {name:"Andromeda Galaxy (M31)",name_ru:"Галактика Андромеды (M31)",dist_mly:2.537,
      type:"Barred spiral galaxy — Sb",type_ru:"Спиральная галактика с перемычкой — Sb",
      stars:"~1 trillion",stars_ru:"~1 трлн",
      desc:"Andromeda is the nearest large galaxy and the most distant object visible to the naked eye, appearing as a faint smudge in the constellation Andromeda. It is larger than the Milky Way and contains about a trillion stars. In approximately 4.5 billion years, the Andromeda and Milky Way galaxies will collide and eventually merge into a single elliptical galaxy, sometimes called 'Milkomeda'. The central supermassive black hole has a mass of ~100 million solar masses.",
      desc_ru:"Андромеда — ближайшая крупная галактика и наиболее удалённый объект, видимый невооружённым глазом. Крупнее Млечного Пути: около триллиона звёзд. Примерно через 4,5 млрд лет Андромеда и Млечный Путь столкнутся и сольются в эллиптическую галактику. Центральная чёрная дыра имеет массу ~100 млн масс Солнца.",
-     x:-82000,y:95000,z:-310000,color:0xffe8c8,sz:48000,arms:4,type3d:'spiral'},
+     x:-42000,y:48000,z:-158000,color:0xffe8c8,sz:22000,arms:4,type3d:'spiral'},
     {name:"Triangulum Galaxy (M33)",name_ru:"Галактика Треугольника (M33)",dist_mly:2.73,
      type:"Spiral galaxy — Sc",type_ru:"Спиральная галактика — Sc",
      stars:"~40 billion",stars_ru:"~40 млрд",
      desc:"The Triangulum Galaxy is the third-largest in the Local Group after the Milky Way and Andromeda. It is a loosely wound face-on spiral with prominent HII emission nebulae. It may be a satellite of Andromeda. NGC 604, a giant HII region within M33, is one of the largest known star-forming regions — containing ~200 hot O-type stars.",
      desc_ru:"Галактика Треугольника — третья по размеру в Местной группе. Слабо закрученная спираль, почти лицом к нам. NGC 604 внутри M33 — одна из крупнейших известных областей звездообразования: ~200 горячих O-звёзд.",
-     x:62000,y:50000,z:-120000,color:0xb0c8e8,sz:12000,arms:2,type3d:'spiral'},
+     x:34000,y:27000,z:-65000,color:0xb0c8e8,sz:9000,arms:2,type3d:'spiral'},
     {name:"Centaurus A (NGC 5128)",name_ru:"Центавр A (NGC 5128)",dist_mly:13.0,
      type:"Peculiar elliptical / radio galaxy",type_ru:"Неправильная эллиптическая / радиогалактика",
      stars:"~100 billion",stars_ru:"~100 млрд",
@@ -1574,6 +1764,404 @@ let sgrAHit=null;
      desc:"The Antennae are two colliding spiral galaxies in the process of merging — one of the nearest and youngest galaxy mergers known. The collision has triggered one of the most intense starbursts ever observed, creating thousands of massive young star clusters. Long tidal tails (the 'antennae') extend for 100,000 light-years.",
      desc_ru:"Антенны — две сталкивающиеся галактики, ближайшее и молодое слияние. Столкновение запустило один из наиболее интенсивных взрывов звездообразования, создав тысячи массивных молодых кластеров. Приливные хвосты протянулись на 100 000 световых лет.",
      x:200000,y:-180000,z:350000,color:0xff9966,sz:28000,type3d:'irregular'},
+    // Additional famous galaxies
+    {name:"Milky Way's Twin (NGC 6744)",name_ru:"Двойник Млечного Пути (NGC 6744)",dist_mly:30.0,
+     type:"Barred spiral — SABbc",type_ru:"Спираль с перемычкой — SABbc",
+     stars:"~300 billion",stars_ru:"~300 млрд",
+     desc:"NGC 6744 is considered the closest large spiral galaxy to resemble the Milky Way in structure — a large barred spiral with two major arms and a small companion galaxy (resembling the LMC). If we could see our galaxy from the outside, it might look very much like NGC 6744.",
+     desc_ru:"NGC 6744 — ближайшая крупная спираль, наиболее похожая на Млечный Путь. Большая спираль с перемычкой, двумя главными рукавами и спутником (похожим на БМО). Возможно, именно так выглядит наша Галактика снаружи.",
+     x:-320000,y:-200000,z:280000,color:0xffe0a0,sz:30000,arms:2,type3d:'spiral'},
+    {name:"Cartwheel Galaxy",name_ru:"Галактика Тележное Колесо",dist_mly:500.0,
+     type:"Ring galaxy — peculiar",type_ru:"Кольцевая галактика — необычная",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"The Cartwheel Galaxy is a spectacular ring galaxy formed by a nearly head-on collision with a smaller galaxy about 200–300 million years ago. The impact sent a ripple of star formation expanding outward like a splash in a pond. The James Webb Space Telescope imaged it in stunning detail in 2022, revealing star-forming spokes connecting the inner and outer rings.",
+     desc_ru:"Галактика Тележное Колесо образовалась при лобовом столкновении 200–300 млн лет назад. Удар породил волну звездообразования, расходящуюся как круги по воде. В 2022 году Джеймс Уэбб снял её в деталях, показав спицы, соединяющие внутреннее и внешнее кольца.",
+     x:420000,y:150000,z:550000,color:0x88ccff,sz:22000,type3d:'irregular'},
+    {name:"NGC 1300 Barred Spiral",name_ru:"NGC 1300 Спираль с перемычкой",dist_mly:61.0,
+     type:"Grand design barred spiral — SBbc",type_ru:"Большая спираль с перемычкой — SBbc",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"NGC 1300 is one of the most beautiful and archetypal barred spiral galaxies known. Its prominent central bar stretches about 150,000 light-years — longer than the entire Milky Way disk. The spiral arms originate from the ends of the bar rather than the nucleus. It was showcased by Hubble in 2005 as one of the most complete examples of a grand design barred spiral.",
+     desc_ru:"NGC 1300 — один из красивейших архетипов спирали с перемычкой. Центральная перемычка протяжённостью ~150 000 световых лет длиннее диска Млечного Пути. Рукава начинаются с концов перемычки. Хаббл представил её в 2005 году как образцовую спираль с перемычкой.",
+     x:280000,y:-80000,z:150000,color:0xffd090,sz:20000,arms:2,type3d:'spiral'},
+    {name:"Galaxy Cluster Abell 2029",name_ru:"Скопление галактик Абель 2029",dist_mly:1060.0,
+     type:"Galaxy Cluster — X-ray luminous",type_ru:"Скопление галактик — рентгеновское",
+     stars:"~10 trillion (cluster)",stars_ru:"~10 трлн (скопление)",
+     desc:"Abell 2029 is a massive galaxy cluster dominated by IC 1101 — the largest known galaxy in the observable universe, spanning roughly 6 million light-years (60× the Milky Way). The cluster contains hundreds of galaxies surrounded by superheated gas at 100 million degrees. It sits within a cosmic web filament and is one of the most X-ray luminous clusters known.",
+     desc_ru:"Абель 2029 — массивное скопление, доминирует IC 1101 — крупнейшая известная галактика (~6 млн световых лет, в 60 раз больше Млечного Пути). Сотни галактик окружены раскалённым газом при 100 млн °C.",
+     x:780000,y:200000,z:-900000,color:0xffe8d0,sz:80000,type3d:'elliptical'},
+    {name:"Virgo Cluster / M87",name_ru:"Скопление Девы / M87",dist_mly:55.0,
+     type:"Galaxy Cluster — ~1300 galaxies",type_ru:"Скопление галактик — ~1300 галактик",
+     stars:"~100 trillion",stars_ru:"~100 трлн",
+     desc:"The Virgo Cluster is the nearest large galaxy cluster to the Milky Way and the core of our Local Supercluster (Laniakea). It contains ~1,300 galaxies including M87, M86, and M84. M87 hosts the first black hole ever directly imaged (2019). The cluster's gravity influences our entire Local Group, causing the 'Virgo Infall' — a motion of ~200 km/s toward it.",
+     desc_ru:"Скопление Девы — ближайшее крупное скопление галактик и ядро нашего сверхскопления Ланиакея. Около 1300 галактик, включая M87 с первой сфотографированной чёрной дырой. Гравитация создаёт «падение в Деву» — движение ~200 км/с в сторону скопления.",
+     x:180000,y:30000,z:-380000,color:0xffdd99,sz:45000,type3d:'elliptical'},
+    {name:"Stephan's Quintet",name_ru:"Квинтет Стефана",dist_mly:280.0,
+     type:"Compact galaxy group — HCG 92",type_ru:"Компактная группа галактик — HCG 92",
+     stars:"~500 billion (group)",stars_ru:"~500 млрд (группа)",
+     desc:"Stephan's Quintet is the first compact galaxy group ever discovered (1877). Four of the five galaxies are gravitationally interacting, producing enormous shockwaves and tidal bridges visible between them. The James Webb Space Telescope's very first released science image (July 2022) was of Stephan's Quintet, showing intricate detail of the collisions. One galaxy (NGC 7320) is actually a foreground object 40 million light-years closer.",
+     desc_ru:"Квинтет Стефана — первая открытая компактная группа галактик (1877 г.). Четыре из пяти гравитационно взаимодействуют, создавая ударные волны и приливные мосты. Первым научным снимком Джеймс Уэбба (июль 2022) был именно квинтет.",
+     x:-400000,y:100000,z:-600000,color:0xddbbaa,sz:25000,type3d:'irregular'},
+    {name:"IC 1101 (largest galaxy)",name_ru:"IC 1101 (крупнейшая галактика)",dist_mly:1045.0,
+     type:"Giant elliptical — cD supergiant",type_ru:"Гигантская эллиптическая — cD сверхгигант",
+     stars:"~100 trillion",stars_ru:"~100 трлн",
+     desc:"IC 1101 is the largest known galaxy in the observable universe — spanning approximately 5–6 million light-years. If placed at the center of our galaxy, it would engulf the Andromeda Galaxy and beyond. It is the dominant central galaxy of galaxy cluster Abell 2029, formed by countless mergers over billions of years. Despite its titanic size, it has little ongoing star formation — a 'red and dead' galaxy.",
+     desc_ru:"IC 1101 — крупнейшая известная галактика (~5–6 млн световых лет). Если поставить её в центр Млечного Пути, она поглотит Галактику Андромеды. Центральная галактика скопления Абель 2029, сформированная слияниями. Несмотря на размер, почти не образует звёзд — «красная и мёртвая».",
+     x:790000,y:210000,z:-910000,color:0xffd0a0,sz:55000,type3d:'elliptical'},
+    // ── More distant interesting galaxies ────────────────────────────────────
+    {name:"Centaurus A (NGC 5128)",name_ru:"Центавр А (NGC 5128)",dist_mly:13.0,
+     type:"Radio Galaxy / Peculiar elliptical",type_ru:"Радиогалактика / Пекулярная эллиптическая",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"Centaurus A is the nearest radio galaxy and one of the most studied extragalactic objects. It was formed by the merger of an elliptical galaxy with a spiral galaxy, leaving a distinctive dark dust lane across its center. Its central black hole of 55 million solar masses produces powerful relativistic jets detectable across the radio, X-ray, and gamma-ray spectrum. At 13 million light-years, it is the 5th brightest galaxy in the sky.",
+     desc_ru:"Центавр А — ближайшая радиогалактика и один из наиболее изученных внегалактических объектов. Образована слиянием эллиптической и спиральной галактик — отсюда характерная пылевая полоса. ЧД 55 млн масс Солнца генерирует мощные релятивистские джеты. Пятая по яркости галактика неба.",
+     x:-140000,y:-50000,z:220000,color:0xffe0b0,sz:24000,type3d:'elliptical'},
+    {name:"Whirlpool Galaxy (M51)",name_ru:"Галактика Водоворот (M51)",dist_mly:23.0,
+     type:"Grand design spiral — SA(s)bc",type_ru:"Большая спираль — SA(s)bc",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"M51 was the first galaxy where spiral structure was observed (1845, Lord Rosse). It is engaged in a tidal interaction with companion NGC 5195, which is pulling material from M51's outer spiral arm. The interaction has triggered widespread star formation throughout the galaxy. Three supernovae have exploded here since 1994.",
+     desc_ru:"M51 — первая галактика, в которой наблюдалась спиральная структура (1845, лорд Росс). Взаимодействует со спутником NGC 5195, вытягивающим материал из внешнего рукава. Три сверхновых с 1994 года.",
+     x:-220000,y:220000,z:-80000,color:0xb0c0e0,sz:20000,arms:2,type3d:'spiral'},
+    {name:"Sombrero Galaxy (M104)",name_ru:"Галактика Сомбреро (M104)",dist_mly:28.0,
+     type:"Unbarred spiral — Sa/S0",type_ru:"Неперемычечная спираль — Sa/S0",
+     stars:"~800 billion",stars_ru:"~800 млрд",
+     desc:"The Sombrero features a brilliant white core surrounded by a dark dust lane, seen nearly edge-on. Its central bulge is unusually large, and it hosts one of the most massive nearby black holes (1 billion solar masses). Its globular cluster system numbers ~2,000 — suggesting it absorbed smaller galaxies.",
+     desc_ru:"Сомбреро — яркое белое ядро в окружении тёмной пылевой полосы. Необычно большое центральное утолщение и одна из наиболее массивных ближайших ЧД (1 млрд масс Солнца). ~2000 шаровых скоплений.",
+     x:260000,y:-120000,z:180000,color:0xffe8d0,sz:22000,type3d:'edge-on'},
+    {name:"NGC 253 Sculptor Galaxy",name_ru:"NGC 253 Галактика Скульптор",dist_mly:11.4,
+     type:"Starburst spiral — SABc",type_ru:"Вспыхивающая спираль — SABc",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"NGC 253 is one of the brightest and dustiest spiral galaxies, classified as a starburst galaxy. It is the brightest member of the Sculptor Group — the nearest galaxy group to the Local Group. Infrared observations reveal intense star formation in its core hidden behind dust lanes.",
+     desc_ru:"NGC 253 — одна из ярчайших и наиболее запылённых спиральных галактик. Ярчайший член группы Скульптора — ближайшей к Местной группе. Инфракрасные наблюдения выявляют интенсивное звездообразование в ядре.",
+     x:24000,y:-85000,z:200000,color:0xd0c0a0,sz:18000,arms:2,type3d:'spiral'},
+    {name:"Hoag's Object",name_ru:"Объект Хога",dist_mly:600.0,
+     type:"Non-interacting ring galaxy",type_ru:"Несвязанная кольцевая галактика",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"Hoag's Object is one of the most perfect ring galaxies known — a yellow core of old stars surrounded by a nearly circular ring of young blue stars, with a nearly empty gap between them. Unlike the Cartwheel Galaxy, this ring was NOT formed by a collision. The origin of the ring remains debated; one theory involves bar instability. Most curiously, another ring galaxy is visible through the gap.",
+     desc_ru:"Объект Хога — одна из наиболее совершенных кольцевых галактик: жёлтое ядро из старых звёзд, окружённое почти круговым кольцом молодых синих звёзд, с почти пустым зазором. Кольцо НЕ образовано столкновением. Сквозь зазор видна ещё одна кольцевая галактика.",
+     x:500000,y:80000,z:-750000,color:0xaaccff,sz:20000,type3d:'irregular'},
+    {name:"El Gordo Galaxy Cluster",name_ru:"Скопление галактик Эль Гордо",dist_mly:7200.0,
+     type:"Massive galaxy cluster",type_ru:"Массивное скопление галактик",
+     stars:"~10 quadrillion",stars_ru:"~10 квадриллионов",
+     desc:"El Gordo ('The Fat One') is one of the most massive galaxy clusters ever found — roughly twice the mass of any cluster known at this distance and era of the universe. Discovered in 2012, it contains 2 subclusters merging at 3 million mph, producing a shockwave and a 'comet-like tail' of hot gas. Its total mass is 3 quadrillion solar masses.",
+     desc_ru:"Эль Гордо («Толстяк») — одно из наиболее массивных известных скоплений галактик (~3 квадриллиона масс Солнца). Два подскопления сливаются со скоростью 5 млн км/ч, создавая ударную волну и «кометный хвост» горячего газа. Открыто в 2012 году.",
+     x:-800000,y:300000,z:-1800000,color:0xffddaa,sz:120000,type3d:'elliptical'},
+    {name:"Musket Ball Cluster (MACS J0025)",name_ru:"Скопление Мушкетный шар",dist_mly:5200.0,
+     type:"Merging galaxy cluster — dark matter evidence",type_ru:"Сливающееся скопление — свидетельство тёмной материи",
+     stars:"~5 quadrillion",stars_ru:"~5 квадриллионов",
+     desc:"MACS J0025 is a merging galaxy cluster famous for demonstrating dark matter's existence through gravitational lensing. During the collision, the hot gas (visible in X-ray) was slowed by electromagnetic forces, while dark matter (mapped by lensing) passed through undisturbed — proving dark matter is distinct from visible matter. The Bullet Cluster made the same discovery earlier.",
+     desc_ru:"MACS J0025 — сливающееся скопление галактик, знаменитое доказательством тёмной материи через гравитационное линзирование. При столкновении горячий газ тормозится электромагнитными силами, а тёмная материя (картировано линзированием) проходит свободно.",
+     x:-500000,y:200000,z:-1300000,color:0xddbbff,sz:90000,type3d:'elliptical'},
+    {name:"Tadpole Galaxy (UGC 10214)",name_ru:"Галактика Головастик (UGC 10214)",dist_mly:420.0,
+     type:"Disrupted spiral with tidal tail",type_ru:"Нарушенная спираль с приливным хвостом",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"The Tadpole Galaxy has a spectacular 280,000 light-year long tidal tail of stars torn away by a gravitational encounter with a smaller galaxy — which can be seen piercing through the main disk. The tail is filled with young blue star clusters formed in the encounter. This Hubble ACS image became one of the most famous extragalactic photos.",
+     desc_ru:"Галактика Головастик имеет приливный хвост длиной 280 000 световых лет — звёзды, вырванные при гравитационном столкновении с меньшей галактикой. Хвост заполнен молодыми синими звёздными кластерами. Один из самых известных снимков Хаббла.",
+     x:-380000,y:120000,z:550000,color:0xbbddff,sz:22000,arms:2,type3d:'spiral'},
+
+    // ── ABOVE the Milky Way plane (high positive Y) ─────────────────────────
+    {name:"NGC 4889 (Coma Cluster BCG)",name_ru:"NGC 4889 (BCG скопления Волосы Вероники)",dist_mly:308.0,
+     type:"Elliptical cD — brightest cluster galaxy",type_ru:"Эллиптическая cD — ярчайшая галактика скопления",
+     stars:"~1 trillion",stars_ru:"~1 трлн",
+     desc:"NGC 4889 is the brightest galaxy in the Coma Cluster and hosts one of the most massive black holes measured — approximately 21 billion solar masses. The Coma Cluster itself contains over 1,000 galaxies. NGC 4889 was crucial in Fritz Zwicky's 1933 discovery of dark matter, when cluster galaxies moved too fast to be held by visible mass alone.",
+     desc_ru:"NGC 4889 — ярчайшая галактика скопления Волосы Вероники и обладательница одной из наиболее массивных измеренных ЧД (~21 млрд масс Солнца). Скопление насчитывает более 1000 галактик. Именно здесь Цвикки открыл тёмную материю в 1933 году.",
+     x:80000,y:480000,z:-600000,color:0xffe8c0,sz:32000,type3d:'elliptical'},
+    {name:"NGC 4874 (Coma Cluster)",name_ru:"NGC 4874 (Скопление Волосы Вероники)",dist_mly:320.0,
+     type:"cD elliptical — Coma Cluster",type_ru:"cD эллиптическая — скопление Волосы Вероники",
+     stars:"~800 billion",stars_ru:"~800 млрд",
+     desc:"NGC 4874 is the second dominant galaxy in the Coma Cluster, forming a pair with NGC 4889. Together they mark the center of one of the best-studied rich galaxy clusters. The Coma Cluster extends 20 million light-years across and contains thousands of galaxies embedded in vast quantities of hot X-ray emitting gas.",
+     desc_ru:"NGC 4874 — второй доминирующий член скопления Волосы Вероники. Вместе с NGC 4889 они образуют центр одного из лучше всего изученных богатых скоплений. Скопление протянулось на 20 млн световых лет и содержит тысячи галактик.",
+     x:60000,y:500000,z:-650000,color:0xffd8b0,sz:28000,type3d:'elliptical'},
+    {name:"Virgo A — M87 (North)",name_ru:"Вирго A — M87 (Север)",dist_mly:55.0,
+     type:"Elliptical — Virgo supercluster",type_ru:"Эллиптическая — сверхскопление Девы",
+     stars:"~1 trillion",stars_ru:"~1 трлн",
+     desc:"M87 dominates the Virgo Cluster directly above our galactic plane. Its famous relativistic jet and the first-ever black hole image (2019) make it one of the most iconic extragalactic objects. Gravity from the Virgo Cluster pulls our entire Local Group at ~250 km/s toward it — the 'Virgo Infall'.",
+     desc_ru:"M87 доминирует в скоплении Девы прямо над плоскостью нашей галактики. Знаменитый релятивистский джет и первый снимок ЧД (2019). Гравитация скопления Девы тянет всю Местную группу со скоростью ~250 км/с — «падение на Деву».",
+     x:60000,y:280000,z:-380000,color:0xffe8a0,sz:36000,type3d:'elliptical'},
+    {name:"NGC 4569 (Virgo Cluster)",name_ru:"NGC 4569 (Скопление Девы)",dist_mly:50.0,
+     type:"Barred spiral — SABab",type_ru:"Спираль с перемычкой — SABab",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"NGC 4569 is one of the largest spirals in the Virgo Cluster. Its spiral arms are being stripped by ram pressure as it falls into the dense cluster environment — a process called 'ram-pressure stripping' that removes a galaxy's gas supply and shuts off star formation.",
+     desc_ru:"NGC 4569 — одна из крупнейших спиралей в скоплении Девы. Её рукава «зачёсываются» давлением межгалактической среды при падении в скопление — процесс «отрывания» газа, прекращающий звездообразование.",
+     x:30000,y:260000,z:-310000,color:0xd0c8e0,sz:18000,arms:2,type3d:'spiral'},
+    {name:"M60 (NGC 4649)",name_ru:"M60 (NGC 4649)",dist_mly:54.0,
+     type:"Elliptical E2 — Virgo Cluster",type_ru:"Эллиптическая E2 — скопление Девы",
+     stars:"~400 billion",stars_ru:"~400 млрд",
+     desc:"M60 is one of the largest elliptical galaxies in the nearby universe and interacts with the spiral NGC 4647. It harbors a black hole of ~4.5 billion solar masses. Together with M59 and M58, it forms the eastern edge of the Virgo Cluster.",
+     desc_ru:"M60 — одна из крупнейших эллиптических галактик в ближней вселенной, взаимодействует со спиралью NGC 4647. Чёрная дыра ~4,5 млрд масс Солнца. Вместе с M59 и M58 образует восточный край скопления Девы.",
+     x:120000,y:270000,z:-360000,color:0xffd8a0,sz:24000,type3d:'elliptical'},
+    {name:"NGC 891 (Edge-on spiral)",name_ru:"NGC 891 (Рёберная спираль)",dist_mly:30.0,
+     type:"Spiral — AB(s)b — nearly edge-on",type_ru:"Спираль — AB(s)b — почти с ребра",
+     stars:"~150 billion",stars_ru:"~150 млрд",
+     desc:"NGC 891 is one of the most-photographed edge-on spirals, often used as a 'template' for what the Milky Way might look like from outside. Its prominent dust lane bisects the galaxy perfectly. Filaments of dust extend thousands of light-years above the disk — driven by supernovae explosions from below.",
+     desc_ru:"NGC 891 — одна из наиболее фотографируемых рёберных спиралей, часто используемая как «шаблон» для Млечного Пути снаружи. Пылевые нити протянулись на тысячи световых лет над диском — вытолканные взрывами сверхновых.",
+     x:180000,y:380000,z:50000,color:0xc8d0e0,sz:20000,type3d:'edge-on'},
+    {name:"NGC 4258 (M106)",name_ru:"NGC 4258 (M106)",dist_mly:23.6,
+     type:"Spiral — SABbc with anomalous arms",type_ru:"Спираль — SABbc с аномальными рукавами",
+     stars:"~160 billion",stars_ru:"~160 млрд",
+     desc:"M106 has four spiral arms — two normal star-forming arms and two 'anomalous' arms visible in X-ray and radio but not optical. These anomalous arms are driven by jets from its central black hole of 40 million solar masses, heating gas to millions of degrees as they slam into the disk.",
+     desc_ru:"M106 имеет четыре спиральных рукава: два обычных и два «аномальных», видимых в рентгене и радио. Аномальные рукава создаются джетами центральной ЧД (40 млн масс Солнца), нагревающими газ до миллионов градусов.",
+     x:-120000,y:380000,z:80000,color:0xd8d0c0,sz:22000,arms:4,type3d:'spiral'},
+    {name:"NGC 3115 (Spindle Galaxy)",name_ru:"NGC 3115 (Галактика Веретено)",dist_mly:32.0,
+     type:"Lenticular S0 — edge-on",type_ru:"Линзообразная S0 — с ребра",
+     stars:"~200 billion",stars_ru:"~200 млрд",
+     desc:"The Spindle Galaxy is the nearest lenticular galaxy to Earth. Its central black hole of 2 billion solar masses was one of the first billion-solar-mass black holes confirmed (1992). Seen edge-on, it appears as a perfectly smooth lens of stars with no spiral structure.",
+     desc_ru:"Галактика Веретено — ближайшая линзообразная галактика. Центральная ЧД в 2 млрд масс Солнца — одна из первых подтверждённых в этом диапазоне (1992). С ребра выглядит идеально гладкой линзой без спиральной структуры.",
+     x:200000,y:320000,z:180000,color:0xffe0c8,sz:16000,type3d:'edge-on'},
+
+    // ── BELOW the Milky Way plane (high negative Y) ─────────────────────────
+    {name:"Fornax Cluster (NGC 1399)",name_ru:"Скопление Печи (NGC 1399)",dist_mly:62.0,
+     type:"cD Elliptical — Fornax Cluster",type_ru:"cD Эллиптическая — скопление Печи",
+     stars:"~700 billion",stars_ru:"~700 млрд",
+     desc:"NGC 1399 is the dominant galaxy of the Fornax Cluster — the second nearest galaxy cluster after Virgo, lying south of the galactic plane. The Fornax Cluster is notable for its high fraction of early-type galaxies and is the target of the Fornax Deep Survey, which revealed stunning low-surface-brightness halos and stellar streams around its members.",
+     desc_ru:"NGC 1399 — доминирующая галактика скопления Печи — второго ближайшего скопления после Девы, расположенного к югу от галактической плоскости. Скопление отличается высокой долей ранних галактик и богатством звёздных потоков.",
+     x:80000,y:-380000,z:300000,color:0xffd0a0,sz:28000,type3d:'elliptical'},
+    {name:"NGC 1316 (Fornax A)",name_ru:"NGC 1316 (Печь A)",dist_mly:60.0,
+     type:"Peculiar elliptical — radio galaxy",type_ru:"Пекулярная эллиптическая — радиогалактика",
+     stars:"~500 billion",stars_ru:"~500 млрд",
+     desc:"Fornax A is the brightest radio source in the Fornax Cluster — the result of a massive merger 3 billion years ago that left shells and ripples of stars throughout the galaxy. It hosts the fourth most luminous Type Ia supernova ever recorded. Its radio lobes extend far beyond the visible galaxy.",
+     desc_ru:"Печь A — ярчайший радиоисточник в скоплении Печи: результат слияния 3 млрд лет назад, оставившего звёздные оболочки и рябь. Четвёртая по яркости сверхновая Ia всех времён. Радиолепестки выходят далеко за пределы видимой галактики.",
+     x:50000,y:-360000,z:280000,color:0xffcc88,sz:24000,type3d:'elliptical'},
+    {name:"NGC 300 (Sculptor Group)",name_ru:"NGC 300 (Группа Скульптора)",dist_mly:6.1,
+     type:"Spiral — SA(s)d face-on",type_ru:"Спираль — SA(s)d лицом",
+     stars:"~60 billion",stars_ru:"~60 млрд",
+     desc:"NGC 300 is a face-on spiral in the Sculptor Group — one of the nearest galaxy groups at 6 million light-years. It is notable for its unusually regular structure and is used to calibrate the extragalactic distance ladder. Hubble observations resolved individual stars in its outer disk.",
+     desc_ru:"NGC 300 — спираль лицом к нам в группе Скульптора (~6 млн св. лет). Используется для калибровки внегалактической шкалы расстояний. Хаббл разрешил отдельные звёзды во внешнем диске.",
+     x:30000,y:-200000,z:350000,color:0xc8d8c0,sz:16000,arms:3,type3d:'spiral'},
+    {name:"NGC 55 (Sculptor Group)",name_ru:"NGC 55 (Группа Скульптора)",dist_mly:6.5,
+     type:"Irregular / edge-on spiral — Sm",type_ru:"Неправильная / рёберная спираль — Sm",
+     stars:"~50 billion",stars_ru:"~50 млрд",
+     desc:"NGC 55 is an edge-on irregular galaxy in the Sculptor Group, often compared to the LMC. At only 6.5 million light-years, it is one of the nearest galaxies beyond the Local Group. Its star-forming regions and HII regions are visually resolved in ground-based images.",
+     desc_ru:"NGC 55 — рёберная неправильная галактика в группе Скульптора, часто сравниваемая с БМО. Всего 6,5 млн световых лет — одна из ближайших за Местной группой. Области звездообразования разрешаются с Земли.",
+     x:-10000,y:-250000,z:400000,color:0xd0c8b0,sz:14000,type3d:'edge-on'},
+    {name:"NGC 1365 (Fornax Cluster)",name_ru:"NGC 1365 (Скопление Печи)",dist_mly:56.0,
+     type:"Grand design barred spiral — SBb",type_ru:"Большая спираль с перемычкой — SBb",
+     stars:"~200 billion",stars_ru:"~200 млрд",
+     desc:"NGC 1365 is one of the finest grand design barred spirals — its bar is one of the longest known, spanning 35,000 light-years. It hosts an active galactic nucleus and was one of the first galaxies where a Seyfert nucleus was found to change type. The James Webb Space Telescope studied it in 2023 as part of the PHANGS survey.",
+     desc_ru:"NGC 1365 — одна из лучших спиралей с перемычкой (перемычка 35 000 световых лет). Содержит активное ядро и была одной из первых галактик, где ядро сейфертовского типа изменило класс. Изучалась Джеймсом Уэббом в 2023 году.",
+     x:100000,y:-420000,z:320000,color:0xffd090,sz:22000,arms:2,type3d:'spiral'},
+    {name:"NGC 4945 (Centaurus Region)",name_ru:"NGC 4945 (Область Центавра)",dist_mly:13.0,
+     type:"Barred spiral — SBcd edge-on",type_ru:"Спираль с перемычкой — SBcd рёберная",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"NGC 4945 is one of the nearest Seyfert galaxies — its bright nucleus is dominated by a powerful AGN hidden behind a thick column of gas and dust. It is one of the brightest galaxies in hard X-rays. Located near Centaurus A in the southern sky, below the galactic plane.",
+     desc_ru:"NGC 4945 — одна из ближайших галактик Сейферта. Яркое ядро скрыто за мощным столбом газа и пыли. Один из ярчайших источников жёсткого рентгена. Расположена вблизи Центавра A в южном небе.",
+     x:-160000,y:-280000,z:350000,color:0xc0b890,sz:18000,type3d:'edge-on'},
+    {name:"Maffei 1",name_ru:"Маффей 1",dist_mly:10.0,
+     type:"Compact elliptical — IC 342/Maffei Group",type_ru:"Компактная эллиптическая — Группа IC 342/Маффей",
+     stars:"~1 trillion",stars_ru:"~1 трлн",
+     desc:"Maffei 1 is a massive elliptical galaxy only 10 million light-years away — so close it could be a third major member of the Local Group, except it is hidden behind the Milky Way's dust (Zone of Avoidance) and was only discovered in 1968 in infrared. It is the dominant member of the IC 342/Maffei Group.",
+     desc_ru:"Маффей 1 — массивная эллиптическая галактика всего в 10 млн световых лет: могла бы быть третьим главным членом Местной группы, но скрыта пылью Млечного Пути. Открыта в 1968 году в инфракрасном диапазоне. Доминирующий член группы IC 342/Маффей.",
+     x:80000,y:-120000,z:170000,color:0xffe0b8,sz:14000,type3d:'elliptical'},
+    {name:"IC 342",name_ru:"IC 342",dist_mly:11.4,
+     type:"Spiral — SABcd — behind MW dust",type_ru:"Спираль — SABcd — за пылью Млечного Пути",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"IC 342 is often called 'The Hidden Galaxy' — it would be one of the most prominent galaxies in the sky if not for the Milky Way's dust obscuring 2.06 magnitudes of its light. It is a nearly face-on grand design spiral similar in size to the Milky Way, and a lead member of its own galaxy group.",
+     desc_ru:"IC 342 называют «Скрытой галактикой» — она была бы одной из видимых, если бы пыль Млечного Пути не поглощала 2,06 звёздной величины. Почти лицевая большая спираль, схожая по размерам с Млечным Путём.",
+     x:100000,y:-140000,z:200000,color:0xd8d0b8,sz:20000,arms:2,type3d:'spiral'},
+    {name:"NGC 2403",name_ru:"NGC 2403",dist_mly:8.0,
+     type:"Spiral — SAcd — M33 type",type_ru:"Спираль — SAcd — тип M33",
+     stars:"~50 billion",stars_ru:"~50 млрд",
+     desc:"NGC 2403 is a nearby spiral galaxy in the M81 Group, structurally similar to M33. It was the first galaxy beyond the Local Group where Cepheid distance measurements were made (1980s), helping calibrate the Hubble constant. It has an exceptionally high rate of Type II supernovae.",
+     desc_ru:"NGC 2403 — ближайшая спираль в группе M81, структурно похожая на M33. Первая галактика за Местной группой, где в 1980-х были измерены расстояния по цефеидам. Аномально высокая частота сверхновых типа II.",
+     x:-150000,y:280000,z:100000,color:0xc8d0d8,sz:16000,arms:3,type3d:'spiral'},
+    {name:"NGC 7331",name_ru:"NGC 7331",dist_mly:49.0,
+     type:"Spiral — SA(s)b unbarred",type_ru:"Спираль — SA(s)b без перемычки",
+     stars:"~200 billion",stars_ru:"~200 млрд",
+     desc:"NGC 7331 is often called the Milky Way's twin — similar in size, structure, and inclination. Its bulge counter-rotates relative to the disk — evidence of a past merger. It is the brightest member of the NGC 7331 Group and lies near Stephan's Quintet in Pegasus.",
+     desc_ru:"NGC 7331 часто называют двойником Млечного Пути: схожи размер, структура и наклон. Балдж вращается в противоположном диску направлении — свидетельство слияния. Ярчайший член своей группы, расположен вблизи Квинтета Стефана.",
+     x:-320000,y:280000,z:-380000,color:0xd8c8b0,sz:20000,arms:2,type3d:'spiral'},
+    {name:"NGC 5907 (Splinter Galaxy)",name_ru:"NGC 5907 (Галактика Щепка)",dist_mly:50.0,
+     type:"Spiral — SA(s)c — edge-on",type_ru:"Спираль — SA(s)c — с ребра",
+     stars:"~150 billion",stars_ru:"~150 млрд",
+     desc:"The Splinter Galaxy is one of the most perfect edge-on spirals, seen as a thin needle of stars with a prominent dust lane. Deep imaging reveals a spectacular looping stellar stream — evidence of a dwarf galaxy it cannibalized. It is a member of the NGC 5866 group.",
+     desc_ru:"Галактика Щепка — одна из наиболее идеальных рёберных спиралей: тонкая игла звёзд с чёткой пылевой полосой. Глубокие снимки показывают петлеобразный звёздный поток — след поглощённой карликовой галактики.",
+     x:-180000,y:480000,z:200000,color:0xc8d0e0,sz:18000,type3d:'edge-on'},
+    {name:"NGC 5866 (M102)",name_ru:"NGC 5866 (M102)",dist_mly:44.0,
+     type:"Lenticular S0 — edge-on",type_ru:"Линзообразная S0 — с ребра",
+     stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"NGC 5866 is a nearly perfect edge-on lenticular galaxy with one of the sharpest dust lanes ever photographed. It may be Messier's 102 — a lost Messier object long debated. Its exceptionally thin profile reveals the galaxy has very little ongoing star formation, with old red stars dominating.",
+     desc_ru:"NGC 5866 — почти идеальная рёберная линзообразная галактика с одной из чётчайших пылевых полос. Возможно, это потерянный объект Мессье 102. Исключительно тонкий профиль указывает на малое звездообразование.",
+     x:-160000,y:440000,z:180000,color:0xffe0c0,sz:14000,type3d:'edge-on'},
+    {name:"Arp 220 (ULIRG)",name_ru:"Арп 220 (УЛИК)",dist_mly:250.0,
+     type:"Ultraluminous IR galaxy — merger",type_ru:"Ультраяркая ИК-галактика — слияние",
+     stars:"~200 billion",stars_ru:"~200 млрд",
+     desc:"Arp 220 is the nearest ultraluminous infrared galaxy (ULIRG) — two spiral galaxies in the final stages of merging. The collision has triggered a starburst forming 200 solar masses of stars per year (vs 1-3 for the Milky Way). Its dense nuclear region is opaque even to radio waves. First studied by IRAS in 1983.",
+     desc_ru:"Арп 220 — ближайшая ультраяркая инфракрасная галактика: две спирали в финальной стадии слияния. Столкновение запустило вспышку звездообразования: 200 масс Солнца/год против 1–3 у Млечного Пути. Плотное ядро непрозрачно даже для радиоволн.",
+     x:200000,y:-580000,z:-200000,color:0xff8866,sz:18000,type3d:'irregular'},
+    {name:"NGC 6744 (MW's Twin)",name_ru:"NGC 6744 (Двойник МП)",dist_mly:30.0,
+     type:"Barred spiral — SABbc",type_ru:"Спираль с перемычкой — SABbc",
+     stars:"~300 billion",stars_ru:"~300 млрд",
+     desc:"NGC 6744 is the galaxy most similar to the Milky Way in the nearby universe — a large barred spiral with two major arms, a small LMC-like companion, and similar size. Located in the southern sky deep below the galactic plane, it is one of the finest spirals visible from the Southern Hemisphere.",
+     desc_ru:"NGC 6744 — наиболее похожая на Млечный Путь галактика в ближней вселенной: крупная спираль с перемычкой, двумя рукавами и спутником типа БМО. Расположена в южном небе глубоко ниже галактической плоскости.",
+     x:-250000,y:-480000,z:500000,color:0xffe0a8,sz:28000,arms:2,type3d:'spiral'},
+    {name:"NGC 1097",name_ru:"NGC 1097",dist_mly:45.0,
+     type:"Barred Seyfert spiral — SBb",type_ru:"Спираль Сейферта с перемычкой — SBb",
+     stars:"~150 billion",stars_ru:"~150 млрд",
+     desc:"NGC 1097 is a barred spiral galaxy hosting a Seyfert 1 nucleus — its central black hole occasionally 'switches on' to bright AGN activity and then dims again. The galaxy has four jets extending from its core — a rare feature. Deep images reveal a stellar halo from ancient galaxy cannibalism.",
+     desc_ru:"NGC 1097 — спираль с перемычкой и ядром Сейферта типа 1: центральная ЧД периодически «включается» как яркое AGN. Четыре джета из ядра — редкость. Глубокие снимки показывают звёздное гало от прошлых поглощений.",
+     x:100000,y:-500000,z:350000,color:0xffd080,sz:22000,arms:2,type3d:'spiral'},
+    {name:"NGC 7793",name_ru:"NGC 7793",dist_mly:12.7,
+     type:"Spiral — SA(s)d flocculent",type_ru:"Спираль — SA(s)d клочковатая",
+     stars:"~50 billion",stars_ru:"~50 млрд",
+     desc:"NGC 7793 is a member of the Sculptor Group located below the MW plane. It is famous for hosting the ultra-luminous X-ray source Holmberg IX X-1 and remarkable 'jelly-fish' jets from a microquasar in its disk. A well-studied flocculent spiral with patchy, non-coherent spiral arms.",
+     desc_ru:"NGC 7793 — член группы Скульптора ниже плоскости МП. Знаменита ультраяркими рентгеновскими источниками и «медузными» джетами микроквазара. Клочковатая спираль с нескоординированными рукавами.",
+     x:20000,y:-350000,z:460000,color:0xc8d0b8,sz:14000,arms:3,type3d:'spiral'},
+    {name:"NGC 3621",name_ru:"NGC 3621",dist_mly:22.0,
+     type:"Spiral — SA(s)d — pure disk",type_ru:"Спираль — SA(s)d — чистый диск",
+     stars:"~80 billion",stars_ru:"~80 млрд",
+     desc:"NGC 3621 is a 'pure disk' spiral with no classical bulge — one of the few large spirals known to lack a central concentration of old stars. It has been used as a Cepheid distance calibrator. Located in Hydra, well below the galactic plane in the southern sky.",
+     desc_ru:"NGC 3621 — спираль с «чистым диском» без балджа: одна из немногих крупных спиралей без центральной концентрации старых звёзд. Использовалась как эталон расстояний по цефеидам.",
+     x:180000,y:-440000,z:250000,color:0xc0c8d0,sz:16000,arms:3,type3d:'spiral'},
+    {name:"NGC 4038 Antennae (South)",name_ru:"NGC 4038 Антенны (Юг)",dist_mly:45.0,
+     type:"Colliding spirals — merger",type_ru:"Сталкивающиеся спирали — слияние",
+     stars:"~300 billion",stars_ru:"~300 млрд",
+     desc:"The Antennae Galaxies (NGC 4038/4039) are the nearest major galaxy merger to Earth, located south of the galactic plane in Corvus. Two once-normal spirals are now in violent collision, triggering the most intense known local starburst. The tidal tails stretch 350,000 light-years.",
+     desc_ru:"Галактики Антенны — ближайшее к Земле крупное слияние галактик, к югу от галактической плоскости в Вороне. Два бывших спиральных объекта столкнулись и породили интенсивнейшую местную вспышку звездообразования. Приливные хвосты — 350 000 световых лет.",
+     x:150000,y:-380000,z:400000,color:0xff9988,sz:24000,type3d:'irregular'},
+    {name:"NGC 4517 (Needle Galaxy South)",name_ru:"NGC 4517 (Игольчатая галактика Юг)",dist_mly:40.0,
+     type:"Spiral — SA(s)cd edge-on",type_ru:"Спираль — SA(s)cd с ребра",
+     stars:"~80 billion",stars_ru:"~80 млрд",
+     desc:"NGC 4517 is a slender edge-on spiral in Virgo, appearing as a thin needle of starlight. One of the thinnest disk galaxies known, its diameter-to-thickness ratio is approximately 10:1. Located at the southern edge of the Virgo Cluster.",
+     desc_ru:"NGC 4517 — тонкая рёберная спираль в Деве. Одна из наиболее плоских дисковых галактик: соотношение диаметра к толщине ~10:1. Расположена на южном крае скопления Девы.",
+     x:80000,y:-300000,z:-200000,color:0xd0d8e8,sz:16000,type3d:'edge-on'},
+
+    // ── MORE NEARBY & MID-RANGE (10–300 Mly) ────────────────────────────────
+    {name:"NGC 5128 / Cen A",name_ru:"NGC 5128 / Цен A",dist_mly:13.0,type:"Radio galaxy — peculiar elliptical",type_ru:"Радиогалактика — пекулярная эллиптическая",stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"Centaurus A is the nearest active radio galaxy, formed by a recent merger with a spiral. Its black hole of 55 million solar masses fires jets detectable from radio to gamma-ray. The dark dust lane across its center is the remnant of the absorbed spiral galaxy.",
+     desc_ru:"Центавр A — ближайшая активная радиогалактика, образованная слиянием с эллиптической. ЧД 55 млн масс Солнца. Пылевая полоса — остаток поглощённой спирали.",
+     x:-140000,y:-55000,z:210000,color:0xffe0a0,sz:22000,type3d:'elliptical'},
+    {name:"NGC 6822 (Barnard's Galaxy)",name_ru:"NGC 6822 (Галактика Барнарда)",dist_mly:1.6,type:"Irregular dwarf — Local Group",type_ru:"Неправильная карликовая — Местная группа",stars:"~10 million",stars_ru:"~10 млн",
+     desc:"Barnard's Galaxy is a small irregular dwarf in the Local Group, one of the nearest galaxies to Earth. It was one of the first galaxies beyond the Magellanic Clouds recognized as a separate galaxy by Edwin Hubble in 1925 using Cepheid variables.",
+     desc_ru:"Галактика Барнарда — маленькая неправильная карликовая в Местной группе. Одна из первых галактик, признанных отдельными системами Хабблом в 1925 году по цефеидам.",
+     x:8000,y:-5000,z:22000,color:0xc8b890,sz:2000,type3d:'irregular'},
+    {name:"Wolf-Lundmark-Melotte (WLM)",name_ru:"Вольф-Лундмарк-Мелотт (WLM)",dist_mly:3.0,type:"Irregular dwarf — Local Group isolated",type_ru:"Неправильная карликовая — изолированная",stars:"~16 million",stars_ru:"~16 млн",
+     desc:"WLM is one of the most isolated members of the Local Group — far from both the Milky Way and Andromeda sub-groups. Despite its isolation, it has been forming stars continuously for 13 billion years. Its ancient stellar population makes it valuable for studying early universe chemistry.",
+     desc_ru:"WLM — один из наиболее изолированных членов Местной группы. Несмотря на изоляцию, непрерывно образует звёзды 13 млрд лет. Древняя звёздная популяция ценна для изучения химии ранней вселенной.",
+     x:15000,y:-28000,z:42000,color:0xb8b090,sz:2500,type3d:'irregular'},
+    {name:"NGC 3031 (M81)",name_ru:"NGC 3031 (M81)",dist_mly:11.8,type:"Grand design spiral — SA(s)ab",type_ru:"Большая спираль — SA(s)ab",stars:"~250 billion",stars_ru:"~250 млрд",
+     desc:"M81 is one of the brightest and most spectacular spirals in the sky. It dominates the M81 Group and gravitationally interacts with M82 and NGC 3077. Its tightly wound arms and bright nucleus make it a textbook grand design spiral.",
+     desc_ru:"M81 — одна из ярчайших спиралей неба. Доминирует в группе M81, взаимодействует с M82 и NGC 3077. Тесно закрученные рукава и яркое ядро — образец классической большой спирали.",
+     x:-90000,y:125000,z:-132000,color:0xffe0b0,sz:20000,arms:2,type3d:'spiral'},
+    {name:"NGC 4631 (Whale Galaxy)",name_ru:"NGC 4631 (Галактика Кит)",dist_mly:25.0,type:"Barred spiral edge-on",type_ru:"Рёберная спираль с перемычкой",stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"The Whale Galaxy is an edge-on barred spiral with a distorted shape caused by gravitational interaction with nearby NGC 4627. A 'halo' of hot X-ray gas and cosmic ray electrons extends far above and below its disk, driven by supernovae in the galaxy's busy star-forming regions.",
+     desc_ru:"Галактика Кит — рёберная спираль с перемычкой, деформированная взаимодействием с NGC 4627. Ореол горячего рентгеновского газа простирается высоко над диском.",
+     x:160000,y:360000,z:-120000,color:0xc8d0e8,sz:18000,type3d:'edge-on'},
+    {name:"M83 (Southern Pinwheel)",name_ru:"M83 (Южная вертушка)",dist_mly:15.0,type:"Barred spiral — SABc face-on",type_ru:"Спираль с перемычкой — SABc лицом",stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"M83 is one of the nearest and brightest barred spirals, sometimes called the Southern Pinwheel. It has hosted 6 supernovae in the 20th–21st century — more than any other galaxy. Its face-on orientation reveals beautiful symmetric blue spiral arms rich in star-forming HII regions.",
+     desc_ru:"M83 — одна из ближайших ярчайших спиралей с перемычкой. Приняла 6 сверхновых в XX–XXI веках — рекорд среди галактик. Лицевая ориентация показывает симметричные синие рукава.",
+     x:-100000,y:-220000,z:280000,color:0xd0e0c0,sz:20000,arms:3,type3d:'spiral'},
+    {name:"NGC 4696 (Perseus/Centaurus)",name_ru:"NGC 4696 (Персей/Центавр)",dist_mly:145.0,type:"cD Elliptical — Centaurus Cluster",type_ru:"cD Эллиптическая — скопление Центавра",stars:"~800 billion",stars_ru:"~800 млрд",
+     desc:"NGC 4696 is the brightest galaxy in the Centaurus Cluster. Hubble images reveal remarkable 'dusty filaments' spiraling into its nucleus — gas being drawn inward toward the central 300-million-solar-mass black hole. The cluster's X-ray gas shows ripples from AGN outbursts.",
+     desc_ru:"NGC 4696 — ярчайшая галактика скопления Центавра. Снимки Хаббла показывают «пылевые нити», спирально втягивающиеся к ядру. ЧД 300 млн масс Солнца. Рябь рентгеновского газа от вспышек AGN.",
+     x:-250000,y:100000,z:450000,color:0xffe8c0,sz:28000,type3d:'elliptical'},
+    {name:"NGC 1132 (Fossil Group)",name_ru:"NGC 1132 (Ископаемая группа)",dist_mly:318.0,type:"Giant elliptical — fossil group",type_ru:"Гигантская эллиптическая — ископаемая группа",stars:"~1 trillion",stars_ru:"~1 трлн",
+     desc:"NGC 1132 is a 'fossil group' — a single giant elliptical galaxy surrounded by an X-ray halo the size of a galaxy cluster. It formed when an entire group of galaxies merged over billions of years into one single massive object, leaving no other bright members behind.",
+     desc_ru:"NGC 1132 — «ископаемая группа»: единственная гигантская эллиптическая, окружённая рентгеновским гало размером со скопление. Образована слиянием целой группы галактик в один объект.",
+     x:-380000,y:50000,z:-680000,color:0xffd8b0,sz:26000,type3d:'elliptical'},
+    {name:"NGC 6052 (Merging Pair)",name_ru:"NGC 6052 (Сливающаяся пара)",dist_mly:230.0,type:"Interacting pair — merger in progress",type_ru:"Взаимодействующая пара — слияние",stars:"~200 billion",stars_ru:"~200 млрд",
+     desc:"NGC 6052 was long thought to be a single peculiar galaxy but is actually two galaxies in the process of merging. Hubble imagery shows the chaotic result — stars from both galaxies flung into new orbits, creating loops and tails. It will eventually settle into a single elliptical.",
+     desc_ru:"NGC 6052 долго считалась одной странной галактикой, но это два объекта в процессе слияния. Снимки Хаббла показывают хаос: звёзды выброшены на новые орбиты, образуя петли и хвосты.",
+     x:280000,y:350000,z:150000,color:0xffaa88,sz:18000,type3d:'irregular'},
+    {name:"NGC 1275 (Perseus A)",name_ru:"NGC 1275 (Персей A)",dist_mly:235.0,type:"cD Elliptical / Seyfert — Perseus Cluster",type_ru:"cD Эллиптическая / Сейферт — скопление Персея",stars:"~1 trillion",stars_ru:"~1 трлн",
+     desc:"NGC 1275 (Perseus A) is the dominant galaxy of the Perseus Cluster, which is one of the most massive and X-ray luminous clusters known. Its central AGN generates sound waves in the cluster gas — a B-flat note 57 octaves below middle C. Astronomers have measured these pressure ripples as the 'cosmic symphony'.",
+     desc_ru:"NGC 1275 — доминирующая галактика скопления Персея. AGN генерирует звуковые волны в газе скопления — нота си-бемоль на 57 октав ниже средней. Астрономы измерили эти пульсации как «космическую симфонию».",
+     x:350000,y:400000,z:200000,color:0xffe0b8,sz:34000,type3d:'elliptical'},
+    {name:"Abell 426 (Perseus Cluster)",name_ru:"Абель 426 (Скопление Персея)",dist_mly:240.0,type:"Galaxy cluster — X-ray brightest",type_ru:"Скопление галактик — рентгеновски ярчайшее",stars:"~10 trillion",stars_ru:"~10 трлн",
+     desc:"The Perseus Cluster (Abell 426) is the brightest X-ray galaxy cluster in the sky. The Chandra X-ray Observatory revealed spectacular pressure ripples in its intracluster gas — the 'sound' of its central black hole. The cluster extends 8 million light-years across.",
+     desc_ru:"Скопление Персея — ярчайшее рентгеновское скопление галактик неба. Обсерватория Чандра выявила пульсации в межгалактическом газе — «звук» центральной чёрной дыры. Протяжённость — 8 млн световых лет.",
+     x:370000,y:420000,z:220000,color:0xffd0a0,sz:60000,type3d:'elliptical'},
+    {name:"NGC 4874 Twin (Coma B)",name_ru:"Кома B (скопление Волосы Вероники)",dist_mly:330.0,type:"Galaxy cluster — rich",type_ru:"Богатое скопление галактик",stars:"~50 trillion",stars_ru:"~50 трлн",
+     desc:"The Coma Cluster (Abell 1656) is one of the densest known galaxy clusters, containing over 1,000 galaxies within a volume of 20 million light-years. It was pivotal in proving dark matter exists — cluster galaxies move too fast to be held by visible matter alone.",
+     desc_ru:"Скопление Волосы Вероники — одно из плотнейших скоплений галактик: более 1000 объектов в объёме 20 млн световых лет. Ключевое для доказательства тёмной материи.",
+     x:100000,y:510000,z:-660000,color:0xffd8c0,sz:55000,type3d:'elliptical'},
+
+    // ── VERY DISTANT (500 Mly – 5 Bly) ─────────────────────────────────────
+    {name:"3C 273 (Quasar)",name_ru:"3C 273 (Квазар)",dist_mly:2400.0,type:"Quasar — brightest in sky",type_ru:"Квазар — ярчайший на небе",stars:"~1 trillion",stars_ru:"~1 трлн",
+     desc:"3C 273 is the brightest and nearest quasar visible from Earth, located 2.4 billion light-years away. Despite its enormous distance, it appears as a faint star in amateur telescopes. At its heart is a black hole of 886 million solar masses actively consuming matter — 4 trillion times the luminosity of the Sun.",
+     desc_ru:"3C 273 — ярчайший квазар, видимый с Земли (2,4 млрд световых лет). Несмотря на расстояние, виден в любительский телескоп. ЧД 886 млн масс Солнца. Светимость — 4 трлн Солнц.",
+     x:-200000,y:500000,z:-2000000,color:0xffffff,sz:60000,type3d:'elliptical'},
+    {name:"PKS 0637-752 (Quasar Jet)",name_ru:"PKS 0637-752 (Квазар с джетом)",dist_mly:6000.0,type:"Radio-loud quasar with jet",type_ru:"Радиогромкий квазар с джетом",stars:"~1 trillion",stars_ru:"~1 трлн",
+     desc:"PKS 0637-752 was the first source imaged by the Chandra X-ray Observatory in 1999. It has a relativistic jet extending 100,000 light-years — one of the longest ever observed. Located 6 billion light-years away in the southern hemisphere deep sky.",
+     desc_ru:"PKS 0637-752 — первый источник, сфотографированный обсерваторией Чандра в 1999 году. Релятивистский джет длиной 100 000 световых лет — один из длиннейших наблюдаемых.",
+     x:100000,y:-900000,z:-1500000,color:0xffee88,sz:80000,type3d:'elliptical'},
+    {name:"HE 0435-1223 (Einstein Cross)",name_ru:"HE 0435-1223 (Крест Эйнштейна)",dist_mly:10200.0,type:"Quasar — gravitationally lensed",type_ru:"Квазар — гравитационно линзированный",stars:"unknown",stars_ru:"неизвестно",
+     desc:"HE 0435-1223 is a quasar lensed into four images by a foreground galaxy — creating an 'Einstein Cross' pattern. Used to measure the Hubble constant via time delays between the four lensed images. The background quasar is 10 billion light-years away.",
+     desc_ru:"HE 0435-1223 — квазар, расщеплённый в четыре изображения линзирующей галактикой — «Крест Эйнштейна». Используется для измерения постоянной Хаббла по временным задержкам.",
+     x:-500000,y:200000,z:-3500000,color:0xaaddff,sz:90000,type3d:'elliptical'},
+    {name:"Markarian 501",name_ru:"Маркарян 501",dist_mly:456.0,type:"BL Lac / Blazar",type_ru:"BL Лаc / Блазар",stars:"~500 billion",stars_ru:"~500 млрд",
+     desc:"Markarian 501 is a blazar — a galaxy with its relativistic jet pointed almost directly at Earth. During outbursts it brightens dramatically and emits TeV gamma rays. It is a primary target for high-energy astrophysics and Cherenkov telescopes studying extreme particle acceleration.",
+     desc_ru:"Маркарян 501 — блазар: галактика с релятивистским джетом, направленным почти на Землю. Во время вспышек резко яреет и испускает гамма-лучи. Главная цель черенковских телескопов.",
+     x:-300000,y:600000,z:500000,color:0xbbaaff,sz:30000,type3d:'elliptical'},
+    {name:"Centaurus B (NGC 5128 twin)",name_ru:"Центавр B (NGC 5128 двойник)",dist_mly:130.0,type:"Radio galaxy — elliptical",type_ru:"Радиогалактика — эллиптическая",stars:"~500 billion",stars_ru:"~500 млрд",
+     desc:"Centaurus B is a bright radio galaxy at 130 Mly, one of the most luminous radio sources in the southern sky. Unlike the better-known Centaurus A, it lacks a prominent dust lane. Its radio lobes extend far beyond the visible galaxy.",
+     desc_ru:"Центавр B — яркая радиогалактика в 130 млн световых лет, один из мощнейших радиоисточников южного неба. В отличие от Центавра A, без выраженной пылевой полосы.",
+     x:-280000,y:-350000,z:600000,color:0xffd0b0,sz:26000,type3d:'elliptical'},
+    {name:"SDSS J1030+0524 (QSO)",name_ru:"SDSS J1030+0524 (КСО)",dist_mly:12700.0,type:"High-redshift quasar z=6.28",type_ru:"Квазар высокого красного смещения z=6,28",stars:"unknown",stars_ru:"неизвестно",
+     desc:"One of the most distant quasars discovered at z=6.28, formed when the universe was only about 900 million years old. Extremely massive black hole (~1 billion solar masses) so early in cosmic history challenges models of black hole formation. Among the first sources to show signatures of the Epoch of Reionization.",
+     desc_ru:"Один из наиболее удалённых квазаров (z=6,28), образованный когда вселенной было лишь ~900 млн лет. Чрезвычайно массивная ЧД (~1 млрд масс Солнца) в столь ранние времена бросает вызов моделям. Один из первых источников с признаками Эпохи реионизации.",
+     x:600000,y:300000,z:3800000,color:0xffaa44,sz:120000,type3d:'elliptical'},
+    {name:"MACS J1149+2223 (Hubble FF)",name_ru:"MACS J1149+2223 (Полевые Хаббла)",dist_mly:5000.0,type:"Galaxy cluster — gravitational lens",type_ru:"Скопление галактик — гравитационная линза",stars:"~50 trillion",stars_ru:"~50 трлн",
+     desc:"MACS J1149+2223 is one of the Hubble Frontier Fields clusters — massive galaxy clusters used as natural gravitational telescopes to study the ultra-distant universe behind them. In 2016 a star named 'Icarus' was seen through this cluster's lensing — the most distant individual star ever observed, 9 billion light-years away.",
+     desc_ru:"MACS J1149+2223 — одно из скоплений «Рубежных полей Хаббла»: массивные скопления, используемые как природные гравитационные телескопы. В 2016 году через линзирование этого скопления наблюдалась звезда «Икар» — наиболее удалённая отдельная звезда (9 млрд св. лет).",
+     x:400000,y:700000,z:-1200000,color:0xddeeff,sz:100000,type3d:'elliptical'},
+    {name:"GN-z11 (Most Distant Known)",name_ru:"GN-z11 (Наиболее удалённая)",dist_mly:32000.0,type:"Ultra-high-redshift galaxy z=11.1",type_ru:"Галактика сверхвысокого красного смещения",stars:"~1 billion",stars_ru:"~1 млрд",
+     desc:"GN-z11 was (until 2022) the most distant galaxy ever confirmed, at redshift z=11.1 — seen as it was just 400 million years after the Big Bang. It is 25 times smaller than the Milky Way but forming stars 20 times faster. James Webb confirmed and refined the redshift measurement in 2022.",
+     desc_ru:"GN-z11 — до 2022 года наиболее удалённая подтверждённая галактика (z=11,1): наблюдается в состоянии через 400 млн лет после Большого взрыва. В 25 раз меньше МП, но образует звёзды в 20 раз быстрее. Джеймс Уэбб уточнил красное смещение в 2022 году.",
+     x:-800000,y:400000,z:8000000,color:0xffcc88,sz:200000,type3d:'irregular'},
+    {name:"JADES-GS-z14-0 (Webb Record)",name_ru:"JADES-GS-z14-0 (Рекорд Уэбба)",dist_mly:33500.0,type:"Most distant confirmed galaxy z=14.32",type_ru:"Наиболее удалённая галактика z=14,32",stars:"unknown",stars_ru:"неизвестно",
+     desc:"JADES-GS-z14-0 became the most distant confirmed galaxy in 2024, observed by JWST at redshift z=14.32 — just 290 million years after the Big Bang. Its surprisingly bright UV luminosity challenges galaxy formation models. JWST detected oxygen emission lines, indicating the galaxy had already enriched its gas with heavy elements surprisingly early.",
+     desc_ru:"JADES-GS-z14-0 стала наиболее удалённой подтверждённой галактикой в 2024 году (z=14,32, 290 млн лет после Большого взрыва). Неожиданно яркая ультрафиолетовая светимость бросает вызов моделям. JWST обнаружил линии кислорода — неожиданно раннее обогащение газа тяжёлыми элементами.",
+     x:-400000,y:600000,z:9000000,color:0xff9955,sz:250000,type3d:'irregular'},
+    {name:"Hercules–Corona Borealis Wall",name_ru:"Великая стена Геркулеса — Северной Короны",dist_mly:10000.0,type:"Superstructure — largest known",type_ru:"Сверхструктура — крупнейшая известная",stars:"unknown",stars_ru:"неизвестно",
+     desc:"The Hercules–Corona Borealis Great Wall is the largest known structure in the observable universe — a concentration of galaxies spanning approximately 10 billion light-years. Discovered in 2013 through gamma-ray burst clustering, it challenges the cosmological principle of large-scale homogeneity.",
+     desc_ru:"Великая стена Геркулеса — Северной Короны — крупнейшая известная структура вселенной: концентрация галактик протяжённостью ~10 млрд световых лет. Открыта в 2013 году через кластеризацию гамма-всплесков. Бросает вызов принципу крупномасштабной однородности.",
+     x:1000000,y:800000,z:3000000,color:0xffddaa,sz:800000,type3d:'irregular'},
+    {name:"NGC 7619 (Pegasus Cluster)",name_ru:"NGC 7619 (Скопление Пегаса)",dist_mly:200.0,type:"Elliptical — Pegasus I cluster",type_ru:"Эллиптическая — скопление Пегас I",stars:"~600 billion",stars_ru:"~600 млрд",
+     desc:"NGC 7619 is the dominant galaxy of the Pegasus I cluster. Its recession velocity was crucial in early measurements of the Hubble constant in the 1970s. The cluster contains ~200 galaxies, many with highly chaotic shapes suggesting frequent interactions.",
+     desc_ru:"NGC 7619 — доминирующая галактика скопления Пегас I. Скорость удаления была ключевой для ранних измерений постоянной Хаббла в 1970-х. Скопление содержит ~200 галактик.",
+     x:-420000,y:200000,z:-500000,color:0xffd8b0,sz:24000,type3d:'elliptical'},
+    {name:"NGC 383 (Radio Galaxy Chain)",name_ru:"NGC 383 (Цепочка радиогалактик)",dist_mly:215.0,type:"Radio elliptical — Zwicky chain",type_ru:"Радиоэллиптическая — цепочка Цвикки",stars:"~500 billion",stars_ru:"~500 млрд",
+     desc:"NGC 383 is the dominant radio source in a linear chain of galaxies known as Arp 331. Its radio jets extend nearly 2 million light-years — among the largest structures produced by a single galaxy. The jet termination points glow as radio 'hotspots'.",
+     desc_ru:"NGC 383 — главный радиоисточник в линейной цепочке галактик Арп 331. Радиоджеты протянулись почти на 2 млн световых лет. Точки окончания джетов светятся как радио «горячие точки».",
+     x:280000,y:-180000,z:-620000,color:0xffcc90,sz:28000,type3d:'elliptical'},
+    {name:"NGC 5256 (Markarian 266)",name_ru:"NGC 5256 (Маркарян 266)",dist_mly:350.0,type:"LIRG — merging pair",type_ru:"ЛИК — сливающаяся пара",stars:"~200 billion",stars_ru:"~200 млрд",
+     desc:"NGC 5256 is a luminous infrared galaxy formed by two merging spirals. Both nuclei remain visible in Hubble imaging, separated by 13,000 light-years. The merger drives intense star formation and dual AGN activity. A preview of what the Milky Way–Andromeda merger may look like.",
+     desc_ru:"NGC 5256 — яркая инфракрасная галактика из двух сливающихся спиралей. Оба ядра видны на снимках Хаббла. Слияние вызывает интенсивное звездообразование и двойное AGN.",
+     x:200000,y:500000,z:300000,color:0xff9966,sz:20000,type3d:'irregular'},
+    {name:"Abell 370 (Gravitational Lens)",name_ru:"Абель 370 (Гравитационная линза)",dist_mly:4000.0,type:"Galaxy cluster — gravitational lens",type_ru:"Скопление галактик — гравитационная линза",stars:"~20 trillion",stars_ru:"~20 трлн",
+     desc:"Abell 370 is a galaxy cluster famous for its gravitational lensing arcs. It was one of the first clusters where a giant luminous arc was observed (1987) — the lensed image of a background galaxy. It is one of the six Hubble Frontier Fields clusters used to probe the earliest galaxies.",
+     desc_ru:"Абель 370 — знаменитое скопление с гравитационными дугами. Одно из первых, где наблюдалась гигантская световая дуга (1987) — линзированное изображение фоновой галактики. Одно из шести скоплений «Рубежных полей Хаббла».",
+     x:-600000,y:-200000,z:-1200000,color:0xddeeff,sz:95000,type3d:'elliptical'},
+    {name:"Sloan Great Wall",name_ru:"Великая стена Слоана",dist_mly:1000.0,type:"Galaxy filament superstructure",type_ru:"Нить галактик — сверхструктура",stars:"unknown",stars_ru:"неизвестно",
+     desc:"The Sloan Great Wall is a vast filament of galaxy clusters stretching 1.37 billion light-years — the longest known structure at the time of discovery (2003) from the Sloan Digital Sky Survey. It is composed of several galaxy clusters and walls connected by galaxy filaments in the cosmic web.",
+     desc_ru:"Великая стена Слоана — огромная нить скоплений протяжённостью 1,37 млрд световых лет — крупнейшая известная структура на момент открытия (2003, SDSS). Состоит из скоплений и стен, соединённых нитями в космической паутине.",
+     x:800000,y:100000,z:-600000,color:0xffd8a0,sz:400000,type3d:'irregular'},
+    {name:"Bullet Cluster (1E 0657-558)",name_ru:"Кластер Пуля (1E 0657-558)",dist_mly:3800.0,type:"Merging cluster — dark matter proof",type_ru:"Сливающееся скопление — доказательство ТМ",stars:"~20 trillion",stars_ru:"~20 трлн",
+     desc:"The Bullet Cluster is the most famous proof of dark matter — two galaxy clusters passed through each other 150 million years ago. X-ray gas (visible matter) slowed down and separated from the gravitational center mapped by lensing (dark matter). The Nobel-worthy result confirmed dark matter is real and distinct from baryonic matter.",
+     desc_ru:"Кластер Пуля — наиболее известное доказательство тёмной материи: два скопления прошли сквозь друг друга 150 млн лет назад. Рентгеновский газ затормозился, а гравитационный центр (ТМ) продолжил движение. Результат достоин Нобелевской премии.",
+     x:-700000,y:-500000,z:-900000,color:0xaaccff,sz:110000,type3d:'elliptical'},
+    {name:"NGC 1569 (Starburst Dwarf)",name_ru:"NGC 1569 (Вспыхивающая карликовая)",dist_mly:11.0,type:"Irregular starburst dwarf",type_ru:"Неправильная вспыхивающая карликовая",stars:"~500 million",stars_ru:"~500 млн",
+     desc:"NGC 1569 is a tiny starburst dwarf galaxy that exploded into star formation approximately 25 million years ago — producing stars at 100× the rate normal for its size. It contains two massive super star clusters, each as luminous as 100,000 suns, and is blowing out hot gas in a galactic-scale superwind.",
+     desc_ru:"NGC 1569 — маленькая вспыхивающая карликовая галактика: 25 млн лет назад взрыв звездообразования в 100 раз интенсивнее нормы. Два массивных сверхскопления и галактический суперветер.",
+     x:80000,y:100000,z:180000,color:0xff8866,sz:3000,type3d:'irregular'},
+    {name:"NGC 7552 (Grus Quartet)",name_ru:"NGC 7552 (Квартет Журавля)",dist_mly:62.0,type:"Barred spiral — starburst",type_ru:"Спираль с перемычкой — вспышка",stars:"~100 billion",stars_ru:"~100 млрд",
+     desc:"NGC 7552 is a member of the Grus Quartet — four galaxies in Grus interacting gravitationally. Its ring-shaped starburst nuclear region glows intensely in infrared. The four Grus galaxies are at similar distances and likely heading for eventual merger.",
+     desc_ru:"NGC 7552 — член Квартета Журавля: четыре галактики в Журавле, гравитационно взаимодействующие. Кольцеобразное ядро вспышки ярко светится в инфракрасном. Четыре галактики, вероятно, в итоге сольются.",
+     x:50000,y:-480000,z:600000,color:0xff9966,sz:18000,arms:2,type3d:'spiral'},
+    {name:"NGC 1277 Group (Perseus)",name_ru:"Группа NGC 1277 (Персей)",dist_mly:220.0,type:"Compact galaxy group",type_ru:"Компактная группа галактик",stars:"~2 trillion",stars_ru:"~2 трлн",
+     desc:"The Perseus Cluster vicinity contains NGC 1277, an overmassive compact galaxy where the black hole comprises 59% of the central stellar mass. Nearby galaxies NGC 1278 and NGC 1281 form a small group embedded in the larger Perseus supercluster.",
+     desc_ru:"Окрестности скопления Персея содержат NGC 1277 — сверхмассивную компактную галактику. Соседние NGC 1278 и 1281 образуют малую группу в суперскоплении Персея.",
+     x:340000,y:380000,z:190000,color:0xffd0a0,sz:30000,type3d:'elliptical'},
+    {name:"Circinus Galaxy",name_ru:"Галактика Циркуль",dist_mly:13.0,type:"Seyfert 2 spiral — Zone of Avoidance",type_ru:"Спираль Сейферта 2 — зона избегания",stars:"~30 billion",stars_ru:"~30 млрд",
+     desc:"The Circinus Galaxy is one of the nearest Seyfert 2 galaxies, almost hidden behind the Milky Way's dust (only 4° from the galactic plane). It has a spectacular biconal ionization cone driven by its active nucleus. One of the nearest AGN to Earth, yet only discovered in 1977.",
+     desc_ru:"Галактика Циркуль — одна из ближайших галактик Сейферта 2, почти скрытая пылью МП (всего 4° от плоскости). Двойной конус ионизации от активного ядра. Открыта лишь в 1977 году.",
+     x:-110000,y:-60000,z:220000,color:0xd0c8a0,sz:14000,arms:2,type3d:'spiral'},
+    {name:"NGC 4038/39 (Antennae South)",name_ru:"NGC 4038/39 (Антенны Юг)",dist_mly:45.0,type:"Merging galaxy pair",type_ru:"Сливающаяся пара галактик",stars:"~300 billion",stars_ru:"~300 млрд",
+     desc:"The Antennae Galaxies form the nearest example of two large spiral galaxies in the advanced stages of merger. The bright blue knots are superstar clusters triggered by the collision. Long tidal tails extend 350,000 light-years — giving the system its name.",
+     desc_ru:"Антенны — ближайший пример двух крупных спиралей в продвинутой стадии слияния. Синие узлы — суперзвёздные скопления. Приливные хвосты 350 000 световых лет дали системе название.",
+     x:140000,y:-390000,z:400000,color:0xff9988,sz:22000,type3d:'irregular'},
+    {name:"NGC 4889 South (Coma BCG)",name_ru:"NGC 4889 Юг (BCG Комы)",dist_mly:310.0,type:"cD Giant elliptical",type_ru:"cD Гигантская эллиптическая",stars:"~1 trillion",stars_ru:"~1 трлн",
+     desc:"Companion of the main Coma BCG viewed from below the galactic plane — a second perspective on the Coma Cluster's dominant members, one of the richest nearby clusters used as a dark matter laboratory.",
+     desc_ru:"Спутник главного BCG Комы, видимый снизу от галактической плоскости — второй взгляд на доминирующие члены одного из богатейших ближних скоплений.",
+     x:90000,y:-520000,z:-600000,color:0xffe8d0,sz:30000,type3d:'elliptical'},
   ];
 
   // ── Build realistic point-cloud galaxy ────────────────────────────────────
@@ -1677,40 +2265,32 @@ let sgrAHit=null;
 
   // Andromeda: bring close enough to be visible without zooming out
   // At r=520 default camera, objects at ~30000 units are clearly visible
-  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).x=-18000;
-  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).y=22000;
-  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).z=-75000;
-  GALAXY_DATA.find(g=>g.name.includes('Andromeda')).sz=38000;
+  // Andromeda position baked into GALAXY_DATA above — no override needed
 
   // Bring LMC/SMC closer too — they should be prominent
-  GALAXY_DATA.find(g=>g.name.includes('Large Magellanic')).x=-5000;
-  GALAXY_DATA.find(g=>g.name.includes('Large Magellanic')).y=-12000;
-  GALAXY_DATA.find(g=>g.name.includes('Large Magellanic')).z=18000;
-  GALAXY_DATA.find(g=>g.name.includes('Large Magellanic')).sz=5500;
-  GALAXY_DATA.find(g=>g.name.includes('Small Magellanic')).x=-8500;
-  GALAXY_DATA.find(g=>g.name.includes('Small Magellanic')).y=-15000;
-  GALAXY_DATA.find(g=>g.name.includes('Small Magellanic')).z=24000;
-  GALAXY_DATA.find(g=>g.name.includes('Small Magellanic')).sz=3000;
+  // LMC/SMC positions baked into GALAXY_DATA above
 
+  window._galaxyDataRef=GALAXY_DATA;
   GALAXY_DATA.forEach(buildGalaxyCloud);
 
-  // ── Deep-field background — hundreds of tiny distant galaxy points ────────
+  // ── Deep-field background — thousands of tiny distant galaxy points ────────
   (()=>{
     const dfGeo=new THREE.BufferGeometry();
-    const dfN=800;
+    const dfN=3000;
     const dfPos=new Float32Array(dfN*3);
     const dfCol=new Float32Array(dfN*3);
     const rng=_rng(42);
     for(let i=0;i<dfN;i++){
       const th=rng()*Math.PI*2,ph=Math.acos(2*rng()-1);
-      const r=500000+rng()*2000000;
+      const r=500000+rng()*4000000;
       dfPos[i*3]=r*Math.sin(ph)*Math.cos(th);
       dfPos[i*3+1]=r*Math.cos(ph)*(0.3+rng()*0.5);
       dfPos[i*3+2]=r*Math.sin(ph)*Math.sin(th);
-      const t=rng(),b=0.18+rng()*0.4;
-      if(t<0.5){dfCol[i*3]=b;dfCol[i*3+1]=b*0.88;dfCol[i*3+2]=b*0.62;}
-      else if(t<0.75){dfCol[i*3]=b*0.65;dfCol[i*3+1]=b*0.78;dfCol[i*3+2]=b;}
-      else{dfCol[i*3]=b;dfCol[i*3+1]=b*0.55;dfCol[i*3+2]=b*0.38;}
+      const t=rng(),b=0.14+rng()*0.35;
+      if(t<0.45){dfCol[i*3]=b;dfCol[i*3+1]=b*0.88;dfCol[i*3+2]=b*0.62;}
+      else if(t<0.7){dfCol[i*3]=b*0.65;dfCol[i*3+1]=b*0.78;dfCol[i*3+2]=b;}
+      else if(t<0.85){dfCol[i*3]=b;dfCol[i*3+1]=b*0.55;dfCol[i*3+2]=b*0.38;}
+      else{dfCol[i*3]=b*0.9;dfCol[i*3+1]=b*0.9;dfCol[i*3+2]=b;}
     }
     dfGeo.setAttribute('position',new THREE.BufferAttribute(dfPos,3));
     dfGeo.setAttribute('color',new THREE.BufferAttribute(dfCol,3));
@@ -1881,6 +2461,9 @@ function buildSystem(star){
   // clear asteroid/Kuiper belt points (Solar System only — always remove old ones)
   if(window._beltData){systemScene.remove(window._beltData.pts);window._beltData=null;}
   if(window._kbData){systemScene.remove(window._kbData.pts);window._kbData=null;}
+  // Clear small bodies from previous solar system visit
+  (window._sysSmallBodyObjs||[]).forEach(o=>{systemScene.remove(o.mesh);if(o.hit)systemScene.remove(o.hit);});
+  window._sysSmallBodyObjs=[];
   // clear old moons
   sysMoonObjs.forEach(o=>{systemScene.remove(o.mesh);systemScene.remove(o.ring);if(o.hit)systemScene.remove(o.hit);});
   sysMoonObjs=[];
@@ -1892,6 +2475,7 @@ function buildSystem(star){
   if(sysCentralMesh)systemScene.remove(sysCentralMesh);
   if(sysCentralHit)systemScene.remove(sysCentralHit);
   if(sysLightMesh)systemScene.remove(sysLightMesh);
+  if(window._sysPointLight){systemScene.remove(window._sysPointLight);window._sysPointLight=null;}
 
   const planets=(planetDB[star.name]||[]);
   const maxOrb=planets.length>0?Math.max(...planets.map(p=>p.orbit)):1;
@@ -1938,6 +2522,7 @@ function buildSystem(star){
 
   // Point light
   const pl=new THREE.PointLight(new THREE.Color(starVisCol(star)),2.5,orbitScene(maxOrb)*4);systemScene.add(pl);
+  window._sysPointLight=pl;
 
   // Star hit sphere (slightly bigger than visual for easy tapping)
   sysCentralHit=new THREE.Mesh(new THREE.SphereGeometry(Math.max(starR,8),8,8),new THREE.MeshBasicMaterial({visible:false}));
@@ -2241,9 +2826,10 @@ function buildSystem(star){
        desc_ru:"Первый известный межзвёздный объект через Солнечную систему (обнаружен в 2017 г.). Крайняя вытянутость, необычное негравитационное ускорение и красноватая поверхность остаются предметом дискуссий. Консенсус: фрагмент азотного льда с объекта типа Плутона другой планетной системы."},
     ];
 
-    // Add small body meshes
+    // Small bodies (comets/asteroids) — Solar System only
+    if(star.isSun){
     let sysSmallBodyObjs=window._sysSmallBodyObjs||[];
-    sysSmallBodyObjs.forEach(o=>{systemScene.remove(o.mesh);if(o.hit)systemScene.remove(o.hit);});
+    sysSmallBodyObjs.forEach(o=>{systemScene.remove(o.mesh);if(o.hit)systemScene.remove(o.hit);if(o.glow)systemScene.remove(o.glow);});
     sysSmallBodyObjs=[];window._sysSmallBodyObjs=sysSmallBodyObjs;
 
     SMALL_BODIES.forEach(b=>{
@@ -2257,15 +2843,17 @@ function buildSystem(star){
       const mesh=new THREE.Mesh(new THREE.SphereGeometry(sz,6,5),new THREE.MeshBasicMaterial({color:b.color}));
       mesh.position.copy(pos);systemScene.add(mesh);
       // Glow for comets
-      if(b.type.includes('Comet')||b.type.includes('Interstellar')){
-        const cg=new THREE.Sprite(makeGlowMat(b.color,0.6));
+      let cg=null;
+      if(b.type&&(b.type.includes('Comet')||b.type.includes('Interstellar'))){
+        cg=new THREE.Sprite(makeGlowMat(b.color,0.6));
         cg.scale.set(8,8,1);cg.position.copy(pos);systemScene.add(cg);
       }
       const hit=new THREE.Mesh(new THREE.SphereGeometry(Math.max(sz*3,8),6,6),new THREE.MeshBasicMaterial({visible:false}));
       hit.position.copy(pos);hit.userData={smallBody:b};systemScene.add(hit);
       const omega=b.period?(2*Math.PI/b.period):0;
-      sysSmallBodyObjs.push({mesh,hit,body:b,angle,omega,orbitR:r,py});
+      sysSmallBodyObjs.push({mesh,hit,glow:b.type&&(b.type.includes('Comet')||b.type.includes('Interstellar'))?cg:null,body:b,angle,omega,orbitR:r,py});
     });
+    } // end if(star.isSun) small bodies
   }
 }
 
@@ -2551,6 +3139,14 @@ function updateGlows(){
 function animate(ts){
   requestAnimationFrame(animate);
   lastTs=lastTs||ts;
+  // Apply mini joystick when unlocked
+  if(!cameraLocked&&(mjDx||mjDy)){
+    const c=mode==='system'?sysCtrl:ctrl;
+    const lt=mode==='system'?sysLookTarget:galaxyLookTarget;
+    const spd=c.r*0.007;
+    const rx=Math.cos(c.theta-Math.PI/2),rz=Math.sin(c.theta-Math.PI/2);
+    lt.x+=rx*mjDx*spd; lt.z+=rz*mjDx*spd; lt.y-=mjDy*spd;
+  }
   updateCam();
   if(mode==='system')updateOrbits(ts);
   if(mode==='galaxy'){renderer.render(galaxyScene,galaxyCam);}
@@ -2597,7 +3193,7 @@ function enterSystem(star){
     sysUI.classList.add('show');
     document.getElementById('sysTitleEl').textContent=star.name.toUpperCase();
     document.getElementById('legendEl').style.display='none';
-    document.getElementById('listFab').style.display='none';
+    document.getElementById('listFab').closest('div[style*="flex-direction"]').style.display='none';
     document.getElementById('sysTimeSlider').value=jdToSlider(sysJD);
     document.getElementById('sysDateLbl').textContent=formatSysDate(sysJD);
     document.getElementById('sysPlayBtn').textContent='▶';
@@ -2617,7 +3213,7 @@ function exitSystem(){
     document.body.classList.remove('in-system');
     sysUI.classList.remove('show');
     document.getElementById('legendEl').style.display='';
-    document.getElementById('listFab').style.display='';
+    document.getElementById('listFab').closest('div[style*="flex-direction"]').style.display='';
     closeSheet();closePlanet();currentStar=null;
     fadeEl.classList.remove('show');
   },350);
@@ -2632,7 +3228,35 @@ function syncLockBtn(){
   const free=!cameraLocked;
   lockBtn.textContent=free?'🔓':'🔒';
   lockBtn.classList.toggle('free',free);
+  // Show/hide mini joystick
+  const mj=document.getElementById('miniJoy');
+  if(mj)mj.style.display=free?'block':'none';
+  if(!free){mjDx=0;mjDy=0;const mk=document.getElementById('miniKnob');if(mk){mk.style.left='23px';mk.style.top='23px';}}
 }
+
+// Mini joystick wiring
+let mjDx=0,mjDy=0,mjActive=false;
+const MJ_MAX=20;
+(()=>{
+  const mj=document.getElementById('miniJoy');
+  const mk=document.getElementById('miniKnob');
+  if(!mj||!mk)return;
+  let ox=0,oy=0;
+  function getC(){const r=mj.getBoundingClientRect();return{x:r.left+36,y:r.top+36};}
+  function setK(dx,dy){
+    const len=Math.hypot(dx,dy),c=Math.min(len,MJ_MAX);
+    const nx=len>0?dx/len*c:0,ny=len>0?dy/len*c:0;
+    mjDx=nx/MJ_MAX;mjDy=ny/MJ_MAX;
+    mk.style.left=(23+nx)+'px';mk.style.top=(23+ny)+'px';
+  }
+  function end(){mjActive=false;mjDx=0;mjDy=0;mk.style.left='23px';mk.style.top='23px';}
+  mj.addEventListener('mousedown',e=>{e.stopPropagation();mjActive=true;const c=getC();ox=c.x;oy=c.y;setK(e.clientX-ox,e.clientY-oy);});
+  window.addEventListener('mousemove',e=>{if(mjActive)setK(e.clientX-ox,e.clientY-oy);});
+  window.addEventListener('mouseup',()=>{if(mjActive)end();});
+  mj.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();mjActive=true;const t=e.touches[0];const c=getC();ox=c.x;oy=c.y;setK(t.clientX-ox,t.clientY-oy);},{passive:false});
+  window.addEventListener('touchmove',e=>{if(mjActive){const t=e.touches[0];setK(t.clientX-ox,t.clientY-oy);}},{passive:true});
+  window.addEventListener('touchend',()=>{if(mjActive)end();},{passive:true});
+})();
 
 // Home button — zoom to Solar System and lock camera
 addTap(document.getElementById('homeBtn'),()=>{
@@ -2680,7 +3304,7 @@ const raycaster=new THREE.Raycaster();
 const mouse=new THREE.Vector2();
 
 function getHitTargets(){
-  if(mode==='galaxy')return [...starGalaxyObjs.map(o=>o.hit),(window._extGalaxyHits||[]),sgrAHit].flat().filter(Boolean);
+  if(mode==='galaxy')return [...starGalaxyObjs.map(o=>o.hit),(window._extGalaxyHits||[]),(window._extraGalaxyHits||[]),sgrAHit].flat().filter(Boolean);
   const sb=(window._sysSmallBodyObjs||[]).map(o=>o.hit);
   return [...sysMoonObjs.map(o=>o.hit),...sysPlanetObjs.map(o=>o.hit),sysCentralHit,...sysProbeObjs.map(o=>o.hit),...sb].filter(Boolean);
 }
@@ -2696,10 +3320,16 @@ function handleTap(cx,cy){
   const ud=hits[0].object.userData;
   if(mode==='galaxy'){
     if(ud.isSgrA){
-      // Zoom into galactic center before opening info
       const gc=window._GC||{x:1200,y:0,z:7000};
-      const gcPos=new THREE.Vector3(gc.x,gc.y,gc.z);
-      zoomToGalaxyObject(gcPos,()=>{openSgrA();});
+      zoomToGalaxyObject(new THREE.Vector3(gc.x,gc.y,gc.z),()=>{openSgrA();});
+    }
+    else if(ud.nebulaName){
+      // Zoom toward the nebula/void then open info
+      const hpos=hits[0].object.position.clone();
+      const dist=hpos.length();
+      // For Boötes Void: just open sheet (too big to "zoom into")
+      if(dist>200000){openNebula(ud);}
+      else{zoomToGalaxyObject(hpos,()=>{openNebula(ud);});}
     }
     else if(ud.galaxy){
       // Zoom toward galaxy then open info
@@ -2708,8 +3338,21 @@ function handleTap(cx,cy){
     }
     else if(ud.star){
       const sObj=starGalaxyObjs.find(o=>o.star===ud.star);
-      if(sObj){zoomToGalaxyObject(sObj.mesh.position,()=>enterSystem(ud.star));}
-      else{enterSystem(ud.star);}
+      const now=Date.now();
+      const lastTap=ud.star._lastTap||0;
+      ud.star._lastTap=now;
+      if(now-lastTap<500){
+        // Double tap → immediately enter system (no animation)
+        ud.star._lastTap=0;
+        enterSystem(ud.star);
+      } else {
+        // Single tap → zoom focus + open star sheet
+        if(sObj){
+          zoomToGalaxyObject(sObj.mesh.position,()=>{openSheet(ud.star);});
+        } else {
+          openSheet(ud.star);
+        }
+      }
     }
   } else if(mode==='system'){
     if(ud.moon){
@@ -2769,7 +3412,8 @@ function anySheetOpen(){
   return sheet.classList.contains('sheet-open')||
          pSheet.classList.contains('sheet-open')||
          optSheet.classList.contains('sheet-open')||
-         document.getElementById('listOverlay').classList.contains('sheet-open');
+         document.getElementById('listOverlay').classList.contains('sheet-open')||
+         document.getElementById('objOverlay').classList.contains('sheet-open');
 }
 glc.addEventListener('touchstart',e=>{
   if(anySheetOpen())return; // let sheet handle the touch
@@ -2834,7 +3478,7 @@ function openMoon(m){
     <div class="mgrid">
       <div class="mcard"><div class="mc-lbl">${isRu?'Радиус':'Radius'}</div><div class="mc-val gold">${km?km.toLocaleString()+' km':t('pl_unk')}</div></div>
       <div class="mcard"><div class="mc-lbl">${isRu?'Расстояние':'Distance'}</div><div class="mc-val">${m.dist_km.toLocaleString()} km</div></div>
-      <div class="mcard"><div class="mc-lbl">${isRu?'Период':'Period'}</div><div class="mc-val cyan">${m.period_days} ${t('pl_days')}</div></div>
+      <div class="mcard"><div class="mc-lbl">${isRu?t('period_lbl'):t('period_lbl')}</div><div class="mc-val cyan">${m.period_days} ${t('pl_days')}</div></div>
       <div class="mcard"><div class="mc-lbl">${isRu?'Масса Луны':'× Moon mass'}</div><div class="mc-val">${km?((km/1737.4)**3*1).toFixed(3)+'× ☾':t('pl_unk')}</div></div>
     </div>
     <div class="info-card"><div class="ic-body">${desc}</div></div>`;
@@ -2852,11 +3496,29 @@ function openSmallBody(b){
     <div class="pt-badge" style="background:${colHex}22;border:1px solid ${colHex}55;color:${colHex}">☄️ ${tp}</div>
     <div class="sh-name">${nm}</div>`;
   const distAU=b.orbit.toFixed(3);
-  const periodStr=b.period?b.period+' '+(isRu?'сут.':'days'):isRu?'Гиперболическая':'Hyperbolic';
+  const periodStr=b.period?b.period+' '+(t('pl_days')):isRu?'Гиперболическая':'Hyperbolic';
   plBody.innerHTML=`
     <div class="mgrid">
-      <div class="mcard"><div class="mc-lbl">${isRu?'Орбита (а.е.)':'Orbit (AU)'}</div><div class="mc-val gold">${distAU} AU</div></div>
-      <div class="mcard"><div class="mc-lbl">${isRu?'Период':'Period'}</div><div class="mc-val cyan">${periodStr}</div></div>
+      <div class="mcard"><div class="mc-lbl">${isRu?t('orbit_lbl'):t('orbit_lbl')}</div><div class="mc-val gold">${distAU} AU</div></div>
+      <div class="mcard"><div class="mc-lbl">${isRu?t('period_lbl'):t('period_lbl')}</div><div class="mc-val cyan">${periodStr}</div></div>
+    </div>
+    <div class="info-card"><div class="ic-body">${desc}</div></div>`;
+  pSheet.classList.add('sheet-open');
+}
+
+function openNebula(ud){
+  const isRu=lang==='ru';
+  const nm=isRu?ud.nebulaName_ru:ud.nebulaName;
+  const tp=isRu?ud.nebulaType_ru:ud.nebulaType;
+  const desc=isRu?ud.nebulaDesc_ru:ud.nebulaDesc;
+  const dist=ud.nebulaDist;
+  plHead.innerHTML=`
+    <div class="pt-badge" style="background:#ff660022;border:1px solid #ff660055;color:#ff8844">🌌 ${tp}</div>
+    <div class="sh-name">${nm}</div>`;
+  plBody.innerHTML=`
+    <div class="mgrid">
+      <div class="mcard"><div class="mc-lbl">${isRu?'Расстояние':'Distance'}</div><div class="mc-val gold">${dist}</div></div>
+      <div class="mcard"><div class="mc-lbl">${isRu?'Тип':'Type'}</div><div class="mc-val cyan">${tp}</div></div>
     </div>
     <div class="info-card"><div class="ic-body">${desc}</div></div>`;
   pSheet.classList.add('sheet-open');
@@ -3264,6 +3926,7 @@ function flash(yr){const b=bcForYear(yr);flashEl.textContent=yr+' — '+b.title;
 // ══════════════════════════════════════════════════════
 const listOverlay=document.getElementById('listOverlay');
 const listBody=document.getElementById('listBody');
+let objSearchQ='';
 
 function buildList(){
   const q=searchQ.toLowerCase();
@@ -3285,10 +3948,65 @@ function buildList(){
     });
   });
   listBody.innerHTML=html||`<div class="empty-msg">${t('no_res')}</div>`;
-  listBody.querySelectorAll('.star-item').forEach(item=>{item.addEventListener('click',()=>{const s=stars.find(x=>x.name===item.dataset.name);if(!s)return;listOverlay.classList.remove('sheet-open');setTimeout(()=>enterSystem(s),220);});});
+  listBody.querySelectorAll('.star-item').forEach(item=>{addTap(item,()=>{const s=stars.find(x=>x.name===item.dataset.name);if(!s)return;listOverlay.classList.remove('sheet-open');
+  // Focus star on map before entering
+  const sObj=starGalaxyObjs.find(o=>o.star===s);
+  if(sObj){setTimeout(()=>{zoomToGalaxyObject(sObj.mesh.position,()=>enterSystem(s));},250);}
+  else{setTimeout(()=>enterSystem(s),220);}
+});});
+}
+
+// Objects list: galaxies, nebulae, black holes, voids
+function buildObjList(){
+  const isRu=lang==='ru';
+  const q=(objSearchQ||'').toLowerCase();
+  const allObjs=[];
+  // Galaxies from GALAXY_DATA
+  (window._galaxyDataRef||[]).forEach(gd=>{
+    const nm=isRu?gd.name_ru:gd.name;
+    if(!q||nm.toLowerCase().includes(q)||gd.type.toLowerCase().includes(q)){
+      allObjs.push({name:nm,type:isRu?gd.type_ru:gd.type,dist:gd.dist_mly+'M ly',icon:'🌌',
+        action:()=>{document.getElementById('objOverlay').classList.remove('sheet-open');
+          const gpos=new THREE.Vector3(gd.x,gd.y,gd.z);
+          zoomToGalaxyObject(gpos,()=>{openGalaxy(gd);});}});
+    }
+  });
+  // Famous objects (nebulae, black holes)
+  const extraObjs=[
+    {name:'Orion Nebula (M42)',name_ru:'Туманность Ориона (M42)',type:'Emission Nebula',type_ru:'Эмиссионная туманность',dist:isRu?'1 344 св. лет':'1,344 ly',icon:'🌟'},
+    {name:'Crab Nebula (M1)',name_ru:'Крабовидная туманность (M1)',type:'Supernova Remnant',type_ru:'Остаток сверхновой',dist:'6,523 ly',icon:'💥'},
+    {name:'Eta Carinae / Carina Nebula',name_ru:'Эта Киля / Туманность Киля',type:'Emission Nebula / LBV',type_ru:'Эмиссионная / LBV',dist:'7,500 ly',icon:'⚡'},
+    {name:'Sagittarius A* (Galactic Center)',name_ru:'Стрелец A* (Центр Галактики)',type:'Supermassive Black Hole',type_ru:'Сверхмассивная чёрная дыра',dist:isRu?'26 000 св. лет':'26,000 ly',icon:'⚫'},
+    {name:'Messier 87 (Virgo A)',name_ru:'Мессье 87 (Вирго A)',type:'Elliptical Galaxy / Black Hole',type_ru:'Эллиптическая галактика / ЧД',dist:'55M ly',icon:'⚫'},
+    {name:'Boötes Void (The Great Nothing)',name_ru:'Пустота Волопаса',type:'Supervoid',type_ru:'Суперпустота',dist:'700M ly',icon:'🕳️'},
+  ];
+  extraObjs.forEach(o=>{
+    const nm=isRu?(o.name_ru||o.name):o.name;
+    const tp=isRu?(o.type_ru||o.type):o.type;
+    if(!q||nm.toLowerCase().includes(q)||tp.toLowerCase().includes(q)){
+      allObjs.push({name:nm,type:tp,dist:o.dist,icon:o.icon,
+        action:()=>{
+          document.getElementById('objOverlay').classList.remove('sheet-open');
+          // Find hit sphere for this object and zoom to it
+          const allHits=[...(window._extGalaxyHits||[]),(window._extraGalaxyHits||[])].flat();
+          const hit=allHits.find(h=>h.userData&&(h.userData.nebulaName===o.name||h.userData.nebulaName_ru===o.name_ru));
+          if(hit){const hp=hit.position.clone();zoomToGalaxyObject(hp,()=>{if(hit.userData.nebulaName)openNebula(hit.userData);else if(hit.userData.isSgrA)openSgrA();});}
+          else if(o.name.includes('Sagittarius')){const gc=window._GC||{x:1200,y:0,z:7000};zoomToGalaxyObject(new THREE.Vector3(gc.x,gc.y,gc.z),()=>openSgrA());}
+        }
+      });
+    }
+  });
+  const ob=document.getElementById('objBody');
+  if(!ob)return;
+  let html=allObjs.map(o=>`<div class="star-item" style="cursor:pointer;" data-obj="${encodeURIComponent(o.name)}"><div style="font-size:18px;flex-shrink:0;">${o.icon}</div><div class="si-info"><div class="si-name">${o.name}</div><div class="si-type">${o.type}</div></div><div class="si-right"><div class="si-dist" style="font-size:10px;">${o.dist}</div></div></div>`).join('');
+  ob.innerHTML=html||`<div class="empty-msg">${isRu?"Объекты не найдены.":t("no_res")}</div>`;
+  ob.querySelectorAll('.star-item').forEach((item,i)=>{addTap(item,()=>{if(allObjs[i])allObjs[i].action();});});
 }
 
 document.getElementById('listFab').addEventListener('click',()=>{buildList();listOverlay.classList.add('sheet-open');});
+addTap(document.getElementById('objFab'),()=>{buildObjList();document.getElementById('objOverlay').classList.add('sheet-open');});
+addTap(document.getElementById('objClose'),()=>document.getElementById('objOverlay').classList.remove('sheet-open'));
+document.getElementById('objSearch').addEventListener('input',e=>{objSearchQ=e.target.value;buildObjList();});
 document.getElementById('listClose').addEventListener('click',()=>listOverlay.classList.remove('sheet-open'));
 document.getElementById('searchInput').addEventListener('input',e=>{searchQ=e.target.value;buildList();});
 document.getElementById('lfRow').addEventListener('click',e=>{
