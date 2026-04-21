@@ -13,13 +13,13 @@
 :root{--bg:#020b18;--cyan:#00e5ff;--gold:#ffca28;--green:#00e676;--amber:#ff9100;--red:#ff4060;--text:#8ab0cc;--bright:#d0e8f8;--border:rgba(0,229,255,0.14);--panel:rgba(3,13,30,0.98);}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}
 html{height:100%;height:-webkit-fill-available;}
-body{height:100%;height:-webkit-fill-available;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;display:flex;flex-direction:column;position:fixed;width:100%;left:0;top:0;}
+body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;display:flex;flex-direction:column;position:fixed;width:100%;height:100%;left:0;top:0;}
 body.in-system #yearBar{display:none;}
 body.in-system #sysTimeBar{display:flex!important;}
 /* All interactive elements: min 44px tap target for iOS HIG */
 button,.hbtn,.play-btn,.pr-btn,.chip,.sort-btn,.nav-btn,.lfc{touch-action:manipulation;cursor:pointer;}
 input[type=range]{touch-action:pan-x;}
-header{flex-shrink:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right));background:rgba(2,11,24,0.98);border-bottom:1px solid var(--border);z-index:40;gap:5px;}
+header{flex-shrink:0;height:44px;min-height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 8px;background:rgba(2,11,24,0.98);border-bottom:1px solid var(--border);z-index:40;gap:5px;}
 .h-brand{font-family:'Orbitron',monospace;font-weight:900;font-size:9px;letter-spacing:1.5px;color:#fff;white-space:nowrap;flex-shrink:0;}
 .h-brand em{color:var(--cyan);font-style:normal;}
 .h-pills{display:flex;gap:4px;flex:1;justify-content:center;min-width:0;}
@@ -54,8 +54,8 @@ header{flex-shrink:0;height:52px;display:flex;align-items:center;justify-content
 .sort-row::-webkit-scrollbar{display:none;}
 .sort-btn{padding:5px 12px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text);white-space:nowrap;}
 .sort-btn.active{background:rgba(0,229,255,0.12);border-color:rgba(0,229,255,0.3);color:var(--cyan);}
-#wrap{flex:1;position:relative;min-height:0;overflow:hidden;}
-#glc{position:absolute;inset:0;width:100%;height:100%;}
+#wrap{flex:1;min-height:0;position:relative;overflow:hidden;}
+#glc{position:absolute;inset:0;width:100%;height:100%;display:block;}
 #uic{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
 /* System UI */
 #sysUI{position:absolute;inset:0;pointer-events:none;display:none;}
@@ -70,31 +70,31 @@ header{flex-shrink:0;height:52px;display:flex;align-items:center;justify-content
 .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .mfab{position:absolute;right:8px;bottom:8px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.28);border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);cursor:pointer;min-height:38px;display:flex;align-items:center;touch-action:manipulation;}
 .mfab.free{background:rgba(255,202,40,0.15);border-color:rgba(255,202,40,0.4);color:var(--gold);}
-#lockBtn{bottom:54px;padding:0;width:38px;height:38px;justify-content:center;font-size:16px;letter-spacing:0;}
+#lockBtn{bottom:94px;padding:0;width:38px;height:38px;justify-content:center;font-size:16px;letter-spacing:0;}
 #objFab{position:relative!important;}
 #fadeEl{position:absolute;inset:0;background:#010812;opacity:0;pointer-events:none;transition:opacity 0.35s;z-index:20;}
 #fadeEl.show{opacity:1;pointer-events:all;}
 #yearFlash{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(3,13,30,0.92);border:1px solid rgba(0,229,255,0.3);border-radius:12px;padding:6px 16px;pointer-events:none;font-family:'Orbitron',monospace;font-size:12px;color:var(--cyan);opacity:0;transition:opacity 0.3s;z-index:50;white-space:nowrap;}
 #yearFlash.show{opacity:1;}
 /* Year bar */
-.year-bar{flex-shrink:0;height:56px;background:rgba(2,11,24,0.98);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 12px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-bottom:max(0px,env(safe-area-inset-bottom));z-index:30;}
-.play-btn{width:38px;height:38px;border-radius:50%;background:rgba(0,229,255,0.12);border:1.5px solid rgba(0,229,255,0.35);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--cyan);flex-shrink:0;}
+.year-bar{position:fixed;bottom:0;left:0;right:0;height:40px;box-sizing:border-box;background:rgba(2,11,24,0.96);border-top:1px solid rgba(0,229,255,0.15);display:flex;align-items:center;gap:6px;padding:0 10px;z-index:30;}
+.play-btn{width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,0.12);border:1.5px solid rgba(0,229,255,0.35);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--cyan);flex-shrink:0;}
 .play-btn.playing{background:rgba(255,202,40,0.12);border-color:rgba(255,202,40,0.4);color:var(--gold);}
-.yr-num{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:#fff;width:46px;text-align:center;flex-shrink:0;}
+.yr-num{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#fff;width:42px;text-align:center;flex-shrink:0;}
 .yr-num.future{color:var(--amber);}
 .slider-wrap{flex:1;display:flex;align-items:center;}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:none;cursor:pointer;background:rgba(255,255,255,0.08);}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,0.6);}
-input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--cyan);border:none;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;outline:none;cursor:pointer;background:rgba(255,255,255,0.08);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px rgba(0,229,255,0.5);}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--cyan);border:none;}
 .yr-end{font-family:'Space Mono',monospace;font-size:9px;color:rgba(138,176,204,0.3);flex-shrink:0;}
 /* Sheets */
 #sheet,#optSheet,#listOverlay,#planetSheet{position:fixed;left:0;right:0;bottom:0;z-index:200;background:var(--panel);border-top:1px solid rgba(0,229,255,0.22);border-radius:20px 20px 0 0;transform:translateY(110%);transition:transform 0.38s cubic-bezier(0.32,0.72,0,1);backdrop-filter:blur(20px);}
-.pl-close{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.07);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;touch-action:manipulation;}
+.pl-close{position:absolute;right:14px;top:14px;z-index:10;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.10);border-radius:50%;color:var(--text);font-size:16px;cursor:pointer;touch-action:manipulation;border:1px solid rgba(255,255,255,0.12);}
 .sheet-open{transform:translateY(0)!important;}
 #sheet{max-height:72vh;display:flex;flex-direction:column;}
 #optSheet{max-height:82vh;display:flex;flex-direction:column;}
 #listOverlay{max-height:88vh;display:flex;flex-direction:column;}
-#planetSheet{max-height:78vh;display:flex;flex-direction:column;}
+#planetSheet{max-height:78vh;display:flex;flex-direction:column;overflow:hidden;}
 .sh-drag{flex-shrink:0;padding:10px 0 0;display:flex;justify-content:center;cursor:pointer;}
 .sh-drag-bar{width:36px;height:4px;background:rgba(255,255,255,0.14);border-radius:2px;}
 .sh-head{flex-shrink:0;padding:10px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.06);}
@@ -210,6 +210,15 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .planet-row{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:13px 14px;margin-bottom:10px;cursor:pointer;}
 .planet-row:active{background:rgba(255,255,255,0.07);}
 .pr-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+#issZoomBtn{position:absolute;bottom:140px;left:50%;transform:translateX(-50%);background:rgba(0,229,255,0.15);border:1.5px solid rgba(0,229,255,0.5);border-radius:14px;padding:10px 22px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--cyan);cursor:pointer;display:none;z-index:80;backdrop-filter:blur(8px);box-shadow:0 0 20px rgba(0,229,255,0.3);animation:issGlow 2s ease-in-out infinite;}
+@keyframes issGlow{0%,100%{box-shadow:0 0 20px rgba(0,229,255,0.3);}50%{box-shadow:0 0 35px rgba(0,229,255,0.6);}}
+#issOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:500;display:none;flex-direction:column;}
+#issClose{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:50%;width:38px;height:38px;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:510;}
+#issCanvas{flex:1;width:100%;background:transparent;}
+#issInfo{position:absolute;left:0;bottom:0;right:0;background:rgba(2,11,24,0.92);border-top:1px solid rgba(0,229,255,0.2);padding:14px 18px;max-height:38%;overflow-y:auto;}
+.iss-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--cyan);margin-bottom:8px;letter-spacing:1px;}
+.iss-stat{font-size:11px;color:rgba(180,210,240,0.85);margin-bottom:4px;}
+.iss-stat span{color:#fff;font-weight:600;}
 .pr-rank{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:rgba(255,255,255,0.12);width:28px;flex-shrink:0;}
 .pr-name{flex:1;}
 .pr-pname{font-size:15px;font-weight:700;color:var(--bright);}
@@ -238,7 +247,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
   <div class="hbtn" id="optBtn">⚙️</div>
 </header>
 <!-- Mini joystick: fixed top-right, below header, only visible when unlocked -->
-<div id="miniJoy" style="display:none;position:fixed;right:10px;top:58px;z-index:50;pointer-events:all;touch-action:none;">
+<div id="miniJoy" style="display:none;position:fixed;right:10px;top:52px;z-index:50;pointer-events:all;touch-action:none;">
   <div style="position:relative;width:72px;height:72px;">
     <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(0,229,255,0.22);backdrop-filter:blur(8px);"></div>
     <div id="miniKnob" style="position:absolute;width:26px;height:26px;left:23px;top:23px;border-radius:50%;background:rgba(0,229,255,0.25);border:1.5px solid rgba(0,229,255,0.6);"></div>
@@ -258,22 +267,40 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
     <div class="tap-hint" data-i18n="tap_hint">Tap ★ or planet · drag · pinch</div>
   </div>
   <!-- Left column: Stars → Objects → Legend (top to bottom) -->
-  <div style="position:absolute;left:8px;bottom:8px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;">
+  <div style="position:absolute;left:8px;bottom:48px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;">
     <div class="mfab" id="listFab" style="right:auto;font-size:10px;letter-spacing:0.5px;padding:7px 10px;position:relative;">⭐ <span data-i18n="stars_btn_lbl">STARS</span></div>
     <div class="mfab" id="objFab" style="right:auto;font-size:10px;letter-spacing:0.5px;padding:7px 10px;position:relative;">🌌 <span data-i18n="objects_btn_lbl">OBJECTS</span></div>
     <div class="legend" id="legendEl">
-      <div class="leg-row"><div class="leg-dot" style="background:#ffca28;box-shadow:0 0 6px #ffca28aa"></div><span data-i18n="l1">🌿 Habitable zone planet</span></div>
-      <div class="leg-row"><div class="leg-dot" style="background:#00e5ff;box-shadow:0 0 6px #00e5ffaa"></div><span data-i18n="l2">📡 Radio reached</span></div>
-      <div class="leg-row"><div class="leg-dot" style="background:#ff4060;box-shadow:0 0 4px #ff406066"></div><span data-i18n="l4">🔕 Not reached yet</span></div>
+      <div class="leg-row"><div class="leg-dot" style="background:#ffca28;box-shadow:0 0 6px #ffca28aa"></div><span data-i18n="l1">🟡 Reached + habitable planets</span></div>
+      <div class="leg-row"><div class="leg-dot" style="background:#00e5ff;box-shadow:0 0 6px #00e5ffaa"></div><span data-i18n="l2">🔵 Reached — no HZ planets</span></div>
+      <div class="leg-row"><div class="leg-dot" style="background:#ff4060;box-shadow:0 0 4px #ff406066"></div><span data-i18n="l4">🔴 Signal not reached yet</span></div>
+      <div class="leg-row"><div class="leg-dot" style="background:#ffca28;box-shadow:0 0 8px #ffca28cc;border:1.5px solid #fff"></div><span data-i18n="l5">☀️ Our Solar System</span></div>
     </div>
   </div>
   <!-- fabGroup kept for JS hide/show compatibility (empty, hidden) -->
   <div id="fabGroup" style="display:none;"></div>
-  <div class="mfab" id="homeBtn" style="right:8px;bottom:100px;font-size:16px;padding:0;width:38px;height:38px;justify-content:center;">🏠</div>
-  <div class="mfab" id="lockBtn" style="right:8px;bottom:54px;font-size:16px;padding:0;width:38px;height:38px;justify-content:center;">🔒</div>
+  <div class="mfab" id="homeBtn" style="right:8px;bottom:138px;font-size:16px;padding:0;width:38px;height:38px;justify-content:center;">🏠</div>
+  <div class="mfab" id="lockBtn" style="right:8px;bottom:94px;font-size:16px;padding:0;width:38px;height:38px;justify-content:center;">🔒</div>
 
   <div id="yearFlash"></div>
   <div id="fadeEl"></div>
+  <div id="issOverlay">
+    <div id="issClose">✕</div>
+    <canvas id="issCanvas"></canvas>
+    <div id="issInfo">
+      <div class="iss-title">🛸 INTERNATIONAL SPACE STATION (ISS)</div>
+      <div class="iss-stat">Altitude: <span>~408 km</span> above Earth</div>
+      <div class="iss-stat">Orbital speed: <span>7.66 km/s (27,600 km/h)</span></div>
+      <div class="iss-stat">Orbital period: <span>92.9 minutes</span></div>
+      <div class="iss-stat">Inclination: <span>51.6° to equator</span></div>
+      <div class="iss-stat">Mass: <span>~420,000 kg</span></div>
+      <div class="iss-stat">Size: <span>109 m × 73 m (football field)</span></div>
+      <div class="iss-stat">Solar panels: <span>2,500 m² generating 120 kW</span></div>
+      <div class="iss-stat">Crew: <span>6–7 astronauts (continuous since Nov 2000)</span></div>
+      <div class="iss-stat">Orbits per day: <span>15.5 (travels 40 million km/year)</span></div>
+      <div class="iss-stat">Modules: <span>16 pressurised modules from 15 countries</span></div>
+    </div>
+  </div>
 </div>
 
 <div class="year-bar" id="yearBar">
@@ -284,13 +311,13 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 </div>
 <div class="year-bar" id="sysTimeBar" style="display:none;">
   <div id="sysPlayBtn" class="play-btn">▶</div>
-  <div id="sysDateLbl" style="font-family:'Space Mono',monospace;font-size:9.5px;color:var(--cyan);white-space:nowrap;flex-shrink:0;min-width:120px;text-align:center;"></div>
+  <div id="sysDateLbl" style="font-family:'Space Mono',monospace;font-size:9.5px;color:var(--cyan);white-space:nowrap;flex-shrink:0;min-width:90px;text-align:center;"></div>
   <div class="slider-wrap"><input type="range" id="sysTimeSlider" min="0" max="36524" value="0"></div>
-  <div id="sysSpeedBtn" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--gold);cursor:pointer;flex-shrink:0;padding:4px 8px;border:1px solid rgba(255,202,40,0.3);border-radius:6px;white-space:nowrap;min-height:30px;display:flex;align-items:center;">1x</div>
+  <div id="sysSpeedBtn" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--gold);cursor:pointer;flex-shrink:0;padding:4px 8px;border:1px solid rgba(255,202,40,0.3);border-radius:6px;white-space:nowrap;height:26px;line-height:26px;display:flex;align-items:center;">1x</div>
 </div>
 
 <div id="sheet"><div class="sh-drag" id="shDrag"><div class="sh-drag-bar"></div></div><div class="sh-head" id="shHead"></div><div class="sh-body" id="shBody"></div></div>
-<div id="planetSheet"><div class="sh-drag" id="plDrag"><div class="sh-drag-bar"></div><div class="pl-close" id="plClose">✕</div></div><div class="sh-head" id="plHead"></div><div class="sh-body" id="plBody"></div></div>
+<div id="planetSheet"><div class="pl-close" id="plClose">✕</div><div class="sh-drag" id="plDrag"><div class="sh-drag-bar"></div></div><div class="sh-head" id="plHead"></div><div class="sh-body" id="plBody"></div></div>
 
 <div id="optSheet">
   <div class="sh-drag" id="optDrag"><div class="sh-drag-bar"></div></div>
@@ -390,7 +417,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 const LANG={en:{
   brand:'SPACE',p_ly:'LY Radius',p_reach:'Reached',p_hab:'Habitable',
   back_map:'MAP',tap_hint:'Tap ★ or planet · drag to rotate · pinch to zoom',
-  l1:'Habitable planets',l2:'Reached — no HZ planets',l4:'Not yet reached',
+  l1:'Reached + habitable planets',l2:'Reached — no HZ planets',l4:'Signal not reached yet',l5:'Our Solar System',
   all_stars:'☰ ALL STARS',options:'Settings',
   sec_lang:'Language / Язык',sec_filter:'Filter Stars',sec_year:'Jump to Year',sec_display:'Display',sec_nav:'Quick Navigate',
   f_all:'All Stars',f_hab:'🌿 Habitable',f_reached:'✓ Reached',f_far:'⟶ Signal En Route',
@@ -414,7 +441,7 @@ const LANG={en:{
   pl_mass:'Mass',pl_rad:'Radius',pl_orb:'Orbit',pl_per:'Period',pl_tmp:'Temperature',pl_esi:'ESI',pl_moons:'Moons',
   pl_days:'days',pl_au:'AU',pl_unk:'Unknown',pl_no:'No confirmed planets.',
   pt_rocky:'Rocky',pt_hot:'Lava / Hot',pt_sup:'Super-Earth',pt_earth:'Earth-like',pt_sub:'Sub-Earth',pt_mini:'Mini-Neptune',pt_ice:'Ice Giant',pt_gas:'Gas Giant',pt_jup:'Hot Jupiter',pt_bd:'Super-Jupiter',
-  moon_rad:'Radius',moon_dist:'Distance',moon_per:'Period',
+  moon_rad:'Radius',moon_dist:'Distance',moon_per:'Period',moon_tmp:'Temp',moon_atm:'Atmosphere',
   obj_title:'OBJECTS & GALAXIES',stars_btn:'⭐ STARS',objects_btn:'🌌 OBJECTS',objects_btn_lbl:'OBJECTS',stars_btn_lbl:'STARS',
   obj_srch:'Search objects…',
   neb_type:'Nebula',bh_type:'Black Hole',void_type:'Supervoid',
@@ -422,7 +449,7 @@ const LANG={en:{
 },ru:{
   brand:'КОСМОС',p_ly:'СГ Радиус',p_reach:'Достигнуто',p_hab:'Обитаемых',
   back_map:'КАРТА',tap_hint:'Нажмите ★ или планету · перетащите · щипок для зума',
-  l1:'Обитаемые планеты',l2:'Достигнуто — нет зоны обит.',l4:'Ещё не достигнуто',
+  l1:'Достигнуто + обитаемые планеты',l2:'Достигнуто — нет обит. планет',l4:'Сигнал ещё не достиг',l5:'Наша Солнечная система',
   all_stars:'☰ ВСЕ ЗВЁЗДЫ',options:'Настройки',
   sec_lang:'Язык / Language',sec_filter:'Фильтр',sec_year:'Перейти к году',sec_display:'Отображение',sec_nav:'Навигация',
   f_all:'Все',f_hab:'🌿 Обитаемые',f_reached:'✓ Достигнутые',f_far:'⟶ Сигнал в пути',
@@ -446,7 +473,7 @@ const LANG={en:{
   pl_mass:'Масса',pl_rad:'Радиус',pl_orb:'Орбита',pl_per:'Период',pl_tmp:'Температура',pl_esi:'ИСЗ',pl_moons:'Спутники',
   pl_days:'сут.',pl_au:'а.е.',pl_unk:'Неизвестно',pl_no:'Нет подтверждённых планет.',
   pt_rocky:'Скальная',pt_hot:'Лавовый мир',pt_sup:'Суперземля',pt_earth:'Землеподобная',pt_sub:'Суб-Земля',pt_mini:'Мини-Нептун',pt_ice:'Ледяной гигант',pt_gas:'Газовый гигант',pt_jup:'Горячий юпитер',pt_bd:'Суперюпитер',
-  moon_rad:'Радиус',moon_dist:'Расстояние',moon_per:'Период',
+  moon_rad:'Радиус',moon_dist:'Расстояние',moon_per:'Период',moon_tmp:'Темп.',moon_atm:'Атмосфера',
   obj_title:'ОБЪЕКТЫ И ГАЛАКТИКИ',stars_btn:'⭐ ЗВЁЗДЫ',objects_btn:'🌌 ОБЪЕКТЫ',objects_btn_lbl:'ОБЪЕКТЫ',stars_btn_lbl:'ЗВЁЗДЫ',
   obj_srch:'Поиск объектов…',
   neb_type:'Туманность',bh_type:'Чёрная дыра',void_type:'Суперпустота',
@@ -464,7 +491,7 @@ function spl(s){return lang==='ru'&&s.planets_ru?s.planets_ru:s.planets;}
 // ══════════════════════════════════════════════════════
 // MOON helper
 // ══════════════════════════════════════════════════════
-function M(name,radius_km,dist_km,period_days,desc,desc_ru){return{name,radius_km,dist_km,period_days,desc,desc_ru};}
+function M(name,radius_km,dist_km,period_days,desc,desc_ru,temp_c,atm){return{name,radius_km,dist_km,period_days,desc,desc_ru,temp_c,temp_c,atm};}
 
 // ══════════════════════════════════════════════════════
 // PLANET DB
@@ -484,7 +511,7 @@ const planetDB={
     "Our home — the only confirmed life-bearing planet in the universe. Earth's liquid water oceans, oxygen-rich atmosphere, magnetic field, and plate tectonics create the conditions for life. 71% of the surface is ocean. Home to 8.7 million species and currently one technological civilization producing radio signals since 1895.",
     "Наш дом — единственная подтверждённая планета с жизнью во вселенной. Жидкие океаны Земли, богатая кислородом атмосфера, магнитное поле и тектоника плит создают условия для жизни. 71% поверхности — океан. Дом для 8,7 млн видов и одной технологической цивилизации, производящей радиосигналы с 1895 года.",
     [M("Moon",1737,384400,27.32,
-       "Earth's only natural satellite and the largest moon relative to its planet in the solar system. The Moon stabilizes Earth's axial tilt (preventing extreme climate swings), drives tides, and slowed Earth's rotation. Formed ~4.5 Gyr ago from a Mars-sized impactor (Theia). Has been visited by 12 humans (Apollo 1969–72). No atmosphere; surface temperatures from −173°C to 127°C.",
+       "Earth's only natural satellite and the largest moon relative to its planet in the solar system. The Moon stabilizes Earth's axial tilt (preventing extreme climate swings,-33,'Negligible exosphere: He, H₂, Na, K. No weather. Surface fully exposed to space.'), drives tides, and slowed Earth's rotation. Formed ~4.5 Gyr ago from a Mars-sized impactor (Theia). Has been visited by 12 humans (Apollo 1969–72). No atmosphere; surface temperatures from −173°C to 127°C.",
        "Единственный естественный спутник Земли и крупнейший относительно своей планеты в Солнечной системе. Луна стабилизирует наклон земной оси, управляет приливами и замедлила вращение Земли. Образовалась ~4,5 млрд лет назад в результате столкновения с протопланетой Тейя. Посещена 12 людьми (Аполлон 1969–72). Атмосферы нет; температуры от −173°C до 127°C."
     )]),
   P("Mars",'pt_rocky',0.107,0.532,1.524,686.97,210,false,true,0.70,'#c1440e',4,
@@ -503,7 +530,7 @@ const planetDB={
        "The most volcanically active body in the solar system, Io has over 400 active volcanoes and erupting plumes up to 500 km tall. Tidal heating from Jupiter and orbital resonance with Europa and Ganymede constantly squeezes Io's interior. Its surface is covered in sulfur and sulfur dioxide, giving it a distinctive yellow-orange-red appearance. No liquid water — perpetual volcanic hell.",
        "Самое вулканически активное тело Солнечной системы: более 400 действующих вулканов, шлейфы до 500 км. Приливный разогрев Юпитером и резонанс с Европой и Ганимедом постоянно сжимают недра Ио. Поверхность покрыта серой, что придаёт ей жёлто-оранжево-красный вид. Жидкой воды нет — вечный вулканический ад."),
      M("Europa",1561,671100,3.551,
-       "One of the most promising places to search for life in the solar system. Europa has a global saltwater ocean beneath ~10-30 km of ice, kept liquid by tidal heating. Chemical exchange between the icy surface and the ocean could provide nutrients. NASA's Europa Clipper mission (launched 2024) will investigate. The ocean is estimated to contain twice as much water as all of Earth's oceans.",
+       "One of the most promising places to search for life in the solar system. Europa has a global saltwater ocean beneath ~10-30 km of ice, kept liquid by tidal heating. Chemical exchange between the icy surface and the ocean could provide nutrients. NASA's Europa Clipper mission (launched 2024,-160,'Thin O₂ radiolytically produced from ice surface. Subsurface ocean at pressure.') will investigate. The ocean is estimated to contain twice as much water as all of Earth's oceans.",
        "Одно из наиболее перспективных мест для поиска жизни. Под 10–30 км льда скрывается глобальный солёный океан, поддерживаемый приливным разогревом. Химический обмен между ледяной поверхностью и океаном может поставлять питательные вещества. Миссия NASA Europa Clipper (запущена в 2024 г.) исследует это. Океан содержит вдвое больше воды, чем все океаны Земли."),
      M("Ganymede",2634,1070400,7.155,
        "The largest moon in the solar system — bigger than Mercury. Ganymede is the only moon known to have its own intrinsic magnetic field, generating a magnetosphere within Jupiter's. It likely has a saltwater ocean beneath an icy shell. It orbits in a 1:2:4 Laplace resonance with Europa and Io. ESA's JUICE mission will enter orbit around Ganymede in 2034.",
@@ -521,19 +548,19 @@ const planetDB={
        "A tiny icy moon with a global subsurface liquid water ocean beneath its south polar region — evidenced by spectacular geysers erupting water ice and organic molecules 500 km into space, feeding Saturn's E ring. The water chemistry detected by Cassini (hydrogen, silica, organics) is consistent with hydrothermal vents on the ocean floor. One of the top candidates for extraterrestrial life in the solar system.",
        "Крошечный ледяной спутник с глобальным подповерхностным океаном — гейзеры у южного полюса выбрасывают водяной лёд и органику на 500 км в космос, питая кольцо E Сатурна. Химия воды (водород, диоксид кремния, органика) совместима с гидротермальными источниками. Один из главных кандидатов на внеземную жизнь."),
      M("Tethys",531,294619,1.888,
-       "A water-ice moon of Saturn with two remarkable features: Odysseus crater (450 km across, the largest relative to moon size in the solar system) and Ithaca Chasma, a canyon 2,000 km long and 100 km wide that may have formed when the interior froze and expanded. Tethys shares its orbital zone with two tiny Trojan moons, Telesto and Calypso.",
+       "A water-ice moon of Saturn with two remarkable features: Odysseus crater (450 km across, the largest relative to moon size in the solar system,-187,'Thin O₂ exosphere. Odysseus crater spans 40% of hemisphere. Ithaca Chasma canyon.') and Ithaca Chasma, a canyon 2,000 km long and 100 km wide that may have formed when the interior froze and expanded. Tethys shares its orbital zone with two tiny Trojan moons, Telesto and Calypso.",
        "Спутник из водяного льда. Кратер Одиссей (450 км) — крупнейший относительно размера тела в Солнечной системе. Каньон Итака — 2000 км в длину, мог образоваться при замерзании и расширении внутренности. Тефия разделяет орбитальную зону с троянскими спутниками Телесто и Калипсо."),
      M("Dione",561,377396,2.737,
-       "One of Saturn's larger moons with a density indicating 1/3 rocky silicate material — more rock than most of Saturn's moons. Its trailing hemisphere is laced with bright icy cliffs and scarps forming a network called wispy terrain, visible as bright streaks. Dione has two small Trojan companions (Helene and Polydeuces) and may have a thin oxygen exosphere.",
+       "One of Saturn's larger moons with a density indicating 1/3 rocky silicate material — more rock than most of Saturn's moons. Its trailing hemisphere is laced with bright icy cliffs and scarps forming a network called wispy terrain, visible as bright streaks. Dione has two small Trojan companions (Helene and Polydeuces,-186,'Trace O₂ exosphere detected by Cassini (2012). Very tenuous.') and may have a thin oxygen exosphere.",
        "Плотность указывает на 1/3 скального силикатного материала — больше горной породы, чем у большинства спутников Сатурна. Ведомое полушарие покрыто сетью ярких ледяных обрывов — «призрачным рельефом». Имеет двух троянских компаньонов и возможную кислородную экзосферу."),
      M("Rhea",764,527108,4.518,
-       "Saturn's second-largest moon, almost entirely water ice. Rhea has a confirmed oxygen exosphere — one of only three moons with this feature (alongside Ganymede and Europa). Its ancient, heavily cratered surface is split by a bright equatorial band. Scientists have tentatively proposed it may have its own faint ring system — which would make it the only moon known to have rings.",
+       "Saturn's second-largest moon, almost entirely water ice. Rhea has a confirmed oxygen exosphere — one of only three moons with this feature (alongside Ganymede and Europa,-220,'Thin O₂ + CO₂ exosphere. Second-largest Saturn moon. Possible faint rings.'). Its ancient, heavily cratered surface is split by a bright equatorial band. Scientists have tentatively proposed it may have its own faint ring system — which would make it the only moon known to have rings.",
        "Второй по размеру спутник Сатурна, почти полностью из водяного льда. Имеет подтверждённую кислородную экзосферу — один из трёх таких спутников. Учёные предполагают наличие у неё собственной слабой кольцевой системы — что сделало бы её единственным спутником с кольцами."),
      M("Titan",2575,1221870,15.945,
        "The only moon in the solar system with a dense atmosphere and the only body other than Earth with stable surface liquids — rivers and lakes of liquid methane and ethane at −179°C. The Cassini-Huygens probe landed on Titan in 2005. NASA's Dragonfly rotorcraft will fly there in 2034. Titan's atmosphere is mostly nitrogen like Earth's, but 1.5× denser at the surface. It is considered a potential host for exotic non-water-based life.",
        "Единственный спутник с плотной атмосферой и единственное тело кроме Земли с жидкими поверхностными водоёмами — реками и озёрами из жидкого метана при −179°C. Зонд Гюйгенс приземлился в 2005 году. Миссия NASA Dragonfly прилетит на Титан в 2034 году. Рассматривается как возможный хозяин экзотической жизни без воды."),
      M("Iapetus",735,3560820,79.322,
-       "One of the most visually bizarre moons: its leading hemisphere is jet-black (albedo ~0.04, dark as fresh asphalt) while its trailing hemisphere is brilliant white ice, a stark yin-yang appearance first observed by Giovanni Cassini in 1671. Iapetus also has an equatorial ridge up to 20 km tall spanning nearly its entire circumference — possibly the remains of a former ring system or an ancient sub-satellite. The origin of the dark coating remains debated.",
+       "One of the most visually bizarre moons: its leading hemisphere is jet-black (albedo ~0.04, dark as fresh asphalt,-143,'Virtually none. Extreme two-tone: one dark, one bright hemisphere. No weather.') while its trailing hemisphere is brilliant white ice, a stark yin-yang appearance first observed by Giovanni Cassini in 1671. Iapetus also has an equatorial ridge up to 20 km tall spanning nearly its entire circumference — possibly the remains of a former ring system or an ancient sub-satellite. The origin of the dark coating remains debated.",
        "Один из наиболее визуально странных спутников: ведущее полушарие угольно-чёрное (альбедо ~0,04), ведомое — ослепительно белый лёд. Разительный двухцветный вид наблюдал Джованни Кассини в 1671 году. На экваторе проходит гребень высотой до 20 км — возможно останки бывшей кольцевой системы. Происхождение тёмного покрытия до сих пор обсуждается.")])
   ,P("Uranus",'pt_ice',14.54,4.007,19.191,30688.5,76,false,true,null,'#7de8e8',7,
     "Uranus is tilted 98° on its side — essentially rolling around the Sun on its equator — likely from an ancient massive collision. This causes extreme seasons: 42 years of continuous sunlight followed by 42 years of darkness. Its deep blue-green color comes from methane absorbing red light. Uranus radiates almost no internal heat, making it the coldest planet (surface temperature −224°C). It has 13 rings and 28 known moons, most named after Shakespearean characters.",
@@ -542,7 +569,7 @@ const planetDB={
        "Despite being small, Miranda has one of the most dramatic landscapes in the solar system — Verona Rupes, a cliff 20 km tall, the highest known in the solar system. A 10-km-tall ice mountain called Elsinore Corona suggests violent past tectonics. Its patchwork terrain may result from a catastrophic collision that shattered and randomly reassembled the moon. Named after the heroine of Shakespeare's The Tempest.",
        "Несмотря на малый размер, у Миранды один из наиболее захватывающих ландшафтов: Верона Скалы высотой 20 км — самый высокий известный утёс. Лоскутный рельеф может быть результатом катастрофического столкновения, разрушившего и случайно восстановившего спутник. Названа в честь героини «Бури» Шекспира."),
      M("Ariel",579,190900,2.520,
-       "The brightest of Uranus's major moons (albedo 0.53), Ariel has a geologically young surface with complex fault valleys, scarps, and smooth-floored canyons called grabens — evidence of extensive tectonic resurfacing. Some regions appear to have been partially melted and re-frozen, possibly driven by past tidal heating when Uranus's moons were in different orbital resonances.",
+       "The brightest of Uranus's major moons (albedo 0.53,-213,'Virtually none. Most reflective Uranian moon. Possible past cryovolcanism.'), Ariel has a geologically young surface with complex fault valleys, scarps, and smooth-floored canyons called grabens — evidence of extensive tectonic resurfacing. Some regions appear to have been partially melted and re-frozen, possibly driven by past tidal heating when Uranus's moons were in different orbital resonances.",
        "Самый яркий из крупных спутников Урана (альбедо 0,53), с геологически молодой поверхностью: сложные разломные долины, уступы и граббены — свидетельства обширного тектонического обновления. Некоторые области, по всей видимости, частично плавились и повторно замерзали."),
      M("Umbriel",584,266000,4.144,
        "The darkest and most ancient of Uranus's five major moons, Umbriel's heavily cratered, uniformly dark surface suggests geologic inactivity for billions of years. Its most distinctive feature is Wunda — a bright ring-shaped deposit near the equator possibly from an impact that excavated brighter material from depth. Named after a malevolent spirit in Alexander Pope's 'The Rape of the Lock'.",
@@ -566,7 +593,7 @@ const planetDB={
     "Reclassified from the 9th planet to a dwarf planet by the IAU in 2006 — a decision still hotly debated. Pluto has a stunning heart-shaped nitrogen ice plain called Tombaugh Regio, mountain ranges of water ice up to 3,500 m tall, and a surprisingly thin nitrogen atmosphere. NASA's New Horizons spacecraft flew by in July 2015, revealing a geologically active, complex world far stranger than expected. Pluto resides in the Kuiper Belt.",
     "Переклассифицирован МАС в карликовые планеты в 2006 году — решение до сих пор оспаривается. На Плутоне есть сердцеобразная азотная равнина Томбо, горы из водяного льда высотой до 3500 м и тонкая азотная атмосфера. Зонд New Horizons пролетел мимо в июле 2015 года, обнаружив геологически активный мир. Плутон находится в поясе Койпера.",
     [M("Charon",606,19591,6.387,
-       "Charon is so massive relative to Pluto — about half its diameter and 12% of its mass — that the two orbit their common center of mass (barycenter), which lies outside Pluto. This makes them a true double dwarf planet system, unique in the solar system. Charon has a large reddish polar cap called Mordor Macula, stained by tholins that escape from Pluto's thin atmosphere. Discovered by James Christy in 1978.",
+       "Charon is so massive relative to Pluto — about half its diameter and 12% of its mass — that the two orbit their common center of mass (barycenter,-220,'Virtually none — faint N₂ when Pluto near perihelion. Mordor Macula reddish polar cap.'), which lies outside Pluto. This makes them a true double dwarf planet system, unique in the solar system. Charon has a large reddish polar cap called Mordor Macula, stained by tholins that escape from Pluto's thin atmosphere. Discovered by James Christy in 1978.",
        "Харон настолько массивен относительно Плутона — около половины диаметра и 12% массы — что оба вращаются вокруг общего центра масс, лежащего вне Плутона. Это делает их истинной двойной карликовой системой. Красная полярная шапка Мордор из толинов. Открыт Джеймсом Кристи в 1978 году.")])
 ],
 "Proxima Centauri":[
@@ -1640,7 +1667,7 @@ const sysCtrl={theta:0.5,phi:1.2,r:300,tTheta:0.5,tPhi:1.2,tR:300};
   }
 
   // Layer 1: main disk + halo (tiny dots, size 0.75)
-  const n1=50000;
+  const n1=70000;
   const pos1=new Float32Array(n1*3);const col1=new Float32Array(n1*3);
   let placed=0,tries=0;
   while(placed<n1&&tries<n1*8){
@@ -1665,7 +1692,7 @@ const sysCtrl={theta:0.5,phi:1.2,r:300,tTheta:0.5,tPhi:1.2,tR:300};
   galaxyScene.add(new THREE.Points(geo1,new THREE.PointsMaterial({size:0.75,vertexColors:true,sizeAttenuation:false})));
 
   // Layer 2: sparse bright foreground stars (size 1.4)
-  const n2=4000;
+  const n2=5500;
   const pos2=new Float32Array(n2*3);const col2=new Float32Array(n2*3);
   let p2=0,t2=0;
   while(p2<n2&&t2<n2*8){
@@ -1760,28 +1787,45 @@ function updateBubble(){
   function addB(o){galaxyScene.add(o);bubbleObjs.push(o);}
   if(!opts.bubble)return;
   const b=Math.sqrt(Math.max(0.01,dynBub()))*SCALE3D;
-  // Very faint volume glow — barely visible
-  const fill=new THREE.Mesh(new THREE.SphereGeometry(b,32,16),new THREE.MeshBasicMaterial({
-    color:0x00e5ff,transparent:true,opacity:0.012,side:THREE.BackSide,depthWrite:false
+  // Outer glow shell (additive, visible from any angle)
+  const fill=new THREE.Mesh(new THREE.SphereGeometry(b,32,20),new THREE.MeshBasicMaterial({
+    color:0x00e5ff,transparent:true,opacity:0.022,side:THREE.BackSide,depthWrite:false
   }));
   addB(fill);
-  // Thin wireframe: equator + 2 meridians only, ultra-transparent
-  const seg=96;
-  [[0,0],[90,0],[0,90]].forEach(([latD,lonD])=>{
-    const lat=latD*Math.PI/180,lon=lonD*Math.PI/180;
+  // Inner brighter shell
+  const inner=new THREE.Mesh(new THREE.SphereGeometry(b*0.99,32,20),new THREE.MeshBasicMaterial({
+    color:0x00ddff,transparent:true,opacity:0.015,side:THREE.FrontSide,depthWrite:false
+  }));
+  addB(inner);
+  // Latitude circles (parallels) — 5 rings at different latitudes
+  const seg=120;
+  [-60,-30,0,30,60].forEach(latD=>{
+    const lat=latD*Math.PI/180;
+    const rLat=Math.cos(lat)*b;
+    const yLat=Math.sin(lat)*b;
     const pts=[];
     for(let i=0;i<=seg;i++){
       const a=(i/seg)*Math.PI*2;
-      let x,y,z;
-      if(latD===0&&lonD===0){x=Math.cos(a)*b;y=0;z=Math.sin(a)*b;}       // equator
-      else if(lonD===0){x=Math.cos(a)*b;y=Math.sin(a)*b*0;z=0;           // meridian XY
-        x=Math.cos(a)*b;y=Math.sin(a)*b;z=0;}
-      else{x=0;y=Math.sin(a)*b;z=Math.cos(a)*b;}                         // meridian YZ
-      pts.push(new THREE.Vector3(x,y,z));
+      pts.push(new THREE.Vector3(Math.cos(a)*rLat,yLat,Math.sin(a)*rLat));
     }
     addB(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({color:0x00e5ff,transparent:true,opacity:0.18,depthWrite:false})));
+      new THREE.LineBasicMaterial({color:0x00e5ff,transparent:true,opacity:latD===0?0.35:0.18,depthWrite:false})));
   });
+  // Longitude meridians (6 evenly spaced)
+  for(let mi=0;mi<6;mi++){
+    const lon=(mi/6)*Math.PI*2;
+    const pts=[];
+    for(let i=0;i<=seg;i++){
+      const lat=(i/seg)*Math.PI*2;
+      pts.push(new THREE.Vector3(Math.cos(lat)*Math.cos(lon)*b,Math.sin(lat)*b,Math.cos(lat)*Math.sin(lon)*b));
+    }
+    addB(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({color:0x00ccff,transparent:true,opacity:0.20,depthWrite:false})));
+  }
+  // Pole-to-pole bright axis ring
+  {const pts=[];for(let i=0;i<=seg;i++){const a=(i/seg)*Math.PI*2;pts.push(new THREE.Vector3(0,Math.sin(a)*b,Math.cos(a)*b));}
+   addB(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x00e5ff,transparent:true,opacity:0.25,depthWrite:false})));
+  }
 }
 
 // Galaxy lighting
@@ -1811,25 +1855,47 @@ let sgrAHit=null;
     function makeNebula(pos,innerColor,outerColor,sz,N){
       const rng2=(s)=>{let h=s;return()=>{h=Math.imul(h,1664525)+1013904223>>>0;return h/0x100000000;};};
       const rng=rng2((pos.x*7+pos.y*13+pos.z*17)|0);
-      const geo=new THREE.BufferGeometry();
-      const pts=new Float32Array(N*3);const col=new Float32Array(N*3);
       const ic=new THREE.Color(innerColor),oc=new THREE.Color(outerColor);
-      for(let i=0;i<N;i++){
-        const u=rng(),v=rng(),w=rng();
-        const ph=Math.acos(2*u-1),th=v*Math.PI*2;
-        const r=Math.pow(w,0.4)*sz; // concentrate toward center
-        pts[i*3]=pos.x+r*Math.sin(ph)*Math.cos(th);
-        pts[i*3+1]=pos.y+r*Math.cos(ph)*0.6;
-        pts[i*3+2]=pos.z+r*Math.sin(ph)*Math.sin(th);
-        const t=r/sz; // 0=core 1=outer
-        col[i*3]=ic.r*(1-t)+oc.r*t; col[i*3+1]=ic.g*(1-t)+oc.g*t; col[i*3+2]=ic.b*(1-t)+oc.b*t;
-      }
-      geo.setAttribute('position',new THREE.BufferAttribute(pts,3));
-      geo.setAttribute('color',new THREE.BufferAttribute(col,3));
-      galaxyScene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:1.5,vertexColors:true,sizeAttenuation:false,transparent:true,opacity:0.85})));
-      // Bright core
-      const core=new THREE.Sprite(makeGlowMat(innerColor,0.9));
-      core.scale.set(sz*0.35,sz*0.35,1);core.position.copy(pos);galaxyScene.add(core);
+      const clr=(v)=>Math.max(0,Math.min(1,v));
+      // Multi-pass: main cloud, wispy filaments, bright knots, faint outer halo
+      const passes=[
+        {n:N,ptSz:1.5,op:0.82,flat:0.60,pow:0.42},       // main cloud
+        {n:Math.floor(N*0.5),ptSz:1.3,op:0.55,flat:1.0,pow:0.28}, // faint outer halo
+        {n:Math.floor(N*0.15),ptSz:1.8,op:0.95,flat:0.40,pow:0.65},// bright inner knots
+        {n:Math.floor(N*0.08),ptSz:2.2,op:1.00,flat:0.25,pow:0.85},// brilliant hotspots
+      ];
+      passes.forEach(p=>{
+        const pts2=new Float32Array(p.n*3),col2=new Float32Array(p.n*3);
+        for(let i=0;i<p.n;i++){
+          const u=rng(),v=rng(),w=rng(),w2=rng();
+          // Irregular asymmetric shape with turbulence
+          const ph=Math.acos(2*u-1)+Math.sin(w2*12)*(1-Math.pow(w,p.pow))*0.4;
+          const th=v*Math.PI*2+Math.cos(w2*8)*0.3;
+          const r=Math.pow(w,p.pow)*sz*(0.85+rng()*0.3);
+          // Wispy filaments: stretch along certain directions
+          const xScale=1.0+rng()*0.4,yScale=p.flat+rng()*0.2,zScale=1.0+rng()*0.3;
+          pts2[i*3]=pos.x+r*Math.sin(ph)*Math.cos(th)*xScale;
+          pts2[i*3+1]=pos.y+r*Math.cos(ph)*yScale;
+          pts2[i*3+2]=pos.z+r*Math.sin(ph)*Math.sin(th)*zScale;
+          const t=r/sz;
+          // Color: mix with random variation + emission lines
+          const emissionVar=rng()*0.2-0.1;
+          col2[i*3]=clr(ic.r*(1-t)+oc.r*t+emissionVar);
+          col2[i*3+1]=clr(ic.g*(1-t)+oc.g*t);
+          col2[i*3+2]=clr(ic.b*(1-t)+oc.b*t-emissionVar*0.5);
+        }
+        const geo=new THREE.BufferGeometry();
+        geo.setAttribute('position',new THREE.BufferAttribute(pts2,3));
+        geo.setAttribute('color',new THREE.BufferAttribute(col2,3));
+        galaxyScene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:p.ptSz,vertexColors:true,sizeAttenuation:false,transparent:true,opacity:p.op,depthWrite:false})));
+      });
+      // Layered core glows
+      const g1=new THREE.Sprite(makeGlowMat(innerColor,0.92));
+      g1.scale.set(sz*0.30,sz*0.30,1);g1.position.copy(pos);galaxyScene.add(g1);
+      const g2=new THREE.Sprite(makeGlowMat(innerColor,0.40));
+      g2.scale.set(sz*0.65,sz*0.65,1);g2.position.copy(pos);galaxyScene.add(g2);
+      const g3=new THREE.Sprite(makeGlowMat(outerColor,0.15));
+      g3.scale.set(sz*1.20,sz*1.20,1);g3.position.copy(pos);galaxyScene.add(g3);
     }
     const orionPos=new THREE.Vector3(-1400, -800, -4200);
     makeNebula(orionPos,0xff8844,0xff4400,280,600);
@@ -3032,314 +3098,502 @@ let sgrAHit=null;
     {name:"GOODS-S",name_ru:"GOODS-S Hubble",dist_mly:10000.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"The GOODS-South field — includes the Hubble Ultra Deep Field. Contains galaxies from redshift 0 to beyond 7, a complete census of the galaxy population at different cosmic epochs.",desc_ru:"Поле GOODS-S — включает HUDF. Галактики z=0 до z>7 — полная перепись в разные эпохи.",x:-1020774,y:-2022542,z:-1057043,color:0xccbbff,sz:138000,type3d:'irregular'},
     {name:"eROSITA Bubble Void",name_ru:"Пузырь eROSITA — пустота",dist_mly:2000.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"The southern eROSITA bubble boundary — a giant X-ray bubble 15,000 light-years across from past Sgr A* activity ~3 million years ago (Fermi Bubbles seen in X-ray).",desc_ru:"Граница пузыря eROSITA — гигантский пузырь от прошлой активности Sgr A* ~3 млн лет назад.",x:-1101048,y:-194144,z:0,color:0x1a2233,sz:62000,type3d:'irregular'},
     {name:"Fermi Bubble Region",name_ru:"Область пузырей Ферми",dist_mly:26000.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"The Fermi Bubble source region — giant lobes of high-energy gas extending 25,000 light-years above and below the Galactic Center, from a past energetic episode of Sgr A*.",desc_ru:"Область пузырей Ферми — гигантские доли 25 000 св. лет по обе стороны ГЦ от Sgr A*.",x:0,y:2015564,z:3491060,color:0x334488,sz:88000,type3d:'irregular'},
+    // ══ BATCH 12: 100 galaxies filling empty sectors ══════════════════
+    {name:"NGC 4414 B",name_ru:"NGC 4414 B",dist_mly:62.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Flocculent spiral near Virgo, with patchy arms and a faint outer disk from past interactions.",desc_ru:"Клочковатая спираль у Девы, слабый внешний диск.",incl:55,pa:160,x:-3752,y:195382,z:-23694,color:0xd0c8b0,sz:15000,type3d:'spiral',arms:2},
+    {name:"NGC 2903 E",name_ru:"NGC 2903 E",dist_mly:30.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Fourth view of NGC 2903 — Messier's miss — showing its hot-spot nuclear ring and symmetric bar.",desc_ru:"Четвёртый ракурс NGC 2903 — симметричная перемычка.",incl:65,pa:197,x:-52007,y:80485,z:-97812,color:0xd8d0b8,sz:16000,type3d:'spiral',arms:2},
+    {name:"NGC 4559 B",name_ru:"NGC 4559 B",dist_mly:29.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of NGC 4559 — large irregular spiral with bright HII regions along asymmetric arms.",desc_ru:"Второй ракурс NGC 4559 — яркие HII-области.",incl:65,pa:150,x:-26692,y:130041,z:22397,color:0xc8d0b8,sz:15000,type3d:'spiral',arms:3},
+    {name:"NGC 3726 B",name_ru:"NGC 3726 B",dist_mly:51.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of NGC 3726 — late barred spiral in UMa with open flocculent arms.",desc_ru:"Второй ракурс NGC 3726.",incl:50,pa:197,x:41094,y:149732,z:-88127,color:0xc8d0c8,sz:15000,type3d:'spiral',arms:3},
+    {name:"NGC 1232 B",name_ru:"NGC 1232 B",dist_mly:65.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second perspective on NGC 1232 — face-on multi-arm grand design spiral in Eridanus.",desc_ru:"Второй ракурс NGC 1232.",incl:30,pa:108,x:-41733,y:-170929,z:-98317,color:0xc8d0c0,sz:19000,type3d:'spiral',arms:4},
+    {name:"NGC 5364",name_ru:"NGC 5364",dist_mly:57.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Grand design spiral paired with NGC 5363 (elliptical). Their different redshifts are nearly identical confirming physical association.",desc_ru:"Большая спираль в паре с NGC 5363.",incl:25,pa:0,x:-25568,y:179507,z:52422,color:0xd0d0c8,sz:16000,type3d:'spiral',arms:2},
+    {name:"NGC 4666",name_ru:"NGC 4666",dist_mly:85.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Superwind galaxy — extreme starburst driving X-ray gas 40,000 ly above the disk. Among fastest-rotating large spirals known.",desc_ru:"Суперветровая галактика с выбросом рентгеновского газа 40 000 св. лет.",incl:82,pa:220,x:-75087,y:207161,z:67608,color:0xc8c8c0,sz:16000,type3d:'edge-on'},
+    {name:"NGC 3184",name_ru:"NGC 3184",dist_mly:37.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Grand design spiral with symmetric two-arm structure. Has hosted three supernovae. Part of M101 Group.",desc_ru:"Большая спираль с тремя сверхновыми.",incl:16,pa:180,x:3411,y:116491,z:-97688,color:0xd0d0c8,sz:15000,type3d:'spiral',arms:2},
+    {name:"NGC 4725 C",name_ru:"NGC 4725 C",dist_mly:40.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Third perspective on NGC 4725 — the single-arm ringed spiral, atypical morphology.",desc_ru:"Третий ракурс NGC 4725 — необычная спираль с одним рукавом.",incl:45,pa:36,x:-22446,y:151988,z:37357,color:0xd8d0b8,sz:19000,type3d:'spiral',arms:2},
+    {name:"NGC 5676",name_ru:"NGC 5676",dist_mly:131.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral in Boötes with Seyfert-like nucleus and strong central concentration.",desc_ru:"Спираль с перемычкой в Волопасе с ядром типа Сейферта.",incl:45,pa:0,x:84557,y:272133,z:25851,color:0xd0c8b8,sz:17000,type3d:'spiral',arms:2},
+    {name:"NGC 4088",name_ru:"NGC 4088",dist_mly:51.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Peculiar spiral in UMa with warped and lopsided disk from interaction with NGC 4085.",desc_ru:"Пекулярная спираль с деформированным диском.",incl:65,pa:235,x:0,y:169797,z:-55170,color:0xd0c8b0,sz:16000,type3d:'spiral',arms:2},
+    {name:"NGC 5457 E",name_ru:"M101 E",dist_mly:21.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Fifth view of M101 — revealing its asymmetric southern arm enhanced by tidal interaction with companions.",desc_ru:"Пятый ракурс M101 — асимметричный южный рукав.",incl:18,pa:219,x:56030,y:99215,z:-11909,color:0xb8c8e0,sz:24000,type3d:'spiral',arms:5},
+    {name:"NGC 4157",name_ru:"NGC 4157",dist_mly:55.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Edge-on barred spiral in UMa with a prominent peanut-shaped bulge and thin disk.",desc_ru:"Рёберная спираль с ореховым балджем.",incl:84,pa:250,x:14828,y:179087,z:-45637,color:0xc8c8c0,sz:16000,type3d:'edge-on'},
+    {name:"NGC 3631",name_ru:"NGC 3631",dist_mly:45.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Nearly face-on grand design spiral used to test theories of spiral density waves. Low inclination makes arm structure clear.",desc_ru:"Фронтальная спираль — тест теорий волн плотности.",incl:18,pa:165,x:14288,y:140649,z:-90214,color:0xd0d0c8,sz:15000,type3d:'spiral',arms:2},
+    {name:"NGC 4051 B",name_ru:"NGC 4051 B",dist_mly:45.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of NLS1 narrow-line Seyfert — rapid X-ray variability reveals compact inner accretion disk.",desc_ru:"Второй ракурс NLS1.",incl:40,pa:315,x:25983,y:160377,z:-41581,color:0xc8c0b0,sz:12000,type3d:'spiral',arms:2},
+    {name:"NGC 3941",name_ru:"NGC 3941",dist_mly:55.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Lenticular galaxy in UMa with Seyfert 2 nucleus and dust ring. Sigma-velocity dispersion constrains BH mass.",desc_ru:"Линзообразная в Большой Медведице с ядром Сейферта 2.",x:19273,y:160565,z:-90676,color:0xffd0b0,sz:14000,type3d:'elliptical'},
+    {name:"NGC 3718",name_ru:"NGC 3718",dist_mly:52.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Highly warped lenticular or spiral — severe S-shaped warp from interaction with companion NGC 3729.",desc_ru:"Сильно деформированная линзообразная — S-образная деформация.",incl:70,pa:15,x:10263,y:151193,z:-97648,color:0xffd8c0,sz:16000,type3d:'edge-on'},
+    {name:"NGC 3729",name_ru:"NGC 3729",dist_mly:52.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral companion to NGC 3718, both in the M81 Group direction. Strongly perturbed arms.",desc_ru:"Компаньон NGC 3718 в группе M81.",incl:50,pa:15,x:11965,y:151193,z:-97454,color:0xd0c8b8,sz:13000,type3d:'spiral',arms:2},
+    {name:"NGC 2500",name_ru:"NGC 2500",dist_mly:33.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Late barred spiral (SBcd) in Leo Minor — low surface brightness with open arms.",desc_ru:"Поздняя спираль с перемычкой в Малом Льве.",incl:25,pa:112,x:-4002,y:86429,z:-114625,color:0xd0c8c0,sz:12000,type3d:'spiral',arms:2},
+    {name:"NGC 1003",name_ru:"NGC 1003",dist_mly:29.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Bulgeless edge-on spiral in Perseus region — important reference for pure-disk galaxy studies.",desc_ru:"Рёберная спираль без балджа в Персее.",incl:75,pa:180,x:82873,y:-27990,z:-102340,color:0xc8d0c8,sz:12000,type3d:'spiral',arms:3},
+    {name:"NGC 2655",name_ru:"NGC 2655",dist_mly:70.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Lenticular with Seyfert nucleus. Unusual for having both dust lanes and compact radio jets. Part of NGC 2655 group.",desc_ru:"Линзообразная с ядром Сейферта, пылевыми полосами и компактными джетами.",x:56571,y:137224,z:-147373,color:0xffd8c0,sz:16000,type3d:'elliptical'},
+    {name:"IC 4296 C",name_ru:"IC 4296 C",dist_mly:130.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Third view of IC 4296 — southern radio galaxy. Chandra cavities from AGN jet heating are most extensive known.",desc_ru:"Третий ракурс IC 4296 — наиболее протяжённые AGN-полости.",x:-164860,y:151050,z:176790,color:0xffd8b0,sz:24000,type3d:'elliptical'},
+    {name:"NGC 3115 D",name_ru:"NGC 3115 D",dist_mly:32.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Fourth view of the Spindle Galaxy — 2-billion-solar-mass BH confirmed here in 1992, first by kinematics.",desc_ru:"Четвёртый ракурс Веретена — ЧД 2 млрд масс Солнца, подтверждена в 1992.",incl:88,pa:225,x:-106813,y:83125,z:-41001,color:0xffe0c8,sz:15000,type3d:'edge-on'},
+    {name:"NGC 4494",name_ru:"NGC 4494",dist_mly:56.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Low-luminosity AGN elliptical in Coma Berenices direction. Famous for dark matter debate — some studies suggest it lacks DM.",desc_ru:"Эллиптическая у северного полюса — дискуссия о тёмной материи.",x:-56330,y:177926,z:13004,color:0xffd8b0,sz:16000,type3d:'elliptical'},
+    {name:"NGC 4278 B",name_ru:"NGC 4278 B",dist_mly:55.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of NGC 4278 — rare LLAGN elliptical with radio jets and counter-rotating stellar population.",desc_ru:"Второй ракурс NGC 4278 с контрвращением.",x:16586,y:183600,z:-19766,color:0xffd8b8,sz:13000,type3d:'elliptical'},
+    {name:"NGC 4589 B",name_ru:"NGC 4589 B",dist_mly:90.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of peculiar elliptical near north galactic pole with boxy isophotes and stellar streams.",desc_ru:"Второй ракурс — прямоугольные изофоты, звёздные потоки.",x:60051,y:226807,z:-34671,color:0xffd8c0,sz:17000,type3d:'elliptical'},
+    {name:"NGC 5322 B",name_ru:"NGC 5322 B",dist_mly:100.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of NGC 5322 — large elliptical with 90° kinematically decoupled core rotation.",desc_ru:"Второй ракурс NGC 5322 с ядром KDC.",x:79613,y:236379,z:16922,color:0xffe0c0,sz:19000,type3d:'elliptical'},
+    {name:"NGC 7619 C",name_ru:"NGC 7619 C",dist_mly:200.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Third view of Pegasus I BCG — used in earliest Hubble constant measurements using photometric distances.",desc_ru:"Третий ракурс BCG Пегаса I.",x:306139,y:-176776,z:-5343,color:0xffd8b0,sz:22000,type3d:'elliptical'},
+    {name:"NGC 6482",name_ru:"NGC 6482",dist_mly:180.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"A fossil group — an isolated giant elliptical that consumed all its companions. X-ray luminous halo represents the merged group.",desc_ru:"Реликтовая группа — эллиптическая, поглотившая всех компаньонов.",x:175750,y:-136423,z:250998,color:0xffe0c0,sz:22000,type3d:'elliptical'},
+    {name:"NGC 1600 B",name_ru:"NGC 1600 B",dist_mly:200.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of NGC 1600 — isolated elliptical with 17-billion-solar-mass BH shocking for its environment.",desc_ru:"Второй ракурс NGC 1600 — ЧД 17 млрд M☉ в изоляции.",x:-89862,y:-236573,z:-246896,color:0xffe0c0,sz:22000,type3d:'elliptical'},
+    {name:"NGC 6868",name_ru:"NGC 6868",dist_mly:110.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Dominant galaxy of the Telescopium Group in the deep southern sky. BCG with AGN-heated X-ray halo.",desc_ru:"Доминирующая в группе Телескопа — BCG с рентгеновским гало.",x:72393,y:-138946,z:210245,color:0xffd8b0,sz:18000,type3d:'elliptical'},
+    {name:"NGC 6769 Group",name_ru:"NGC 6769 Group",dist_mly:200.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Triplet of interacting spirals (NGC 6769, 6770, 6771) in Pavo — tidal bridges connect all three.",desc_ru:"Тройка взаимодействующих NGC 6769/70/71 — приливные мосты.",x:-45622,y:-132443,z:324618,color:0xd0c8c0,sz:26000,type3d:'irregular'},
+    {name:"NGC 6744 E",name_ru:"NGC 6744 E",dist_mly:30.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Fifth view of MW twin NGC 6744 — from below showing its southern arm structure extending below the MW plane.",desc_ru:"Пятый ракурс NGC 6744 снизу.",incl:50,pa:14,x:-25368,y:-123072,z:54402,color:0xffe0a8,sz:26000,type3d:'spiral',arms:2},
+    {name:"NGC 6300",name_ru:"NGC 6300",dist_mly:49.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred Seyfert 2 in the southern sky. Its soft X-ray excess and reflection spectrum constrain the AGN geometry.",desc_ru:"Спираль Сейферта 2 юга. Мягкий рентген ограничивает геометрию AGN.",incl:50,pa:120,x:-74593,y:-117097,z:106531,color:0xd0c0a0,sz:15000,type3d:'spiral',arms:2},
+    {name:"NGC 6221",name_ru:"NGC 6221",dist_mly:68.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Strongly barred Seyfert spiral paired with NGC 6215. Large HI gas disk extending beyond optical radius.",desc_ru:"Спираль с перемычкой Сейферта, диск HI превышает оптический.",incl:40,pa:180,x:-95322,y:-143207,z:113601,color:0xd0c0a8,sz:15000,type3d:'spiral',arms:2},
+    {name:"NGC 6025",name_ru:"NGC 6025",dist_mly:30.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Open cluster + background galaxy pair in Triangulum Australe. An example of a galaxy group in the southern MW zone.",desc_ru:"Звёздное скопление + галактика в Южном Треугольнике.",x:-74171,y:-88017,z:74171,color:0xb8b090,sz:4000,type3d:'irregular'},
+    {name:"IC 4296 D",name_ru:"IC 4296 D",dist_mly:130.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Fourth view — IC 4296 is part of the Hydra-Centaurus complex flowing toward the Great Attractor.",desc_ru:"Четвёртый ракурс — IC 4296 часть потока к Великому аттрактору.",x:-164860,y:151050,z:176790,color:0xffd8b0,sz:24000,type3d:'elliptical'},
+    {name:"ESO 269-G057",name_ru:"ESO 269-G057",dist_mly:170.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Dominant elliptical of the Hydra Cluster (A1060) direction. Giant X-ray halo from ~150 galaxy group members.",desc_ru:"Доминирующая эллиптическая — группа 150 галактик с рентгеновским гало.",x:-250908,y:111484,z:175687,color:0xffd0a8,sz:22000,type3d:'elliptical'},
+    {name:"NGC 5291",name_ru:"NGC 5291",dist_mly:180.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Head-on galaxy collision creating one of the largest known concentrations of star-forming 'Tidal Dwarf Galaxies' — 30 new dwarfs around the collider.",desc_ru:"Лобовое столкновение: 30 новых карликовых приливных галактик вокруг.",x:-25532,y:301464,z:144800,color:0xff9966,sz:20000,type3d:'irregular'},
+    {name:"NGC 4438 C",name_ru:"NGC 4438 C",dist_mly:50.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Third view of NGC 4438 (Eyes Galaxy) — stripped by both NGC 4435 and Virgo intracluster ram pressure.",desc_ru:"Третий ракурс NGC 4438 — давление кластерной среды и NGC 4435.",x:-44394,y:170753,z:11068,color:0xd0c0c0,sz:15000,type3d:'irregular'},
+    {name:"NGC 697",name_ru:"NGC 697",dist_mly:120.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Highly inclined spiral in Perseus. One of the few massive spirals found in isolation outside of groups.",desc_ru:"Наклонённая спираль в Персее, изолированная от групп.",incl:73,pa:130,x:141404,y:-61605,z:-226295,color:0xd0c8c0,sz:18000,type3d:'spiral',arms:2},
+    {name:"NGC 759",name_ru:"NGC 759",dist_mly:205.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Giant elliptical dominant in its group in Perseus. Extended stellar halo with X-ray emission.",desc_ru:"Гигантская эллиптическая группы в Персее.",x:130105,y:-86594,z:-322023,color:0xffe0c0,sz:22000,type3d:'elliptical'},
+    {name:"NGC 507 B",name_ru:"NGC 507 B",dist_mly:230.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of NGC 507 — bright cD BCG in Perseus-Pisces Supercluster with giant radio jets.",desc_ru:"Второй ракурс NGC 507 — cD BCG со Сверхскопления Персей-Рыбы.",x:266546,y:-104506,z:-248558,color:0xffd8b0,sz:25000,type3d:'elliptical'},
+    {name:"NGC 499",name_ru:"NGC 499",dist_mly:225.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Companion elliptical to NGC 507 in their galaxy group — forms a physical pair at 120,000 ly separation.",desc_ru:"Компаньон NGC 507 — физическая пара в 120 000 св. лет.",x:263633,y:-103364,z:-245842,color:0xffd0b0,sz:20000,type3d:'elliptical'},
+    {name:"NGC 972",name_ru:"NGC 972",dist_mly:60.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"HII-rich spiral in Perseus seen in HI surveys of the Perseus-Pisces filament direction.",desc_ru:"Спираль, богатая HII-областями, в нити Персей-Рыбы.",incl:60,pa:155,x:95873,y:-53376,z:-159559,color:0xd0c0b0,sz:14000,type3d:'spiral',arms:2},
+    {name:"NGC 678",name_ru:"NGC 678",dist_mly:117.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Nearly edge-on spiral in Perseus Cloud. Dark dust lane clearly visible in optical images.",desc_ru:"Рёберная спираль Облака Персея с пылевой полосой.",incl:82,pa:0,x:140070,y:-83563,z:-215690,color:0xd0c8c0,sz:15000,type3d:'edge-on'},
+    {name:"NGC 680",name_ru:"NGC 680",dist_mly:117.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Elliptical companion to NGC 678 — the pair forms an interacting group within Perseus Cloud.",desc_ru:"Эллиптический компаньон NGC 678 в Облаке Персея.",x:140070,y:-83563,z:-215690,color:0xffd8c0,sz:14000,type3d:'elliptical'},
+    {name:"NGC 7418",name_ru:"NGC 7418",dist_mly:73.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Low-inclination grand design spiral in Grus with bright two-arm structure and star-forming regions.",desc_ru:"Фронтальная спираль в Журавле с двумя рукавами.",incl:20,pa:145,x:-47870,y:-174970,z:112776,color:0xd0c8b8,sz:14000,type3d:'spiral',arms:2},
+    {name:"NGC 7421",name_ru:"NGC 7421",dist_mly:104.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral near NGC 7418 in Grus — likely physically associated based on similar redshift.",desc_ru:"Спираль с перемычкой у NGC 7418 в Журавле.",incl:35,pa:0,x:-57138,y:-208843,z:134608,color:0xd0c8a8,sz:14000,type3d:'spiral',arms:2},
+    {name:"NGC 7329",name_ru:"NGC 7329",dist_mly:93.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Bright elliptical in Grus, dominant in its group. Extended X-ray emission traced to 200,000 ly.",desc_ru:"Яркая эллиптическая в Журавле, доминирует в группе.",x:-56683,y:-181953,z:147664,color:0xffd8b0,sz:16000,type3d:'elliptical'},
+    {name:"IC 5201",name_ru:"IC 5201",dist_mly:17.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Low-surface-brightness spiral in Grus visible through deep imaging — bulgeless extended disk.",desc_ru:"Спираль с низкой яркостью в Журавле — диск без балджа.",incl:50,pa:135,x:-21704,y:-81226,z:59633,color:0xc0c8c0,sz:10000,type3d:'spiral',arms:3},
+    {name:"NGC 7496",name_ru:"NGC 7496",dist_mly:43.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral in Sculptor studied by JWST in 2022 (PHANGS survey) — resolved star formation at 10 pc scale.",desc_ru:"Спираль с перемычкой: JWST 2022 разрешил звездообразование на 10 пк.",incl:35,pa:180,x:-12426,y:-137488,z:88417,color:0xd0c0a8,sz:14000,type3d:'spiral',arms:2},
+    {name:"NGC 7424 C",name_ru:"NGC 7424 C",dist_mly:40.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Third view of NGC 7424 — nearly face-on grand design spiral in Grus with ULX source.",desc_ru:"Третий ракурс NGC 7424 — фронтальная большая спираль с ULX.",incl:18,pa:185,x:-32891,y:-103732,z:114707,color:0xc8d8c0,sz:16000,type3d:'spiral',arms:2},
+    {name:"NGC 7205",name_ru:"NGC 7205",dist_mly:76.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral in Grus. Member of a small but dense galaxy group south of the galactic plane.",desc_ru:"Спираль с перемычкой в Журавле — южная группа.",incl:55,pa:140,x:-70558,y:-140092,z:151313,color:0xd0c8b0,sz:15000,type3d:'spiral',arms:2},
+    {name:"NGC 4396",name_ru:"NGC 4396",dist_mly:55.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Edge-on Virgo Cluster member — ram-pressure stripped with extended HI tail pointing toward the cluster center.",desc_ru:"Рёберная в Деве — хвост давления потока HI.",incl:80,pa:0,x:-54489,y:176330,z:17704,color:0xd0c8c0,sz:12000,type3d:'edge-on'},
+    {name:"NGC 4402 C",name_ru:"NGC 4402 C",dist_mly:57.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Third view of NGC 4402 — Virgo Cluster edge-on spiral with prominent dust lane bent by ram pressure.",desc_ru:"Третий ракурс NGC 4402 — пылевая полоса согнута давлением.",incl:80,pa:90,x:-50010,y:181434,z:14340,color:0xd0c8b8,sz:13000,type3d:'edge-on'},
+    {name:"NGC 4606",name_ru:"NGC 4606",dist_mly:56.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Small barred spiral south of M87 in Virgo. Infalling member showing stripped HI gas.",desc_ru:"Маленькая спираль к югу от M87 — потеря HI.",incl:55,pa:10,x:-65701,y:172210,z:32044,color:0xd0c8b8,sz:12000,type3d:'spiral',arms:2},
+    {name:"NGC 4607",name_ru:"NGC 4607",dist_mly:56.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Edge-on companion to NGC 4606 in Virgo — both losing gas to the cluster environment.",desc_ru:"Рёберная компаньон NGC 4606 — оба теряют газ.",incl:82,pa:0,x:-65701,y:172210,z:32044,color:0xd0c8c0,sz:12000,type3d:'edge-on'},
+    {name:"NGC 5746 C",name_ru:"NGC 5746 C",dist_mly:100.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Third view of NGC 5746 — edge-on barred spiral with boxy peanut-shaped bulge indicating a bar.",desc_ru:"Третий ракурс NGC 5746 — ореховый балдж указывает на перемычку.",incl:88,pa:170,x:36398,y:199658,z:145984,color:0xd0c8b8,sz:16000,type3d:'edge-on'},
+    {name:"NGC 5792",name_ru:"NGC 5792",dist_mly:82.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral in Libra — one of the few large isolated barred spirals not associated with a group.",desc_ru:"Спираль с перемычкой в Весах — редкая изолированная.",incl:70,pa:95,x:12272,y:142468,z:175505,color:0xd0c8b8,sz:16000,type3d:'spiral',arms:2},
+    {name:"NGC 5334",name_ru:"NGC 5334",dist_mly:60.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral in Virgo direction — relatively isolated and undisturbed, useful for undisturbed galaxy studies.",desc_ru:"Спираль с перемычкой в направлении Девы — изолированная.",incl:38,pa:180,x:-19064,y:150493,z:120366,color:0xd0c0b0,sz:14000,type3d:'spiral',arms:2},
+    {name:"NGC 4941",name_ru:"NGC 4941",dist_mly:55.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Seyfert 2 spiral in Virgo region. Hosts a low-luminosity AGN. Past interaction left faint tidal streams.",desc_ru:"Спираль Сейферта 2 в области Девы с потоками от прошлого взаимодействия.",incl:52,pa:200,x:-68590,y:163702,z:53588,color:0xd0c0b0,sz:13000,type3d:'spiral',arms:2},
+    {name:"NGC 4981",name_ru:"NGC 4981",dist_mly:78.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral in Virgo Cloud. High star formation rate in nuclear ring from bar-driven inflow.",desc_ru:"Спираль с перемычкой в Облаке Девы — кольцо вспышки от перемычки.",incl:45,pa:240,x:-84569,y:191213,z:70961,color:0xd0c8b0,sz:14000,type3d:'spiral',arms:2},
+    {name:"NGC 2782",name_ru:"NGC 2782",dist_mly:112.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Post-merger galaxy with stellar shells and two faint tidal tails. Seyfert 1 nucleus from the merger remnant.",desc_ru:"Пост-слиянная галактика с оболочками, Сейферт 1 от слияния.",x:-70323,y:166502,z:-193213,color:0xff9966,sz:16000,type3d:'irregular'},
+    {name:"NGC 2300",name_ru:"NGC 2300",dist_mly:96.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Dominant elliptical of its group — Chandra detected very hot X-ray gas from the group, not just the galaxy.",desc_ru:"Доминирующая эллиптическая группы с X-ray газом всей группы.",x:89650,y:122474,z:-192256,color:0xffd8b0,sz:18000,type3d:'elliptical'},
+    {name:"NGC 2276",name_ru:"NGC 2276",dist_mly:96.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Disturbed spiral interacting with NGC 2300 — one-sided starburst on the leading edge of ram pressure.",desc_ru:"Нарушенная спираль рядом с NGC 2300 — односторонняя вспышка.",incl:45,pa:200,x:92992,y:122474,z:-190663,color:0xff9966,sz:14000,type3d:'spiral',arms:3},
+    {name:"NGC 2268",name_ru:"NGC 2268",dist_mly:70.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Barred spiral in Camelopardalis — relatively undisturbed despite being at the center of a compact group.",desc_ru:"Спираль с перемычкой в Жирафе — в центре компактной группы.",incl:50,pa:150,x:86702,y:98197,z:-163064,color:0xd0c0b0,sz:14000,type3d:'spiral',arms:2},
+    {name:"NGC 2336",name_ru:"NGC 2336",dist_mly:90.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Grand design spiral in Camelopardalis — among the largest bright spirals in the northern sky.",desc_ru:"Большая спираль в Жирафе — одна из крупнейших ярких на севере.",incl:25,pa:175,x:91567,y:96466,z:-196366,color:0xd0d0c8,sz:18000,type3d:'spiral',arms:2},
+    {name:"NGC 2403 D",name_ru:"NGC 2403 D",dist_mly:8.0,type:"spiral galaxy",type_ru:"spiral галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Fourth view of NGC 2403 — MW-mass spiral with supernova 2004dj studied for years as a young stellar population probe.",desc_ru:"Четвёртый ракурс NGC 2403 — SN 2004dj.",incl:62,pa:308,x:30618,y:35355,z:-53033,color:0xc8d0d8,sz:16000,type3d:'spiral',arms:3},
+    {name:"Arp 94",name_ru:"Arp 94",dist_mly:66.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Arp 94 — NGC 3226/3227 pair — classic interacting Seyfert spiral + elliptical with tidal bridge.",desc_ru:"Арп 94 — пара NGC 3226/3227.",x:-80307,y:168378,z:-80307,color:0xd0c0b0,sz:14000,type3d:'irregular'},
+    {name:"Arp 220 B",name_ru:"Арп 220 B",dist_mly:250.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of Arp 220 — the nearest ULIRG, formed by a major galaxy merger 700 million years ago. Two nuclei still separated by 1,200 ly.",desc_ru:"Второй ракурс Арп 220 — ближайший УЛИК (2 ядра в 1200 св. лет).",x:-29030,y:349015,z:183290,color:0xff9955,sz:20000,type3d:'irregular'},
+    {name:"NGC 6240 B",name_ru:"NGC 6240 B",dist_mly:400.0,type:"irregular galaxy",type_ru:"irregular галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of NGC 6240 — dual AGN system where both black holes will eventually merge. X-ray superwind 400 km/s.",desc_ru:"Второй ракурс NGC 6240 — двойное AGN, суперветер 400 км/с.",x:42841,y:394005,z:304834,color:0xff8855,sz:20000,type3d:'irregular'},
+    {name:"NGC 1266",name_ru:"NGC 1266",dist_mly:100.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Compact lenticular with a powerful molecular outflow — AGN drives gas out at 110 km/s faster than escape velocity, yet AGN is weak. 'Drowned' star formation.",desc_ru:"Компактная линзообразная с молекулярным оттоком — AGN останавливает звездообразование.",x:-15935,y:-170499,z:-182142,color:0xffd8c0,sz:14000,type3d:'elliptical'},
+    {name:"NGC 3607",name_ru:"NGC 3607",dist_mly:75.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Giant lenticular in Leo Group with complex stellar streams and LINER nucleus. Part of a triplet (NGC 3605, 3607, 3608).",desc_ru:"Гигантская линзообразная в Льве с потоками — тройная система.",x:-77870,y:199295,z:-33054,color:0xffd8b0,sz:16000,type3d:'elliptical'},
+    {name:"NGC 3608",name_ru:"NGC 3608",dist_mly:75.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Elliptical companion to NGC 3607 — kinematic analysis revealed a secondary black hole at 40 million solar masses.",desc_ru:"Эллиптический компаньон NGC 3607 — вторая ЧД 40 млн M☉.",x:-77870,y:199295,z:-33054,color:0xffd0b0,sz:14000,type3d:'elliptical'},
+    {name:"NGC 3605",name_ru:"NGC 3605",dist_mly:75.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Compact dwarf elliptical member of the Leo triplet (NGC 3605/07/08). Compact mass concentration.",desc_ru:"Компактная карликовая эллиптическая из Тройки Льва.",x:-77870,y:199295,z:-33054,color:0xffd8c0,sz:10000,type3d:'elliptical'},
+    {name:"NGC 4026",name_ru:"NGC 4026",dist_mly:48.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Edge-on lenticular in Ursa Major with kinematic detection of a central black hole of 200 million solar masses.",desc_ru:"Рёберная линзообразная в UMa с ЧД 200 млн M☉.",incl:84,pa:115,x:30476,y:165636,z:-40443,color:0xffd0b0,sz:12000,type3d:'edge-on'},
+    {name:"NGC 4111",name_ru:"NGC 4111",dist_mly:54.0,type:"edge-on galaxy",type_ru:"edge-on галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Edge-on lenticular with a polar dust ring — accreted from a past gas-rich minor merger.",desc_ru:"Рёберная с полярным пылевым кольцом — реликт малого слияния.",incl:86,pa:150,x:19097,y:179697,z:-33078,color:0xffe0c0,sz:14000,type3d:'edge-on'},
+    {name:"NGC 4143",name_ru:"NGC 4143",dist_mly:55.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"LINER/Seyfert lenticular in CVn with compact nuclear radio emission indicating low-level AGN activity.",desc_ru:"LINER/Сейферт линзообразная с компактным радиоядром.",x:20219,y:180653,z:-36477,color:0xffd8c0,sz:12000,type3d:'elliptical'},
+    {name:"NGC 3945",name_ru:"NGC 3945",dist_mly:56.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Double-barred lenticular (nuclear bar within large bar) — a rare case used to study secular evolution driven by nested bars.",desc_ru:"Двуперемычечная линзообразная — изучение секулярной эволюции.",x:3065,y:165184,z:-87776,color:0xffd8c0,sz:16000,type3d:'elliptical'},
+    {name:"NGC 4245",name_ru:"NGC 4245",dist_mly:53.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Lenticular with multi-ring structure — inner ring + outer ring + bar — a classic ringed S0 galaxy.",desc_ru:"Линзообразная с многокольцевой структурой.",x:12942,y:171026,z:-60888,color:0xffd8c0,sz:13000,type3d:'elliptical'},
+    {name:"Abell 3571",name_ru:"Абель 3571",dist_mly:620.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"The most X-ray luminous cluster in the Shapley Supercluster — Abell 3571. Its BCG has jets inflating giant radio bubbles in the ICM.",desc_ru:"Наиболее рентгеновски яркое скопление Шэпли. BCG с джетами.",x:-355044,y:-263077,z:438444,color:0xddeecc,sz:65000,type3d:'elliptical'},
+    {name:"Abell 3528",name_ru:"Абель 3528",dist_mly:620.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Abell 3528 — a Shapley Supercluster member forming a chain with A3532 and A3530. Merging at 1,500 km/s.",desc_ru:"Абель 3528 — цепочка скоплений Шэпли, слияние со 1500 км/с.",x:-367774,y:-292243,z:408455,color:0xddeecc,sz:60000,type3d:'elliptical'},
+    {name:"Abell 3532",name_ru:"Абель 3532",dist_mly:620.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Abell 3532 — third cluster in the Shapley core chain, connected to A3528 by a hot X-ray bridge.",desc_ru:"Абель 3532 — третье скопление цепочки Шэпли с рентгеновским мостом.",x:-363881,y:-282606,z:418597,color:0xddeecc,sz:60000,type3d:'elliptical'},
+    {name:"Abell 3560",name_ru:"Абель 3560",dist_mly:640.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Cluster at the edge of the Shapley Supercluster core. Falling toward the main concentration at 600 km/s.",desc_ru:"Скопление на краю ядра Шэпли, падает со 600 км/с.",x:-351428,y:-296919,z:433977,color:0xddeecc,sz:62000,type3d:'elliptical'},
+    {name:"Abell 3266 B",name_ru:"Абель 3266 B",dist_mly:925.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Second view of Abell 3266 — one of the hottest clusters, with a complex double radio relic marking merger shocks.",desc_ru:"Второй ракурс A3266 — горячейшее скопление, двойной радиореликт.",x:-527858,y:-546946,z:18433,color:0xaaddff,sz:68000,type3d:'elliptical'},
+    {name:"Abell 3158",name_ru:"Абель 3158",dist_mly:700.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Southern massive cluster with a giant radio halo — the first southern cluster detected by eROSITA's all-sky survey.",desc_ru:"Южное скопление с радиогало — одно из первых в обзоре eROSITA.",x:-398002,y:-528247,z:6947,color:0xddeebb,sz:62000,type3d:'elliptical'},
+    {name:"Abell 1651",name_ru:"Абель 1651",dist_mly:985.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Rich cool-core cluster in the Hydra-Centaurus-Pavo region. BCG has complex H-alpha filaments.",desc_ru:"Богатое скопление с холодным ядром в регионе Гидры-Центавра.",x:-73968,y:737299,z:257959,color:0xddeebb,sz:68000,type3d:'elliptical'},
+    {name:"Abell 1736",name_ru:"Абель 1736",dist_mly:1000.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Abell 1736 — merging cluster pair in the Hydra-Centaurus direction with X-ray substructure.",desc_ru:"Абель 1736 — сливающаяся пара в направлении Гидры-Центавра.",x:-63108,y:647596,z:449039,color:0xddeebb,sz:70000,type3d:'elliptical'},
+    {name:"Abell 3574",name_ru:"Абель 3574",dist_mly:630.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Southern cluster east of Shapley — member of the larger Shapley Supercluster concentration.",desc_ru:"Южное скопление восточнее Шэпли — часть сверхскопления.",x:-350780,y:-193906,z:482807,color:0xddeebb,sz:58000,type3d:'elliptical'},
+    {name:"Abell 1644",name_ru:"Абель 1644",dist_mly:950.0,type:"elliptical galaxy",type_ru:"elliptical галактика",stars:"~80 billion",stars_ru:"~80 млрд",desc:"Abell 1644 — cool-core cluster whose BCG contains a unique counter-rotating gas disk orbiting the central BH.",desc_ru:"Абель 1644 — BCG с контрвращающимся газовым диском.",x:-115243,y:535270,z:542176,color:0xddeebb,sz:68000,type3d:'elliptical'},
   ];
 
   // ── Build realistic point-cloud galaxy ────────────────────────────────────
   const _rng=(seed)=>{let s=(seed>>>0)||1;return()=>{s=Math.imul(s,1664525)+1013904223>>>0;return s/0x100000000;};};
 
   function buildGalaxyCloud(gd){
+    // ── Per-galaxy unique DNA derived from name + position seed ───────────────
     const seed=Math.abs(gd.x+gd.y*7+gd.z*13)|0;
     const rng=_rng(seed);
+    // Secondary RNG from name hash for stable per-galaxy traits
+    let nh=0;for(let i=0;i<(gd.name||'').length;i++)nh=(nh*31+gd.name.charCodeAt(i))>>>0;
+    const rng2=_rng(nh^seed);
+    // Burn a few to decorrelate
+    rng();rng();rng2();rng2();
+
     const C=new THREE.Color(gd.color);
-    const sz=gd.sz;
-    const arms=gd.arms||2;
-    const isE=gd.type3d==='elliptical';
-    const isEd=gd.type3d==='edge-on';
-    const isIr=gd.type3d==='irregular';
-    const isSp=!isE&&!isEd&&!isIr;
+    const sz=gd.sz, arms=gd.arms||2;
+    const isE=gd.type3d==='elliptical', isEd=gd.type3d==='edge-on';
+    const isIr=gd.type3d==='irregular', isSp=!isE&&!isEd&&!isIr;
 
-    // Real bar detection
+    // ── UNIQUE GALAXY TRAITS (stable per galaxy, derived from name) ─────────
     const nm=gd.name||'';
-    const hasBar=isSp&&(nm.match(/barred|SB[abc]|M83|M95|NGC 13|NGC 10|NGC 1097|NGC 1300|NGC 1365|NGC 1433|NGC 1512|NGC 1566|NGC 1672|NGC 2442|NGC 7552|NGC 1350|NGC 6744|NGC 1232|NGC 4725/i)||rng()<0.42);
-    const barLen=hasBar?sz*(0.18+rng()*0.12):0;
-    const pitch=0.18+rng()*0.09; // spiral arm pitch angle (radians)
+    // Is it a known type from name?
+    const isSeyfert=nm.match(/Seyfert|Mrk|Mrk|NGC 1068|NGC 4051|NGC 4151|NGC 5033|NGC 3783|NGC 1566|NGC 7213/i);
+    const isStarburst=nm.match(/starburst|M82|NGC 253|NGC 4945|NGC 1569|NGC 3628|Arp 220|NGC 5253|IC 10/i);
+    const isMerging=nm.match(/merging|Antennae|Mice|Arp 87|NGC 520|NGC 4038|NGC 7252|Atoms|interacting|Tadpole|Whirlpool/i);
+    const isBarred=nm.match(/barred|SBb|SBc|SBa|M83|M95|M58|NGC 13|NGC 10|NGC 1097|NGC 1300|NGC 1365|NGC 1433|NGC 1512|NGC 1566|NGC 1672|NGC 2442|NGC 7552|NGC 1350|NGC 6744|NGC 1232|NGC 4725|NGC 1672|NGC 7479/i)||rng2()<0.38;
+    const isRing=nm.match(/ring|ringed|M94|NGC 7552|NGC 4725|NGC 1350|NGC 1433|Hoag/i);
+    const isFlocculent=nm.match(/flocculent|M101|NGC 2841|NGC 5055|NGC 3521|NGC 2903|NGC 2997/i);
+    const isLopsided=nm.match(/lopsided|asymm|M96|NGC 772|NGC 4038|irregular/i)||rng2()<0.15;
+    const hasBarExplicit=isBarred;
+    const hasBar=isSp&&hasBarExplicit;
 
-    // Orientation: incl=0 face-on, 90=edge-on; pa=position angle
-    const inclRad=(gd.incl!==undefined?gd.incl:
-      isEd?90: isE?(25+seed%100): (15+seed%65))*Math.PI/180;
-    const paRad=(gd.pa!==undefined?gd.pa:(seed%360))*Math.PI/180;
+    // Unique structural parameters (stable per galaxy)
+    const barLen=hasBar?sz*(0.14+rng2()*0.18):0;
+    const pitch=isFlocculent?(0.08+rng2()*0.06):(0.14+rng2()*0.14); // tight=grand design, loose=flocculent
+    const diskThick=sz*(0.009+rng2()*0.014); // thin to thick disk
+    const bulgeFrac=isStarburst?0.12:(0.15+rng2()*0.22); // bulge-to-total ratio
+    const armSpread=isFlocculent?(0.04+rng2()*0.06):(0.010+rng2()*0.018); // arm scatter
+    const armFade=0.40+rng2()*0.35; // how quickly arms fade outward
+    const hiiDensity=isStarburst?0.8:(isSeyfert?0.3:(0.2+rng2()*0.4)); // HII region density
+    const twistExtra=rng2()*0.8-0.4; // arm twist asymmetry (lopsided galaxies)
+    const barTwist=(rng2()-0.5)*0.3; // bar angle offset from major axis
+    // Elliptical: unique flattening and color temp
+    const ellFlat=isE?(0.45+Math.floor(nh%7)*0.07):0.7; // E0..E6
+    const ellRedder=isE&&(rng2()<0.6); // 60% of ellipticals are redder
+    // Ring params
+    const ringRadius=isRing?(sz*(0.30+rng2()*0.20)):0;
+    const ringWidth=ringRadius*0.06;
+    // Seyfert: brighter nucleus
+    const nuclearBright=isSeyfert?(3.5+rng2()*1.5):isStarburst?(2.5+rng2()*1.0):(1.6+rng2()*0.6);
+    // Merger: create tidal tails
+    const tidalAng=rng2()*Math.PI*2;
+    const tidalLen=isMerging?(sz*(0.35+rng2()*0.35)):0;
+    // Warp (for edge-on)
+    const warpAmp=sz*(0.01+rng2()*0.03);
+    const warpFreq=1.5+rng2()*2.0;
+    // Color personality
+    const colorTemp=rng2(); // 0=very red/old, 1=very blue/young
+    const redExtra=ellRedder?0.15:0;
+    const blueExtra=isStarburst?0.25:(colorTemp<0.3?0:colorTemp*0.1);
+
+    // Orientation
+    const inclRad=(gd.incl!==undefined?gd.incl:isEd?90:isE?(20+nh%110):(10+nh%70))*Math.PI/180;
+    const paRad=(gd.pa!==undefined?gd.pa:(nh%360))*Math.PI/180;
     const ci=Math.cos(inclRad),si=Math.sin(inclRad),cp=Math.cos(paRad),sp=Math.sin(paRad);
     function rot(lx,ly,lz){
-      const y2=ly*ci-lz*si, z2=ly*si+lz*ci;
-      return [lx*cp+z2*sp, y2, -lx*sp+z2*cp];
+      const y2=ly*ci-lz*si,z2=ly*si+lz*ci;
+      return [lx*cp+z2*sp,y2,-lx*sp+z2*cp];
     }
+    function wp(lx,ly,lz){const[rx,ry,rz]=rot(lx,ly,lz);return[gd.x+rx,gd.y+ry,gd.z+rz];}
+    function cl(v){return Math.max(0,Math.min(1,v));}
 
-    // ── PHOTOREALISTIC MULTI-PASS RENDERING ───────────────────────────────────
-    // Colors inspired by real Hubble/JWST photos:
-    // Core: brilliant golden-white; Bulge: warm amber; Arms: mix; HII: pink+blue; Halo: blue-white
-    function addCloud(nPts, ptSz, opacity, generator){
-      if(nPts<=0)return;
+    // ── POINT CLOUD BUILDER ───────────────────────────────────────────────────
+    function addCloud(n,ptSz,opacity,gen){
+      if(n<=0)return;
       const pos=[],col=[];
-      for(let i=0;i<nPts;i++){const r=generator(i);if(r)pos.push(...r[0]),col.push(...r[1]);}
+      for(let i=0;i<n;i++){const r=gen(i);if(r){pos.push(...r[0]);col.push(...r[1]);}}
       if(!pos.length)return;
       const g2=new THREE.BufferGeometry();
       g2.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3));
       g2.setAttribute('color',new THREE.BufferAttribute(new Float32Array(col),3));
-      galaxyScene.add(new THREE.Points(g2,new THREE.PointsMaterial({
-        size:ptSz,vertexColors:true,sizeAttenuation:false,
-        transparent:true,opacity:opacity,depthWrite:false
-      })));
+      galaxyScene.add(new THREE.Points(g2,new THREE.PointsMaterial({size:ptSz,vertexColors:true,sizeAttenuation:false,transparent:true,opacity,depthWrite:false})));
     }
 
-    // Helper: place a point in world space
-    function wp(lx,ly,lz){
-      const [rx,ry,rz]=rot(lx,ly,lz);
-      return [gd.x+rx,gd.y+ry,gd.z+rz];
-    }
-    // Helper: clamp color
-    function clamp(v){return Math.max(0,Math.min(1,v));}
-    function blue2(r){return r()<0.25?0.15+r()*0.12:0;}
-
+    // ── GALAXY-TYPE RENDERING ─────────────────────────────────────────────────
     if(isE){
-      // ── ELLIPTICAL: de Vaucouleurs r^(1/4) profile, 4 passes ──────────────
-      const flat=0.55+seed%6*0.07; // flattening E0-E6
-      // Pass 1: outer faint halo
-      addCloud(800,1.2,0.22,()=>{
+      // Elliptical: de Vaucouleurs profile, unique flattening + color temperature
+      const reDisk=sz*0.38;
+      // Outer faint halo
+      addCloud(700,1.2,0.18,()=>{
         const u=rng()+1e-9,t=rng()*Math.PI*2,p=Math.acos(2*rng()-1);
-        const r=sz*(0.35+rng()*0.65);
-        const lx=r*Math.sin(p)*Math.cos(t),ly=r*Math.cos(p)*flat,lz=r*Math.sin(p)*Math.sin(t);
-        const w=0.06+rng()*0.08;
-        return [wp(lx,ly,lz),[clamp(C.r*0.6+0.1),clamp(C.g*0.55+0.08),clamp(C.b*0.5+0.12)]];
+        const r=sz*(0.32+rng()*0.68);
+        const lx=r*Math.sin(p)*Math.cos(t),ly=r*Math.cos(p)*ellFlat,lz=r*Math.sin(p)*Math.sin(t);
+        const w=0.05+rng()*0.08;
+        return[wp(lx,ly,lz),[cl(C.r*0.50+0.08+redExtra*0.5),cl(C.g*0.45+0.06),cl(C.b*0.48+0.10)]];
       });
-      // Pass 2: main body — de Vaucouleurs
-      addCloud(2200,1.3,0.80,()=>{
+      // Main body
+      addCloud(2400,1.3,0.82,()=>{
         const u=rng()+1e-9,t=rng()*Math.PI*2,p=Math.acos(2*rng()-1);
-        const re=sz*0.38;
-        const r=re*Math.pow(-Math.log(u)*0.22,4);
-        const lx=r*Math.sin(p)*Math.cos(t),ly=r*Math.cos(p)*flat,lz=r*Math.sin(p)*Math.sin(t);
-        const w=Math.exp(-r/(re*0.4));
-        const br=0.75+rng()*0.25;
-        return [wp(lx,ly,lz),[clamp((C.r+w*0.35)*br),clamp((C.g+w*0.18)*br),clamp((C.b-w*0.12+0.05)*br)]];
+        const r=reDisk*Math.pow(-Math.log(u)*0.22,4);
+        const lx=r*Math.sin(p)*Math.cos(t),ly=r*Math.cos(p)*ellFlat,lz=r*Math.sin(p)*Math.sin(t);
+        const w=cl(Math.exp(-r/(reDisk*0.38)));
+        const br=0.72+rng()*0.28;
+        return[wp(lx,ly,lz),[cl((C.r+w*0.38+redExtra)*br),cl((C.g+w*0.18)*br),cl((C.b-w*0.12+blueExtra)*br)]];
       });
-      // Pass 3: bright inner stars
-      addCloud(180,1.4,0.92,()=>{
+      // Inner bright core
+      addCloud(200,1.4,0.90,()=>{
         const u=rng()+1e-9,t=rng()*Math.PI*2,p=Math.acos(2*rng()-1);
-        const r=sz*0.12*Math.pow(-Math.log(u)*0.15,4);
-        const lx=r*Math.sin(p)*Math.cos(t),ly=r*Math.cos(p)*flat,lz=r*Math.sin(p)*Math.sin(t);
-        const br=1.15+rng()*0.25;
-        return [wp(lx,ly,lz),[clamp((C.r+0.30)*br),clamp((C.g+0.20)*br),clamp((C.b+0.08)*br)]];
+        const r=sz*0.10*Math.pow(-Math.log(u)*0.15,4);
+        const lx=r*Math.sin(p)*Math.cos(t),ly=r*Math.cos(p)*ellFlat,lz=r*Math.sin(p)*Math.sin(t);
+        const br=1.15+rng()*0.30;
+        return[wp(lx,ly,lz),[cl((C.r+0.35+redExtra)*br),cl((C.g+0.22)*br),cl((C.b+0.08)*br)]];
       });
-      // Pass 4: nuclear cluster — brilliant
-      addCloud(60,1.5,1.0,()=>{
-        const r=rng()*sz*0.04,a=rng()*Math.PI*2,b2=rng()*Math.PI-Math.PI/2;
-        const lx=r*Math.cos(b2)*Math.cos(a),ly=r*Math.sin(b2)*flat,lz=r*Math.cos(b2)*Math.sin(a);
-        const br=1.8+rng()*0.5;
-        return [wp(lx,ly,lz),[clamp((C.r+0.45)*br),clamp((C.g+0.38)*br),clamp((C.b+0.15)*br)]];
+      // Nucleus
+      addCloud(70,1.6,1.0,()=>{
+        const r=rng()*sz*0.035,a=rng()*Math.PI*2,b2=rng()*Math.PI-Math.PI/2;
+        const lx=r*Math.cos(b2)*Math.cos(a),ly=r*Math.sin(b2)*ellFlat,lz=r*Math.cos(b2)*Math.sin(a);
+        const br=nuclearBright;
+        return[wp(lx,ly,lz),[cl((C.r+0.50)*br),cl((C.g+0.40)*br),cl((C.b+0.18)*br)]];
       });
 
     } else if(isEd){
-      // ── EDGE-ON: ultra-thin disk + bulge + dust lane ───────────────────────
-      const HZ=sz*0.009; // very thin scale height
-      const HR=sz*0.30;  // radial scale length
-      const bulgeR=sz*0.10;
-      const dustH=sz*0.003; // dust lane half-height
-      // Outer stellar halo (sphere)
-      addCloud(500,1.2,0.18,()=>{
-        const r=(0.25+rng()*0.75)*sz,ph=rng()*Math.PI*2,th=Math.acos(2*rng()-1);
-        const lx=r*Math.sin(th)*Math.cos(ph),ly=r*Math.cos(th)*0.30,lz=r*Math.sin(th)*Math.sin(ph);
-        return [wp(lx,ly,lz),[clamp(C.r*0.5+0.08),clamp(C.g*0.45+0.07),clamp(C.b*0.55+0.12)]];
+      // Edge-on: unique warp, dust lane thickness, bulge ratio
+      const HZ=diskThick, HR=sz*0.28;
+      const dustH=sz*(0.002+rng2()*0.004); // varies: thick dust (NGC 4565) vs thin
+      const bFrac=bulgeFrac;
+      // Stellar halo
+      addCloud(450,1.2,0.16,()=>{
+        const r=(0.2+rng()*0.8)*sz,ph=rng()*Math.PI*2,th=Math.acos(2*rng()-1);
+        const lx=r*Math.sin(th)*Math.cos(ph),ly=r*Math.cos(th)*0.28,lz=r*Math.sin(th)*Math.sin(ph);
+        return[wp(lx,ly,lz),[cl(C.r*0.42+0.10),cl(C.g*0.40+0.10),cl(C.b*0.50+0.18)]];
       });
-      // Main disk (exponential, with dust lane gap)
-      addCloud(3200,1.3,0.82,()=>{
-        const isBulge=rng()<0.35;
-        let lx,ly,lz,w;
-        if(isBulge){
-          const r=rng()*bulgeR,a=rng()*Math.PI*2;
-          lx=Math.cos(a)*r*0.55;lz=Math.sin(a)*r*0.12;ly=(rng()-0.5)*bulgeR*0.80;
-          w=1.0-r/bulgeR;
-        } else {
-          const side=rng()<0.5?1:-1;
-          const R=Math.abs(-HR*Math.log(rng()+1e-5)*0.35)*side;
-          const u3=rng()-0.5;
-          ly=-HZ*Math.sign(u3)*Math.log(1-2*Math.abs(u3)+1e-4);
-          lx=R;lz=(rng()-0.5)*sz*0.012;
-          // Dust lane: remove particles near midplane
-          if(Math.abs(ly)<dustH&&Math.abs(lx)<sz*0.4) return null;
-          w=Math.exp(-Math.abs(R)/(HR*0.9))*0.5;
+      // Main disk (with warp unique per galaxy)
+      addCloud(3000,1.3,0.82,()=>{
+        if(rng()<bFrac){
+          const r=rng()*sz*0.12,a=rng()*Math.PI*2;
+          const lx=Math.cos(a)*r*0.5,lz=Math.sin(a)*r*0.10,ly=(rng()-0.5)*sz*0.09;
+          const w=cl(1.0-r/(sz*0.12));
+          const br=0.8+rng()*0.2;
+          return[wp(lx,ly,lz),[cl((C.r+w*0.38)*br),cl((C.g+w*0.20)*br),cl((C.b)*br)]];
         }
-        const br=0.70+rng()*0.30;
-        return [wp(lx,ly,lz),[clamp((C.r+w*0.32)*br),clamp((C.g+w*0.14)*br),clamp((C.b-w*0.18+blue2(rng))*br)]];
+        const side=rng()<0.5?1:-1;
+        const R=Math.abs(-HR*Math.log(rng()+1e-5)*0.32)*side;
+        const u3=rng()-0.5;
+        // Warp: vertical displacement increases with radius
+        const warpOffset=warpAmp*Math.sin(warpFreq*R/sz)*Math.sign(R);
+        let ly=-HZ*Math.sign(u3)*Math.log(1-2*Math.abs(u3)+1e-4)+warpOffset;
+        const lx=R, lz=(rng()-0.5)*sz*0.010;
+        if(Math.abs(ly-warpOffset)<dustH&&Math.abs(R)<sz*0.45)return null; // dust lane gap
+        const w=cl(Math.exp(-Math.abs(R)/(HR*0.85))*0.45);
+        const br=0.65+rng()*0.30;
+        const blueT=Math.abs(R)>sz*0.2?blueExtra*0.5:0;
+        return[wp(lx,ly,lz),[cl((C.r+w*0.30)*br),cl((C.g+w*0.13)*br),cl((C.b+blueT)*br)]];
       });
-      // HII knots along disk
-      addCloud(220,1.4,0.94,()=>{
-        const R=(rng()-0.5)*sz*0.62;
-        const ly=(rng()-0.5)*sz*0.006;
-        const lz=(rng()-0.5)*sz*0.006;
-        if(Math.abs(ly)<dustH*0.8) return null;
-        const hue=rng()<0.55; // HII = pink/red, young clusters = blue
-        const br=1.1+rng()*0.35;
-        if(hue)return [wp(R,ly,lz),[clamp(1.0*br),clamp(0.35*br),clamp(0.65*br)]]; // H-alpha pink
-        return [wp(R,ly,lz),[clamp(0.4*br),clamp(0.70*br),clamp(1.0*br)]]; // OII blue
+      // HII knots — unique density per galaxy
+      addCloud(Math.floor(160+hiiDensity*180),1.4,0.94,()=>{
+        const R=(rng()-0.5)*sz*0.60;
+        const warpOffset=warpAmp*Math.sin(warpFreq*R/sz);
+        const ly=(rng()-0.5)*sz*0.005+warpOffset;
+        const lz=(rng()-0.5)*sz*0.005;
+        if(Math.abs(ly-warpOffset)<dustH*0.7)return null;
+        const hue=rng();
+        const br=1.15+rng()*0.40;
+        if(hue<0.50)return[wp(R,ly,lz),[cl(0.98*br),cl(0.30*br),cl(0.65*br)]];
+        return[wp(R,ly,lz),[cl(0.35*br),cl(0.68*br),cl(1.0*br)]];
       });
-      // Nuclear bulge — bright
+      // Nuclear bulge
       addCloud(80,1.6,1.0,()=>{
-        const r=rng()*sz*0.06,a=rng()*Math.PI*2;
-        const lx=Math.cos(a)*r*0.5,ly=(rng()-0.5)*sz*0.04,lz=Math.sin(a)*r*0.08;
-        const br=1.7+rng()*0.5;
-        return [wp(lx,ly,lz),[clamp((C.r+0.45)*br),clamp((C.g+0.38)*br),clamp((C.b+0.12)*br)]];
+        const r=rng()*sz*0.055,a=rng()*Math.PI*2;
+        const lx=Math.cos(a)*r*0.45,ly=(rng()-0.5)*sz*0.035,lz=Math.sin(a)*r*0.07;
+        const br=nuclearBright;
+        return[wp(lx,ly,lz),[cl((C.r+0.50)*br),cl((C.g+0.40)*br),cl((C.b+0.15)*br)]];
       });
 
     } else if(isIr){
-      // ── IRREGULAR: clumpy, patchy, asymmetric star-forming ────────────────
-      const HR=sz*0.28,HZ=sz*0.06;
-      // Off-center bar (LMC-style)
-      const barOff=sz*(rng()*0.15-0.075);
-      // Outer halo (very faint)
-      addCloud(400,1.2,0.18,()=>{
-        const R=(0.3+rng()*0.7)*sz,phi=rng()*Math.PI*2;
+      // Irregular: chaotic, clumpy, unique morphology per galaxy
+      const HR=sz*0.26, HZ=sz*0.055;
+      // LMC-style: some have bar + off-center, some are pure chaotic
+      const lmcStyle=rng2()<0.55;
+      const barOff=lmcStyle?sz*(rng2()*0.14-0.07):0;
+      const chaos=rng2(); // 0=more regular, 1=pure chaos
+      // Outer halo
+      addCloud(350,1.2,0.16,()=>{
+        const R=(0.28+rng()*0.72)*sz,phi=rng()*Math.PI*2;
         const lx=R*Math.cos(phi)+barOff,lz=R*Math.sin(phi),ly=(rng()-0.5)*sz*0.12;
-        return [wp(lx,ly,lz),[clamp(C.r*0.4+0.05),clamp(C.g*0.4+0.06),clamp(C.b*0.55+0.10)]];
+        return[wp(lx,ly,lz),[cl(C.r*0.38+0.08),cl(C.g*0.38+0.08),cl(C.b*0.50+0.14)]];
       });
-      // Main body — exponential disk with clumps
-      addCloud(2000,1.3,0.80,()=>{
-        const R=HR*(-Math.log(rng()+1e-4))*0.75;
-        const phi=rng()*Math.PI*2;
+      // Main chaotic body
+      addCloud(1800,1.3,0.80,()=>{
+        const R=HR*(-Math.log(rng()+1e-4))*(0.5+chaos*0.5);
+        const phi=rng()*Math.PI*2*(1+chaos*(rng()-0.5)*0.3);
         const u=rng()-0.5;
         const ly=-HZ*Math.sign(u)*Math.log(1-2*Math.abs(u)+1e-4);
-        let lx=R*Math.cos(phi)+barOff*(1-R/sz),lz=R*Math.sin(phi);
-        // Irregular clumps
-        if(rng()<0.15){lx+=(rng()-0.5)*sz*0.18;lz+=(rng()-0.5)*sz*0.14;}
-        if(rng()<0.30){lx+=barOff*0.4*(rng()-0.5);lz*=0.45+rng()*0.3;}
-        const w=Math.exp(-Math.sqrt(lx*lx+lz*lz)/(sz*0.20));
-        const br=0.72+rng()*0.28;
-        return [wp(lx,ly,lz),[clamp((C.r+w*0.28)*br),clamp((C.g+w*0.12)*br),clamp((C.b-w*0.16+rng()*0.05)*br)]];
+        let lx=R*Math.cos(phi)+barOff*(1-R/(sz*0.5)),lz=R*Math.sin(phi);
+        if(lmcStyle&&rng()<0.20){lx+=(rng()-0.5)*sz*0.16;lz+=(rng()-0.5)*sz*0.12;}
+        if(rng()<0.28){lx+=barOff*0.5*(rng()-0.5);lz*=0.38+rng()*0.35;}
+        const w=cl(Math.exp(-Math.sqrt(lx*lx+lz*lz)/(sz*0.19)));
+        const br=0.68+rng()*0.32;
+        return[wp(lx,ly,lz),[cl((C.r+w*0.26+blueExtra)*br),cl((C.g+w*0.11)*br),cl((C.b-w*0.14+blueExtra*0.5)*br)]];
       });
-      // HII star-forming clumps — very blue/pink
-      addCloud(350,1.4,0.92,()=>{
-        const R=rng()*sz*0.55;
-        const phi=rng()*Math.PI*2+barOff*0.01;
-        const lx=R*Math.cos(phi)+barOff,lz=R*Math.sin(phi),ly=(rng()-0.5)*sz*0.04;
+      // Star-forming clumps — very unique per galaxy
+      addCloud(Math.floor(250+hiiDensity*300),1.4,0.92,()=>{
+        const R=rng()*sz*(0.12+chaos*0.45);
+        const phi=rng()*Math.PI*2+(lmcStyle?barOff*0.012:chaos*rng());
+        const lx=R*Math.cos(phi)+barOff*(0.5+rng()*0.5),lz=R*Math.sin(phi),ly=(rng()-0.5)*sz*0.035;
         const t=rng();
-        const br=1.15+rng()*0.40;
-        if(t<0.45)return [wp(lx,ly,lz),[clamp(0.95*br),clamp(0.28*br),clamp(0.72*br)]]; // pink HII
-        if(t<0.75)return [wp(lx,ly,lz),[clamp(0.35*br),clamp(0.65*br),clamp(1.0*br)]];  // blue OB clusters
-        return [wp(lx,ly,lz),[clamp(1.0*br),clamp(0.92*br),clamp(0.50*br)]]; // yellowish old clusters
+        const br=1.20+rng()*0.50;
+        if(t<0.40)return[wp(lx,ly,lz),[cl(0.96*br),cl(0.28*br),cl(0.68*br)]]; // Hα pink
+        if(t<0.62)return[wp(lx,ly,lz),[cl(0.32*br),cl(0.65*br),cl(1.0*br)]];  // OII blue
+        if(t<0.78)return[wp(lx,ly,lz),[cl(1.0*br),cl(0.90*br),cl(0.45*br)]];  // yellow clusters
+        return[wp(lx,ly,lz),[cl(0.78*br),cl(0.90*br),cl(1.0*br)]];             // blue-white
       });
-      // Starburst nucleus
-      addCloud(60,1.5,1.0,()=>{
-        const r=rng()*sz*0.05,a=rng()*Math.PI*2;
-        const lx=Math.cos(a)*r+barOff*0.3,lz=Math.sin(a)*r,ly=(rng()-0.5)*sz*0.025;
-        const br=1.6+rng()*0.5;
-        return [wp(lx,ly,lz),[clamp((C.r+0.40)*br),clamp((C.g+0.35)*br),clamp((C.b+0.20)*br)]];
+      // Nucleus (if exists)
+      addCloud(50,1.5,1.0,()=>{
+        const r=rng()*sz*0.045,a=rng()*Math.PI*2;
+        const lx=Math.cos(a)*r+barOff*0.25,lz=Math.sin(a)*r,ly=(rng()-0.5)*sz*0.022;
+        const br=nuclearBright;
+        return[wp(lx,ly,lz),[cl((C.r+0.44)*br),cl((C.g+0.36)*br),cl((C.b+0.20)*br)]];
       });
+      // Tidal tail if merging
+      if(tidalLen>0){
+        addCloud(200,1.2,0.45,()=>{
+          const t2=rng();
+          const tx=Math.cos(tidalAng+t2*0.8)*tidalLen*t2+barOff;
+          const tz=Math.sin(tidalAng+t2*0.8)*tidalLen*t2;
+          const ty=(rng()-0.5)*sz*0.06*t2;
+          const br=0.4+rng()*0.3;
+          return[wp(tx,ty,tz),[cl((C.r+0.1)*br),cl((C.g+0.1)*br),cl(C.b*br)]];
+        });
+        // Second tail (opposite side)
+        addCloud(120,1.2,0.35,()=>{
+          const t2=rng();
+          const ang2=tidalAng+Math.PI+rng2()*0.5;
+          const tx=Math.cos(ang2)*tidalLen*0.6*t2,tz=Math.sin(ang2)*tidalLen*0.6*t2;
+          const ty=(rng()-0.5)*sz*0.04*t2;
+          const br=0.3+rng()*0.25;
+          return[wp(tx,ty,tz),[cl((C.r+0.08)*br),cl((C.g+0.1)*br),cl(C.b*br)]];
+        });
+      }
 
     } else {
-      // ── SPIRAL: multiple passes — halo, disk, arms, HII, nucleus ──────────
-      const HZ=sz*0.014; // scale height
-      const HR=sz*0.24;  // radial scale
+      // Spiral: fully unique per galaxy — pitch, arm count, bar, ring, HII, merger tails
+      const HZ=diskThick, HR=sz*0.22;
+      // Grand design: coherent arms. Flocculent: patchy, many small bright clumps
+      const grandDesign=!isFlocculent;
+      // Arm parameters per galaxy
+      const armPhaseOffset=(nh%100)*0.063; // rotational offset of arm pattern
+      const armAsymmetry=isLopsided?(rng2()*0.4-0.2):0; // one arm slightly shifted
+      const innerFill=0.10+rng2()*0.20; // inner disk fill fraction
+      const spiralTurns=isFlocculent?(1.8+rng2()*1.0):(2.5+rng2()*1.5);
 
-      // Pass 1: outer stellar halo (sphere, very faint blue-white)
-      addCloud(600,1.2,0.16,()=>{
-        const r=(0.40+rng()*0.80)*sz,phi=rng()*Math.PI*2;
-        const th=Math.acos(2*rng()-1);
-        const lx=r*Math.sin(th)*Math.cos(phi),ly=r*Math.cos(th)*0.25,lz=r*Math.sin(th)*Math.sin(phi);
-        return [wp(lx,ly,lz),[clamp(C.r*0.45+0.12),clamp(C.g*0.45+0.12),clamp(C.b*0.55+0.20)]];
+      // PASS 1: outer stellar halo
+      addCloud(550,1.2,0.15,()=>{
+        const r=(0.38+rng()*0.82)*sz,phi=rng()*Math.PI*2,th=Math.acos(2*rng()-1);
+        const lx=r*Math.sin(th)*Math.cos(phi),ly=r*Math.cos(th)*0.22,lz=r*Math.sin(th)*Math.sin(phi);
+        return[wp(lx,ly,lz),[cl(C.r*0.42+0.12),cl(C.g*0.42+0.12),cl(C.b*0.52+0.22)]];
       });
 
-      // Pass 2: smooth inter-arm disk + bulge (warm, concentrated)
-      addCloud(1800,1.3,0.78,()=>{
-        if(rng()<0.30){
-          // De Vaucouleurs bulge
-          const r=rng()*sz*(hasBar?0.08:0.10),a=rng()*Math.PI*2;
-          const lx=Math.cos(a)*r,lz=Math.sin(a)*r*0.92,ly=(rng()-0.5)*sz*0.045;
-          const w=1.0-r/(sz*0.10);
-          const br=1.0+rng()*0.2;
-          return [wp(lx,ly,lz),[clamp((C.r+w*0.38)*br),clamp((C.g+w*0.22)*br),clamp((C.b-w*0.15)*br)]];
-        } else if(hasBar&&rng()<0.25){
-          // Bar stars
-          const lx=(rng()-0.5)*barLen*2,lz=(rng()-0.5)*sz*0.032,ly=(rng()-0.5)*sz*0.010;
-          const w=0.65-Math.abs(lx)/barLen*0.25;
-          const br=0.80+rng()*0.20;
-          return [wp(lx,ly,lz),[clamp((C.r+w*0.28)*br),clamp((C.g+w*0.14)*br),clamp((C.b)*br)]];
-        } else {
-          // Smooth disk
-          const R=-HR*Math.log(rng()+1e-4)*0.60;
-          const phi=rng()*Math.PI*2;
-          const u=rng()-0.5;
-          const ly=-HZ*1.5*Math.sign(u)*Math.log(1-2*Math.abs(u)+1e-4);
-          const lx=Math.cos(phi)*R,lz=Math.sin(phi)*R;
-          const w=Math.exp(-R/(HR*1.1))*0.35;
-          const br=0.65+rng()*0.25;
-          return [wp(lx,ly,lz),[clamp((C.r+w*0.18)*br),clamp((C.g+w*0.08)*br),clamp((C.b+0.05)*br)]];
+      // PASS 2: smooth disk + unique bulge
+      addCloud(1600,1.3,0.76,()=>{
+        const die=rng();
+        if(die<bulgeFrac){
+          // Bulge — de Vaucouleurs, unique size per galaxy
+          const bR=sz*(hasBar?0.07:0.10+rng2()*0.04);
+          const r=rng()*bR,a=rng()*Math.PI*2;
+          const lx=Math.cos(a)*r,lz=Math.sin(a)*r*0.88,ly=(rng()-0.5)*bR*0.50;
+          const w=cl(1.0-r/bR);
+          const br=0.85+rng()*0.20;
+          return[wp(lx,ly,lz),[cl((C.r+w*0.40)*br),cl((C.g+w*0.22)*br),cl((C.b-w*0.12)*br)]];
         }
+        if(hasBar&&die<bulgeFrac+0.20){
+          // Bar stars — unique length and width
+          const bx=(rng()-0.5)*barLen*2;
+          const bz=(rng()-0.5)*sz*(0.028+rng2()*0.016);
+          const bTiltX=Math.cos(barTwist)*bx-Math.sin(barTwist)*bz;
+          const bTiltZ=Math.sin(barTwist)*bx+Math.cos(barTwist)*bz;
+          const ly=(rng()-0.5)*HZ*1.5;
+          const w=cl(0.65-Math.abs(bx)/barLen*0.22);
+          const br=0.78+rng()*0.22;
+          return[wp(bTiltX,ly,bTiltZ),[cl((C.r+w*0.30)*br),cl((C.g+w*0.16)*br),cl(C.b*br)]];
+        }
+        // Smooth disk — exponential
+        const R=-HR*Math.log(rng()+1e-4)*0.55;
+        const phi=rng()*Math.PI*2;
+        const u=rng()-0.5;
+        const ly=-HZ*1.8*Math.sign(u)*Math.log(1-2*Math.abs(u)+1e-4);
+        const lx=Math.cos(phi)*R,lz=Math.sin(phi)*R;
+        const w=cl(Math.exp(-R/(HR*1.05))*0.32);
+        const br=0.60+rng()*0.25;
+        return[wp(lx,ly,lz),[cl((C.r+w*0.16)*br),cl((C.g+w*0.08)*br),cl((C.b+0.04)*br)]];
       });
 
-      // Pass 3: spiral arms — densely sampled with correct logarithmic form
-      addCloud(3200,1.3,0.88,()=>{
+      // PASS 3: spiral arms — unique per galaxy via logarithmic spiral with per-arm twist
+      addCloud(grandDesign?3200:2200,1.3,0.86,()=>{
         const arm=Math.floor(rng()*arms);
-        const t=Math.pow(rng(),0.55); // bias toward inner spiral
-        const armAngle=arm*(Math.PI*2/arms)+(hasBar?Math.PI*0.05:0);
-        // Logarithmic spiral: r = r_min * exp(pitch * theta)
-        const rMin=hasBar?sz*0.12:sz*0.04;
-        const theta=armAngle+t*3.5+rng()*0.22;
-        const R=rMin*Math.exp(pitch*theta);
-        if(R>sz*0.58) return null; // clip outer spiral
-        const scatter=sz*(0.010+t*0.018)*(rng()<0.08?5.0:1.0); // interarm scatter
+        const t=Math.pow(rng(),0.50);
+        const baseAngle=arm*(Math.PI*2/arms)+armPhaseOffset;
+        const armOff=arm===0?armAsymmetry:0; // first arm gets lopsided offset
+        const theta=baseAngle+armOff+t*spiralTurns;
+        const rStart=hasBar?(barLen*0.85):sz*(innerFill+0.02);
+        const R=rStart*Math.exp(pitch*(theta-baseAngle-armOff));
+        if(R>sz*0.60)return null;
+        // Scatter: tighter for grand design, patchier for flocculent
+        const baseScatter=sz*(armSpread+t*armSpread*1.5);
+        const patchFactor=isFlocculent?(1+rng2()*3):1;
+        const scatter=baseScatter*patchFactor*(rng()<0.06?5:1);
         const lx=Math.cos(theta)*R+(rng()-0.5)*scatter;
         const lz=Math.sin(theta)*R+(rng()-0.5)*scatter;
         const u=rng()-0.5;
         const ly=-HZ*Math.sign(u)*Math.log(1-2*Math.abs(u)+1e-4);
-        // Color: inner arms warm, outer arms slightly bluer
-        const armFrac=t; // 0=inner, 1=outer
-        const br=0.80+rng()*0.22;
-        const r2=clamp((C.r+0.22*(1-armFrac)-armFrac*0.10)*br);
-        const g2=clamp((C.g+0.10*(1-armFrac))*br);
-        const b2=clamp((C.b+armFrac*0.18+rng()*0.05)*br);
-        return [wp(lx,ly,lz),[r2,g2,b2]];
+        const frac=t;
+        const br=0.76+rng()*0.24;
+        const rC=cl((C.r+0.24*(1-frac)-frac*0.08)*br);
+        const gC=cl((C.g+0.10*(1-frac)+frac*0.02)*br);
+        const bC=cl((C.b+frac*(0.15+blueExtra)+rng()*0.04)*br);
+        return[wp(lx,ly,lz),[rC,gC,bC]];
       });
 
-      // Pass 4: HII regions + young star clusters — scattered along arms
-      addCloud(380,1.4,0.95,()=>{
-        const arm=Math.floor(rng()*arms);
-        const t=rng()*0.85+0.05; // along arm
-        const armAngle=arm*(Math.PI*2/arms)+(hasBar?Math.PI*0.05:0);
-        const theta=armAngle+t*3.2;
-        const rMin=hasBar?sz*0.12:sz*0.04;
-        const R=rMin*Math.exp(pitch*theta);
-        if(R>sz*0.55) return null;
-        const scatter=sz*0.025;
-        const lx=Math.cos(theta)*R+(rng()-0.5)*scatter;
-        const lz=Math.sin(theta)*R+(rng()-0.5)*scatter;
-        const ly=(rng()-0.5)*sz*0.008;
-        const hue=rng();
-        const br=1.20+rng()*0.45;
-        if(hue<0.40) return [wp(lx,ly,lz),[clamp(0.98*br),clamp(0.32*br),clamp(0.68*br)]]; // Hα pink
-        if(hue<0.65) return [wp(lx,ly,lz),[clamp(0.38*br),clamp(0.68*br),clamp(1.00*br)]]; // OII blue
-        if(hue<0.82) return [wp(lx,ly,lz),[clamp(1.00*br),clamp(0.95*br),clamp(0.60*br)]]; // young clusters gold
-        return [wp(lx,ly,lz),[clamp(0.80*br),clamp(0.90*br),clamp(1.00*br)]]; // blue-white massive stars
+      // PASS 4: HII + young clusters — unique density, color, distribution
+      if(isRing&&ringRadius>0){
+        // Ring galaxy: HII concentrated in ring
+        addCloud(320,1.4,0.94,()=>{
+          const ang=rng()*Math.PI*2;
+          const r=ringRadius+(rng()-0.5)*ringWidth*2;
+          const lx=Math.cos(ang)*r,lz=Math.sin(ang)*r,ly=(rng()-0.5)*HZ*0.8;
+          const t2=rng();
+          const br=1.18+rng()*0.45;
+          if(t2<0.45)return[wp(lx,ly,lz),[cl(0.98*br),cl(0.28*br),cl(0.65*br)]];
+          return[wp(lx,ly,lz),[cl(0.38*br),cl(0.70*br),cl(1.0*br)]];
+        });
+      } else {
+        addCloud(Math.floor(200+hiiDensity*350),1.4,0.94,()=>{
+          const arm=Math.floor(rng()*arms);
+          const t2=rng()*0.88+0.04;
+          const baseAngle=arm*(Math.PI*2/arms)+armPhaseOffset;
+          const theta=baseAngle+(arm===0?armAsymmetry:0)+t2*spiralTurns;
+          const rStart=hasBar?(barLen*0.85):sz*(innerFill+0.02);
+          const R=rStart*Math.exp(pitch*(theta-baseAngle));
+          if(R>sz*0.55)return null;
+          const scatter=sz*0.022;
+          const lx=Math.cos(theta)*R+(rng()-0.5)*scatter;
+          const lz=Math.sin(theta)*R+(rng()-0.5)*scatter;
+          const ly=(rng()-0.5)*HZ*0.6;
+          const hue=rng();
+          const br=1.22+rng()*0.48;
+          if(hue<0.38)return[wp(lx,ly,lz),[cl(0.97*br),cl(0.26*br),cl(0.68*br)]]; // Hα
+          if(hue<0.60)return[wp(lx,ly,lz),[cl(0.32*br),cl(0.66*br),cl(1.0*br)]];  // OII
+          if(hue<0.76)return[wp(lx,ly,lz),[cl(1.0*br),cl(0.92*br),cl(0.48*br)]];  // clusters
+          return[wp(lx,ly,lz),[cl(0.72*br),cl(0.85*br),cl(1.0*br)]];               // OB stars
+        });
+      }
+
+      // PASS 5: nuclear star cluster — unique brightness (Seyfert gets jet-like glow)
+      addCloud(80,1.5,1.0,()=>{
+        const r=rng()*sz*(hasBar?0.026:0.034),a=rng()*Math.PI*2;
+        const lx=Math.cos(a)*r,lz=Math.sin(a)*r,ly=(rng()-0.5)*HZ*0.8;
+        const br=nuclearBright;
+        return[wp(lx,ly,lz),[cl((C.r+0.52)*br),cl((C.g+0.42)*br),cl((C.b+0.16)*br)]];
       });
 
-      // Pass 5: brilliant nuclear star cluster
-      addCloud(90,1.5,1.0,()=>{
-        const r=rng()*sz*(hasBar?0.030:0.038),a=rng()*Math.PI*2;
-        const lx=Math.cos(a)*r,lz=Math.sin(a)*r,ly=(rng()-0.5)*sz*0.016;
-        const br=1.85+rng()*0.55;
-        return [wp(lx,ly,lz),[clamp((C.r+0.48)*br),clamp((C.g+0.40)*br),clamp((C.b+0.15)*br)]];
-      });
+      // Tidal tail for merging galaxies
+      if(tidalLen>0){
+        addCloud(280,1.2,0.42,()=>{
+          const t2=rng();
+          const tx=Math.cos(tidalAng+t2*0.9)*tidalLen*t2;
+          const tz=Math.sin(tidalAng+t2*0.9)*tidalLen*t2;
+          const ty=(rng()-0.5)*sz*0.05*t2;
+          const br=0.38+rng()*0.28;
+          return[wp(tx,ty,tz),[cl((C.r+0.08)*br),cl((C.g+0.10)*br),cl(C.b*br)]];
+        });
+        addCloud(160,1.2,0.32,()=>{
+          const t2=rng();
+          const ang2=tidalAng+Math.PI+(rng2()-0.5)*0.6;
+          const tx=Math.cos(ang2)*tidalLen*0.55*t2,tz=Math.sin(ang2)*tidalLen*0.55*t2;
+          const ty=(rng()-0.5)*sz*0.038*t2;
+          const br=0.28+rng()*0.22;
+          return[wp(tx,ty,tz),[cl((C.r+0.06)*br),cl((C.g+0.08)*br),cl(C.b*br)]];
+        });
+      }
     }
 
-    // Blue function workaround
-    // ── GLOW SPRITES: layered halos for photorealistic depth ─────────────────
-    // Innermost: brilliant compact core
-    const coreSize=isIr?sz*0.28:isEd?sz*0.12:sz*0.16;
-    const coreCol=isE?gd.color:0xfffce8; // ellipticals use their color, others gold-white
-    const core1=new THREE.Sprite(makeGlowMat(coreCol,0.92));
-    core1.scale.set(coreSize,coreSize,1);core1.position.set(gd.x,gd.y,gd.z);galaxyScene.add(core1);
-
-    // Mid halo: galaxy color
-    const midSize=isIr?sz*0.55:isEd?sz*0.25:sz*0.38;
-    const mid1=new THREE.Sprite(makeGlowMat(gd.color,0.45));
-    mid1.scale.set(midSize,midSize,1);mid1.position.set(gd.x,gd.y,gd.z);galaxyScene.add(mid1);
-
-    // Outer halo: cool blue-white (scattered stellar light)
-    const outerSize=isIr?sz*0.85:isEd?sz*0.45:sz*0.70;
-    const outer1=new THREE.Sprite(makeGlowMat(isSp?0x99aaff:gd.color,0.20));
-    outer1.scale.set(outerSize,outerSize,1);outer1.position.set(gd.x,gd.y,gd.z);galaxyScene.add(outer1);
-
-    // Diffuse very outermost glow (barely visible)
-    if(!isIr){
-      const diffuse=new THREE.Sprite(makeGlowMat(0x8899cc,0.07));
-      diffuse.scale.set(sz*1.4,sz*1.4,1);diffuse.position.set(gd.x,gd.y,gd.z);galaxyScene.add(diffuse);
+    // ── LAYERED GLOW SPRITES: unique per galaxy type ──────────────────────────
+    // Core glow: brilliant nuclear concentration
+    const coreS=isIr?sz*0.26:isEd?sz*0.11:sz*0.15;
+    const coreC=isSeyfert?0xffeedd:isStarburst?0x88eecc:(isE?gd.color:0xfffdee);
+    const g1=new THREE.Sprite(makeGlowMat(coreC,isSeyfert?0.98:0.90));
+    g1.scale.set(coreS,coreS,1);g1.position.set(gd.x,gd.y,gd.z);galaxyScene.add(g1);
+    // Mid halo
+    const midS=isIr?sz*0.50:isEd?sz*0.22:sz*0.34;
+    const g2=new THREE.Sprite(makeGlowMat(gd.color,0.42));
+    g2.scale.set(midS,midS,1);g2.position.set(gd.x,gd.y,gd.z);galaxyScene.add(g2);
+    // Outer blue-white halo (spiral arms scatter light blue)
+    const outS=isIr?sz*0.80:isEd?sz*0.40:sz*0.65;
+    const outC=isSp?0x99aade:(isE?gd.color:0x8899bb);
+    const g3=new THREE.Sprite(makeGlowMat(outC,0.18));
+    g3.scale.set(outS,outS,1);g3.position.set(gd.x,gd.y,gd.z);galaxyScene.add(g3);
+    // Very diffuse outermost halo
+    const g4=new THREE.Sprite(makeGlowMat(0x7788aa,0.06));
+    g4.scale.set(sz*1.3,sz*1.3,1);g4.position.set(gd.x,gd.y,gd.z);galaxyScene.add(g4);
+    // Seyfert AGN: extra piercing point glow
+    if(isSeyfert){
+      const gAgn=new THREE.Sprite(makeGlowMat(0xffffff,0.80));
+      gAgn.scale.set(sz*0.04,sz*0.04,1);gAgn.position.set(gd.x,gd.y,gd.z);galaxyScene.add(gAgn);
     }
 
     // Hit sphere
@@ -3361,7 +3615,7 @@ let sgrAHit=null;
   // ── Deep-field background — thousands of tiny distant galaxy points ────────
   (()=>{
     const dfGeo=new THREE.BufferGeometry();
-    const dfN=10000;
+    const dfN=16000;
     const dfPos=new Float32Array(dfN*3);
     const dfCol=new Float32Array(dfN*3);
     const rng=_rng(42);
@@ -4532,6 +4786,7 @@ function handleTap(cx,cy){
       const pObj=sysPlanetObjs.find(o=>o.planet===ud.planet);
       if(pObj){focusOnObject(pObj.mesh.position.clone(),Math.max(pObj.pR*18,12));}
       selPlanet=ud.planet;openPlanet(ud.planet);
+      // ISS button shown inside Earth sheet via renderPlanet
     } else if(ud.isStar&&currentStar){
       sysLookTarget.set(0,0,0);
       sysCtrl.tR=sysCtrl.tR*0.9>20?sysCtrl.tR*0.9:sysCtrl.r;
@@ -4635,13 +4890,20 @@ const plBody=document.getElementById('plBody');
 
 function openSheet(s){renderSheet(s);sheet.classList.add('sheet-open');}
 function closeSheet(){sheet.classList.remove('sheet-open');}
-function closePlanet(){pSheet.classList.remove('sheet-open');selPlanet=null;}
+function closePlanet(){
+  pSheet.classList.remove('sheet-open');
+  selPlanet=null;
+  // Reset plBody height to prevent ghost space
+  setTimeout(()=>{if(!pSheet.classList.contains('sheet-open')){plBody.innerHTML='';plHead.innerHTML='';}},400);
+}
 function openPlanet(p){renderPlanet(p);pSheet.classList.add('sheet-open');}
 
 function openMoon(m){
   const isRu=lang==='ru';
   const desc=isRu&&m.desc_ru?m.desc_ru:m.desc;
   const km=PLANET_RADIUS_KM[m.name];
+  const mTmp=m.temp_c!=null?m.temp_c+'°C':'Unknown';
+  const mAtm=m.atm||(isRu?'Неизвестно':'Unknown');
   plHead.innerHTML=`
     <div class="pt-badge" style="background:#88aacc22;border:1px solid #88aacc55;color:#aabbdd">🌙 ${isRu?'Спутник':'Moon'}</div>
     <div class="sh-name">${m.name}</div>`;
@@ -4649,10 +4911,16 @@ function openMoon(m){
     <div class="mgrid">
       <div class="mcard"><div class="mc-lbl">${isRu?'Радиус':'Radius'}</div><div class="mc-val gold">${km?km.toLocaleString()+' km':t('pl_unk')}</div></div>
       <div class="mcard"><div class="mc-lbl">${isRu?'Расстояние':'Distance'}</div><div class="mc-val">${m.dist_km.toLocaleString()} km</div></div>
-      <div class="mcard"><div class="mc-lbl">${isRu?t('period_lbl'):t('period_lbl')}</div><div class="mc-val cyan">${m.period_days} ${t('pl_days')}</div></div>
-      <div class="mcard"><div class="mc-lbl">${isRu?'Масса Луны':'× Moon mass'}</div><div class="mc-val">${km?((km/1737.4)**3*1).toFixed(3)+'× ☾':t('pl_unk')}</div></div>
+      <div class="mcard"><div class="mc-lbl">${isRu?'Период':'Period'}</div><div class="mc-val cyan">${m.period_days} d</div></div>
+      <div class="mcard"><div class="mc-lbl">${isRu?'Температура':'Temperature'}</div><div class="mc-val amber">${mTmp}</div></div>
     </div>
-    <div class="info-card"><div class="ic-body">${desc}</div></div>`;
+    <div class="info-card" style="margin-top:10px">
+      <div class="ic-title" style="color:#88ccff">🌫 ${isRu?'Атмосфера':'Atmosphere'}</div>
+      <div style="font-size:12px;color:#aac8e8;line-height:1.6;margin-top:4px">${mAtm}</div>
+    </div>
+    <div class="info-card" style="margin-top:10px">
+      <div class="ic-body">${desc}</div>
+    </div>`;
   pSheet.classList.add('sheet-open');
 }
 function openProbe(probe){renderProbe(probe);pSheet.classList.add('sheet-open');}
@@ -4820,28 +5088,101 @@ function renderSheet(s){
   shBody.innerHTML=`${starDescHtml}<div class="mgrid"><div class="mcard"><div class="mc-lbl">${t('dist')}</div><div class="mc-val gold">${s.dist>0?s.dist.toFixed(2)+' ly':'0 ly (home)'}</div></div><div class="mcard"><div class="mc-lbl">${t('dist_km')}</div><div class="mc-val" style="font-size:10px">${distKM} km</div></div><div class="mcard"><div class="mc-lbl">${t('travel')}</div><div class="mc-val">${s.dist>0?s.dist.toFixed(1)+' yrs':'0'}</div></div><div class="mcard"><div class="mc-lbl">${t('status')}</div>${sv}</div>${isR?`<div class="mcard"><div class="mc-lbl">${t('first_arr')}</div><div class="mc-val cyan">${s.dist>0?Math.ceil(fa):'1895'}</div></div><div class="mcard"><div class="mc-lbl">${t('cur_era')}</div><div class="mc-val">${s.dist>0?Math.floor(viewYear-s.dist)+' AD':'Now'}</div></div>`:`<div class="mcard"><div class="mc-lbl">${t('arr_yr')}</div><div class="mc-val amber">${Math.ceil(fa)}</div></div><div class="mcard"><div class="mc-lbl">${t('yrs_away')}</div><div class="mc-val red">${(fa-viewYear).toFixed(0)}</div></div>`}</div><div class="info-card"><div class="ic-title">${t('pl_lbl')}</div><div class="ic-body">${spl(s)}</div>${hint}</div>${sig}`;
 }
 
+// ── Planet atmosphere & detail database ──────────────────────────────────────
+const PLANET_ATM={
+  Mercury:{atm:'Virtually none (exosphere: O₂, Na, H₂, He, K)',atm_ru:'Отсутствует (экзосфера: O₂, Na, H₂)',pressure:'~10⁻¹⁵ bar',gravity:'3.7 m/s²',dayLen:'58.6 Earth days',axialTilt:'0.03°',moons:0,rings:false,surf:'Rocky, heavily cratered, no plate tectonics. Huge temperature swings.'},
+  Venus:{atm:'96.5% CO₂ + 3.5% N₂ + traces H₂SO₄',atm_ru:'96,5% CO₂ + 3,5% N₂ + следы H₂SO₄',pressure:'92 bar (like 900m underwater)',gravity:'8.87 m/s²',dayLen:'243 Earth days (retrograde)',axialTilt:'177.4°',moons:0,rings:false,surf:'Volcanic plains, mountains, no liquid water. Runaway greenhouse effect.'},
+  Earth:{atm:'78% N₂ + 21% O₂ + 1% Ar + 0.04% CO₂',atm_ru:'78% N₂ + 21% O₂ + 1% Ar + 0,04% CO₂',pressure:'1.013 bar',gravity:'9.81 m/s²',dayLen:'23h 56m',axialTilt:'23.44°',moons:1,rings:false,surf:'71% ocean, active plate tectonics, magnetic field, diverse biosphere.'},
+  Mars:{atm:'95.3% CO₂ + 2.7% N₂ + 1.6% Ar',atm_ru:'95,3% CO₂ + 2,7% N₂ + 1,6% Ar',pressure:'0.006 bar',gravity:'3.72 m/s²',dayLen:'24h 37m',axialTilt:'25.19°',moons:2,rings:false,surf:'Dust storms, Olympus Mons (27 km), Valles Marineris canyon, subsurface water ice.'},
+  Jupiter:{atm:'90% H₂ + 10% He + traces CH₄, NH₃, H₂O',atm_ru:'90% H₂ + 10% He + следы CH₄, NH₃',pressure:'No solid surface — pressure increases to millions of bar',gravity:'24.79 m/s²',dayLen:'9h 56m',axialTilt:'3.13°',moons:95,rings:true,surf:'Gas giant. Metallic hydrogen interior. Great Red Spot storm older than 350 years.'},
+  Saturn:{atm:'96.3% H₂ + 3.25% He',atm_ru:'96,3% H₂ + 3,25% He',pressure:'No surface — density 0.69 g/cm³ (floats on water)',gravity:'10.44 m/s²',dayLen:'10h 33m',axialTilt:'26.73°',moons:146,rings:true,surf:'Gas giant. Rings span 280,000 km but only ~10m thick. Hexagonal polar storm.'},
+  Uranus:{atm:'83% H₂ + 15% He + 2.3% CH₄',atm_ru:'83% H₂ + 15% He + 2,3% CH₄',pressure:'No surface — methane gives blue-green colour',gravity:'8.87 m/s²',dayLen:'17h 14m (retrograde)',axialTilt:'97.77° — rolls on its side',moons:28,rings:true,surf:'Ice giant. Radiates almost no internal heat — coldest planetary atmosphere (-224°C).'},
+  Neptune:{atm:'80% H₂ + 19% He + 1.5% CH₄',atm_ru:'80% H₂ + 19% He + 1,5% CH₄',pressure:'No surface — supersonic winds up to 2,100 km/h',gravity:'11.15 m/s²',dayLen:'16h 6m',axialTilt:'28.32°',moons:16,rings:true,surf:'Ice giant. Great Dark Spot (storm). Triton orbits retrograde — captured KBO.'},
+  Pluto:{atm:'N₂ + traces CH₄ + CO (thin, collapses when far from Sun)',atm_ru:'N₂ + следы CH₄ + CO (разрежённая)',pressure:'~0.00001 bar (variable)',gravity:'0.62 m/s²',dayLen:'6.4 Earth days',axialTilt:'119.6°',moons:5,rings:false,surf:'Tombaugh Regio (heart), N₂ ice plains, H₂O ice mountains 3,500 m tall.'},
+};
+
 function renderPlanet(p){
   const isRu=lang==='ru';
   const desc=isRu&&p.desc_ru?p.desc_ru:p.desc;
   const typeLabel=t(p.tk||'pt_earth');
+  const pd=PLANET_ATM[p.name]||{};
+
   plHead.innerHTML=`<div class="pt-badge" style="background:${p.color}22;border:1px solid ${p.color}55;color:${p.color}">${typeLabel}</div><div class="sh-name">${p.name}</div><div style="margin-top:7px">${p.confirmed?'<span class="badge bc">'+t('bc')+'</span>':'<span class="badge bq">'+t('bq')+'</span>'}${p.hab?'<span class="badge bh">'+t('bh')+'</span>':''}</div>`;
+
   const mass=p.mass!=null?p.mass+' M⊕':t('pl_unk');
   const rad=p.radius!=null?p.radius+' R⊕':t('pl_unk');
   const per=p.period!=null?p.period+' '+t('pl_days'):t('pl_unk');
   const orb=p.orbit!=null?p.orbit+' '+t('pl_au'):t('pl_unk');
   const tempC=kToC(p.temp);
   const tmp=tempC!=null?(tempC+'°C'):t('pl_unk');
-  const esi=p.esi!=null?p.esi.toFixed(2):t('pl_unk');
+  const esi=p.name==='Earth'?'1.00 — Confirmed life':p.esi!=null?p.esi.toFixed(2):t('pl_unk');
+  const esiCol=p.name==='Earth'?'#00e676':(p.esi&&p.esi>0.8?'#00e676':p.esi&&p.esi>0.5?'#ffca28':'#ff9100');
+
+  // Atmosphere section
+  const atmText=isRu&&pd.atm_ru?pd.atm_ru:pd.atm;
+  const atmBlock=atmText?`<div class="info-card" style="margin-top:10px">
+    <div class="ic-title" style="color:#88ccff">🌫 ${isRu?'Атмосфера':'Atmosphere'}</div>
+    <div style="font-size:12px;color:#aac8e8;line-height:1.6;margin-bottom:6px">${atmText}</div>
+    ${pd.pressure?`<div style="font-size:11px;color:rgba(138,176,204,0.7)">⚡ ${isRu?'Давление':'Pressure'}: <span style="color:#fff">${pd.pressure}</span></div>`:''}
+  </div>`:'';
+
+  // Physical properties
+  const physBlock=`<div class="info-card" style="margin-top:10px">
+    <div class="ic-title" style="color:#ffca28">⚙️ ${isRu?'Физические свойства':'Physical Properties'}</div>
+    <div class="mgrid" style="margin-top:6px">
+      ${pd.gravity?`<div class="mcard"><div class="mc-lbl">Gravity</div><div class="mc-val" style="font-size:12px">${pd.gravity}</div></div>`:''}
+      ${pd.dayLen?`<div class="mcard"><div class="mc-lbl">${isRu?'Сут. цикл':'Day Length'}</div><div class="mc-val" style="font-size:11px">${pd.dayLen}</div></div>`:''}
+      ${pd.axialTilt?`<div class="mcard"><div class="mc-lbl">${isRu?'Наклон оси':'Axial Tilt'}</div><div class="mc-val">${pd.axialTilt}</div></div>`:''}
+      ${pd.moons!=null?`<div class="mcard"><div class="mc-lbl">${isRu?'Спутники':'Moons'}</div><div class="mc-val cyan">${pd.moons}</div></div>`:''}
+    </div>
+    ${pd.surf?`<div style="font-size:11px;color:rgba(138,176,204,0.75);line-height:1.5;margin-top:6px">🪨 ${pd.surf}</div>`:''}
+  </div>`;
+
+  // Moon section — fully detailed
   let moonHtml='';
   if(p.moons&&p.moons.length){
-    moonHtml=`<div class="info-card"><div class="ic-title">${t('pl_moons')} (${p.moons.length})</div><div class="moon-section">`;
+    moonHtml=`<div class="info-card" style="margin-top:10px"><div class="ic-title">🌙 ${t('pl_moons')} (${p.moons.length})</div><div class="moon-section">`;
     p.moons.forEach(m=>{
       const md=isRu&&m.desc_ru?m.desc_ru:m.desc;
-      moonHtml+=`<div class="moon-item"><div class="moon-name">◉ ${m.name}</div><div class="moon-stats"><span class="moon-stat">${t('moon_rad')}: ${m.radius_km.toLocaleString()} km</span><span class="moon-stat">${t('moon_dist')}: ${m.dist_km.toLocaleString()} km</span><span class="moon-stat">${t('moon_per')}: ${m.period_days} d</span></div><div class="moon-desc">${md}</div></div>`;
+      const mTmp=m.temp_c!=null?`<span style="color:#ffaa44;font-weight:600">${m.temp_c}°C</span>`:`<span style="color:rgba(138,176,204,0.5)">?</span>`;
+      const mAtm=m.atm?`<div style="font-size:11px;color:#88ccff;background:rgba(100,180,255,0.08);border:1px solid rgba(100,180,255,0.15);border-radius:6px;padding:6px 8px;margin:5px 0;line-height:1.5">🌫 <strong>${isRu?'Атм.':'Atm.'}</strong> ${m.atm}</div>`:'';
+      moonHtml+=`<div class="moon-item">
+        <div class="moon-name">◉ ${m.name}</div>
+        <div class="moon-stats">
+          <span class="moon-stat">⬤ ${m.radius_km.toLocaleString()} km</span>
+          <span class="moon-stat">↔ ${m.dist_km.toLocaleString()} km</span>
+          <span class="moon-stat">⏱ ${m.period_days} d</span>
+          <span class="moon-stat">🌡 ${mTmp}</span>
+        </div>
+        ${mAtm}
+        <div class="moon-desc">${md}</div>
+      </div>`;
     });
     moonHtml+='</div></div>';
   }
-  plBody.innerHTML=`<div class="mgrid"><div class="mcard"><div class="mc-lbl">${t('pl_mass')}</div><div class="mc-val gold">${mass}</div></div><div class="mcard"><div class="mc-lbl">${t('pl_rad')}</div><div class="mc-val">${rad}</div></div><div class="mcard"><div class="mc-lbl">${t('pl_per')}</div><div class="mc-val cyan">${per}</div></div><div class="mcard"><div class="mc-lbl">${t('pl_orb')}</div><div class="mc-val">${orb}</div></div><div class="mcard"><div class="mc-lbl">${t('pl_tmp')}</div><div class="mc-val amber">${tmp}</div></div><div class="mcard"><div class="mc-lbl">${t('pl_esi')}</div><div class="mc-val ${p.esi&&p.esi>0.8?'green':p.esi&&p.esi>0.5?'gold':'red'}">${esi}</div></div></div><div class="info-card"><div class="ic-body">${desc}</div></div>${moonHtml}`;
+
+  plBody.innerHTML=`
+    <div class="mgrid">
+      <div class="mcard"><div class="mc-lbl">${t('pl_mass')}</div><div class="mc-val gold">${mass}</div></div>
+      <div class="mcard"><div class="mc-lbl">${t('pl_rad')}</div><div class="mc-val">${rad}</div></div>
+      <div class="mcard"><div class="mc-lbl">${t('pl_per')}</div><div class="mc-val cyan">${per}</div></div>
+      <div class="mcard"><div class="mc-lbl">${t('pl_orb')}</div><div class="mc-val">${orb}</div></div>
+      <div class="mcard"><div class="mc-lbl">${t('pl_tmp')}</div><div class="mc-val amber">${tmp}</div></div>
+      <div class="mcard"><div class="mc-lbl">${t('pl_esi')}</div><div class="mc-val" style="color:${esiCol};font-size:10px">${esi}</div></div>
+    </div>
+    <div class="info-card" style="margin-top:10px"><div class="ic-body">${desc}</div></div>
+    ${atmBlock}
+    ${physBlock}
+    ${moonHtml}`;
+
+  // ISS button for Earth
+  if(p.name==='Earth'&&currentStar&&currentStar.isSun){
+    const issBtn=document.createElement('button');
+    issBtn.style.cssText='display:block;width:calc(100% - 32px);margin:12px 16px;padding:14px;background:rgba(0,229,255,0.12);border:1.5px solid rgba(0,229,255,0.45);border-radius:14px;color:var(--cyan);font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;';
+    issBtn.textContent='🛸 View ISS orbiting Earth';
+    issBtn.onclick=()=>openISSView();
+    plBody.appendChild(issBtn);
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -4927,6 +5268,7 @@ let chartSort='prob',chartFilter='all';
 
 // Life probability score (0-100) for a planet given its host star
 function lifeScore(p,star){
+  if(p.name==='Earth')return 100;
   let s=5;
   // ESI contribution (biggest factor)
   if(p.esi!=null)s+=p.esi*50;
@@ -5016,7 +5358,7 @@ function buildChart(){
   chartBody.innerHTML=rows.map((r,idx)=>{
     const{p,star,score}=r;
     const col=lifeColor(score);
-    const pct=Math.round(score*1.25);
+    const pct=Math.min(100,Math.round(score*1.25));
     const esi=p.esi!=null?p.esi.toFixed(2):'—';
     const comp=composition(p,isRu);
     const way=lifeWay(p,star,score,isRu);
@@ -5196,6 +5538,671 @@ updateHeader();
 buildList();
 lastTs=performance.now();
 requestAnimationFrame(animate);
+
+// ══ ISS ZOOM VIEW ══════════════════════════════════════════════════════════
+let issScene=null,issRenderer=null,issCam=null,issAnimId=null;
+let issISSGroup=null,issEarth=null,issAngle=0;
+
+function buildISSScene(){
+  const canvas=document.getElementById('issCanvas');
+  const W=canvas.offsetWidth||window.innerWidth;
+  const H=canvas.offsetHeight||window.innerHeight*0.62;
+  canvas.width=W;canvas.height=H;
+
+  issScene=new THREE.Scene();
+  issCam=new THREE.PerspectiveCamera(48,W/H,0.5,80000);
+  // Zoomed out so full Earth is visible with ISS in frame
+  issCam.position.set(0,1200,2800);issCam.lookAt(0,0,0);
+
+  issRenderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  issRenderer.setSize(W,H);
+  issRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+  // ── STARFIELD ─────────────────────────────────────────────────────────────
+  const mkRng=(seed)=>{let s=(seed>>>0)||1;return()=>{s=Math.imul(s,1664525)+1013904223>>>0;return s/0x100000000;};};
+  const sSeed=mkRng(1234);
+  const sPts=[],sCols=[];
+  for(let i=0;i<4000;i++){
+    const ph=Math.acos(2*sSeed()-1),th=sSeed()*Math.PI*2,r=15000+sSeed()*8000;
+    sPts.push(r*Math.sin(ph)*Math.cos(th),r*Math.cos(ph),r*Math.sin(ph)*Math.sin(th));
+    const b=0.35+sSeed()*0.65,t2=sSeed();
+    if(t2<0.3)sCols.push(b*0.85,b*0.85,b);      // blue-white
+    else if(t2<0.6)sCols.push(b,b*0.9,b*0.75);  // warm white
+    else sCols.push(b,b,b);                       // pure white
+  }
+  const sGeo=new THREE.BufferGeometry();
+  sGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(sPts),3));
+  sGeo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(sCols),3));
+  issScene.add(new THREE.Points(sGeo,new THREE.PointsMaterial({size:1.0,vertexColors:true,sizeAttenuation:false})));
+
+  // ── EARTH TEXTURE: high-res canvas, 1024×512 ─────────────────────────────
+  const EW=1024,EH=512;
+  const ec=document.createElement('canvas');ec.width=EW;ec.height=EH;
+  const ex=ec.getContext('2d');
+
+  // Ocean: deep blue gradient with Pacific/Atlantic tones
+  const og=ex.createLinearGradient(0,0,0,EH);
+  og.addColorStop(0,'#0d2b5e');og.addColorStop(0.25,'#133880');
+  og.addColorStop(0.5,'#0f4a8f');og.addColorStop(0.75,'#133880');og.addColorStop(1,'#0d2b5e');
+  ex.fillStyle=og;ex.fillRect(0,0,EW,EH);
+
+  // Helper: lon/lat to canvas pixel
+  function px(lon,lat){return[(lon+180)/360*EW,(90-lat)/180*EH];}
+  function land(pts,color){
+    ex.fillStyle=color||'#3a6b28';
+    ex.beginPath();
+    pts.forEach(([lon,lat],i)=>{
+      const[sx,sy]=px(lon,lat);
+      i===0?ex.moveTo(sx,sy):ex.lineTo(sx,sy);
+    });
+    ex.closePath();ex.fill();
+  }
+
+  // North America (detailed)
+  land([[-168,72],[-140,72],[-135,60],[-122,58],[-124,50],[-124,37],[-117,32],[-97,26],[-90,22],[-83,10],[-77,8],[-77,10],[-76,22],[-80,25],[-80,32],[-75,37],[-65,44],[-62,46],[-66,47],[-68,48],[-70,47],[-72,42],[-70,41],[-70,43],[-74,40],[-76,35],[-77,35],[-80,32],[-85,30],[-88,30],[-90,29],[-93,30],[-97,26],[-100,28],[-104,22],[-108,23],[-110,24],[-108,30],[-112,32],[-115,32],[-117,35],[-120,38],[-122,38],[-124,40],[-126,43],[-124,49],[-122,55],[-130,56],[-135,58],[-140,60],[-143,62],[-150,62],[-160,60],[-166,62],[-168,64],[-166,68],[-162,70],[-160,72],[-155,72],[-152,70],[-148,72],[-145,70],[-140,72],[-168,72]],'#3d7030');
+  // Greenland
+  land([[-55,83],[-35,83],[-18,76],[-18,72],[-22,68],[-30,65],[-42,64],[-50,64],[-54,68],[-52,72],[-55,76],[-55,83]],'#5a7a68');
+  // Europe (detailed)
+  land([[-10,36],[-5,36],[0,37],[3,43],[5,44],[8,44],[10,43],[14,41],[16,42],[18,42],[20,43],[22,41],[24,40],[26,40],[28,41],[30,46],[30,56],[25,60],[20,60],[15,58],[12,56],[10,55],[8,57],[5,60],[2,58],[0,58],[-4,58],[-5,57],[-8,57],[-8,52],[-5,50],[0,50],[2,51],[5,52],[8,52],[10,55],[14,55],[20,57],[25,60],[28,62],[28,70],[20,70],[15,70],[12,65],[8,63],[5,62],[0,62],[-5,62],[-8,60],[-8,57],[-6,56],[-2,56],[0,56],[2,52],[0,51],[-5,50],[-8,48],[-10,44],[-10,36]],'#4a7a35');
+  // Africa (detailed)
+  land([[-18,16],[-14,11],[-17,6],[-15,1],[-10,-2],[-8,-5],[-10,-14],[-12,-20],[-16,-28],[-18,-34],[-16,-38],[-12,-42],[-6,-40],[0,-38],[14,-34],[22,-30],[30,-24],[34,-20],[38,-14],[42,-10],[42,-2],[40,4],[42,10],[44,12],[44,14],[40,16],[38,18],[36,22],[34,24],[32,28],[30,32],[28,34],[24,36],[20,38],[14,38],[10,36],[6,34],[2,32],[0,32],[-4,32],[-8,30],[-10,28],[-14,24],[-16,20],[-18,16]],'#5a8a30');
+  // Madagascar
+  land([[44,-12],[48,-14],[50,-18],[50,-22],[48,-24],[46,-26],[44,-24],[44,-18],[44,-12]],'#4a7a2a');
+  // South America (detailed)
+  land([[-80,10],[-75,12],[-68,12],[-62,12],[-55,6],[-50,2],[-48,-2],[-44,0],[-38,-4],[-35,-8],[-36,-12],[-38,-14],[-40,-18],[-42,-22],[-44,-24],[-46,-24],[-48,-28],[-52,-32],[-54,-34],[-56,-38],[-62,-40],[-66,-44],[-68,-48],[-66,-52],[-68,-54],[-72,-50],[-72,-46],[-70,-40],[-68,-36],[-68,-28],[-70,-20],[-72,-16],[-76,-12],[-78,-6],[-78,0],[-78,4],[-76,8],[-80,10]],'#4a8030');
+  // Russia + Asia (detailed)
+  land([[28,72],[40,72],[50,70],[60,68],[70,72],[80,74],[95,74],[110,72],[130,72],[140,70],[148,66],[160,62],[166,58],[172,52],[168,48],[160,44],[150,40],[144,36],[138,34],[132,32],[126,30],[120,28],[115,25],[110,20],[105,18],[100,18],[95,22],[90,24],[85,28],[80,32],[75,36],[68,36],[62,28],[58,24],[54,26],[50,30],[44,36],[38,40],[34,42],[30,46],[25,50],[22,54],[20,60],[22,64],[24,68],[26,70],[28,72]],'#3d7028');
+  // India
+  land([[68,24],[72,22],[76,20],[80,14],[82,8],[78,8],[74,10],[70,12],[66,18],[66,22],[68,24]],'#4a7030');
+  // Japan
+  land([[130,33],[132,34],[134,36],[136,38],[138,40],[140,42],[142,44],[144,44],[144,42],[142,40],[140,38],[138,36],[136,34],[134,32],[132,32],[130,33]],'#4a7530');
+  // Southeast Asia
+  land([[100,20],[104,18],[108,16],[112,14],[116,10],[110,4],[106,2],[104,0],[102,-2],[104,-4],[108,-4],[112,-2],[116,2],[118,4],[120,6],[116,8],[112,10],[108,12],[104,14],[100,16],[100,20]],'#4a7830');
+  // Australia
+  land([[114,-22],[118,-20],[122,-16],[128,-12],[132,-12],[136,-12],[138,-16],[140,-18],[142,-20],[144,-22],[146,-24],[148,-22],[150,-24],[152,-26],[154,-28],[154,-30],[152,-34],[148,-36],[144,-38],[140,-38],[136,-36],[132,-36],[128,-36],[124,-34],[120,-30],[116,-28],[114,-22]],'#6a8840');
+  // New Zealand (approximate)
+  land([[172,-36],[174,-38],[174,-40],[172,-42],[170,-44],[170,-46],[172,-46],[174,-44],[176,-40],[174,-38],[172,-36]],'#4a7530');
+  // Antarctica
+  ex.fillStyle='#c0d8f0';
+  land([[-180,-68],[-150,-70],[-120,-72],[-90,-74],[-60,-76],[-30,-74],[0,-76],[30,-74],[60,-72],[90,-70],[120,-72],[150,-70],[180,-68],[180,-90],[-180,-90],[-180,-68]]);
+  // Arctic (Greenland ice cap lighter)
+  ex.fillStyle='#d8eeff';
+  land([[-180,82],[-120,82],[-60,84],[0,84],[60,82],[120,80],[180,82],[180,90],[-180,90],[-180,82]]);
+
+  // Ocean depth shading: shallow coastal water lighter
+  ex.globalAlpha=0.18;
+  ex.fillStyle='#3399cc';
+  ex.fillRect(0,0,EW,EH);
+  ex.globalAlpha=1.0;
+
+  // Desert/arid regions (Sahara, Arabia, Australia center, Gobi)
+  ex.fillStyle='#c8a060';
+  ex.globalAlpha=0.6;
+  // Sahara
+  land([[-16,36],[0,36],[12,34],[24,32],[34,28],[36,24],[34,20],[30,16],[24,14],[18,16],[12,20],[4,22],[0,28],[-4,32],[-8,34],[-12,34],[-16,36]]);
+  // Arabian Peninsula
+  land([[36,28],[44,28],[52,24],[56,20],[58,16],[56,12],[52,12],[46,14],[40,16],[36,22],[36,28]]);
+  // Australian center
+  land([[120,-22],[132,-18],[138,-22],[142,-26],[136,-32],[128,-32],[120,-26],[120,-22]]);
+  // Gobi
+  land([[90,44],[100,46],[108,44],[110,40],[104,38],[96,40],[90,42],[90,44]]);
+  ex.globalAlpha=1.0;
+
+  // Snow/mountain regions
+  ex.fillStyle='#e8eeee';ex.globalAlpha=0.55;
+  // Himalayas
+  land([[70,30],[78,34],[84,34],[88,30],[84,28],[78,28],[70,30]]);
+  // Andes
+  land([[-76,2],[-74,-6],[-70,-14],[-68,-22],[-70,-30],[-72,-14],[-74,-6],[-76,2]]);
+  ex.globalAlpha=1.0;
+
+  // Cloud patches (random realistic swirls)
+  const cloudSeed=mkRng(9999);
+  for(let ci=0;ci<35;ci++){
+    const cx=cloudSeed()*EW,cy=cloudSeed()*EH;
+    const cw=cloudSeed()*80+30,ch=cloudSeed()*25+10;
+    const cGrad=ex.createRadialGradient(cx,cy,0,cx,cy,Math.max(cw,ch));
+    cGrad.addColorStop(0,`rgba(255,255,255,${0.55+cloudSeed()*0.35})`);
+    cGrad.addColorStop(0.5,`rgba(255,255,255,${0.15+cloudSeed()*0.20})`);
+    cGrad.addColorStop(1,'rgba(255,255,255,0)');
+    ex.save();ex.translate(cx,cy);ex.scale(cw/Math.max(cw,ch),ch/Math.max(cw,ch));ex.translate(-cx,-cy);
+    ex.fillStyle=cGrad;ex.beginPath();ex.arc(cx,cy,Math.max(cw,ch),0,Math.PI*2);ex.fill();ex.restore();
+  }
+  // Large storm systems
+  for(let si=0;si<6;si++){
+    const sx=cloudSeed()*EW,sy=(0.2+cloudSeed()*0.6)*EH;
+    const sr=40+cloudSeed()*60;
+    const sGrad=ex.createRadialGradient(sx,sy,5,sx,sy,sr);
+    sGrad.addColorStop(0,'rgba(255,255,255,0.7)');
+    sGrad.addColorStop(0.4,'rgba(255,255,255,0.3)');
+    sGrad.addColorStop(1,'rgba(255,255,255,0)');
+    ex.fillStyle=sGrad;ex.beginPath();ex.arc(sx,sy,sr,0,Math.PI*2);ex.fill();
+  }
+
+  const eTex=new THREE.CanvasTexture(ec);
+
+  // ── CITY LIGHTS TEXTURE: only on land, dark amber ─────────────────────────
+  const lc=document.createElement('canvas');lc.width=EW;lc.height=EH;
+  const lx=lc.getContext('2d');
+  lx.fillStyle='#000000';lx.fillRect(0,0,EW,EH);
+
+  // Real major city clusters — placed on actual land coordinates
+  const cities=[
+    // North America
+    [[-74,40],6],[[-87,41],5],[[-118,34],5],[[-122,37],4],[[-79,43],4],[[-71,42],4],
+    [[-80,26],3],[[-84,33],3],[[-90,30],3],[[-96,30],3],[[-104,39],3],[[-112,33],3],
+    [[-122,47],3],[[-123,49],3],[[-100,46],2],[[-83,42],2],
+    // Europe
+    [[-0.12,51.5],6],[[2.35,48.85],5],[[13.4,52.5],5],[[37.62,55.75],6],
+    [[12.5,41.9],4],[[4.9,52.37],4],[[18.07,59.33],3],[[24.9,60.17],3],
+    [[14.42,50.08],3],[[8.68,50.12],3],[[2.17,41.38],3],
+    [[10.0,53.55],3],[[12.57,55.68],2],[[23.73,37.98],2],[[28.95,41.01],4],
+    // Russia
+    [[37.62,55.75],5],[[30.32,59.95],4],[[82.92,55.03],3],[[73.4,54.9],2],
+    // Middle East
+    [[51.42,35.7],4],[[44.4,33.34],3],[[46.72,24.7],5],[[67.01,24.86],4],
+    // India / South Asia
+    [[77.23,28.63],6],[[72.88,19.08],6],[[80.27,13.08],4],[[88.36,22.57],5],
+    [[85.14,25.6],3],[[75.86,22.72],3],[[72.85,21.2],3],
+    // East Asia
+    [[116.39,39.91],7],[[121.47,31.23],7],[[103.82,1.35],4],
+    [[100.5,13.75],4],[[106.68,10.82],4],[[108.2,16.07],3],
+    [[126.98,37.57],5],[[129.07,35.18],4],[[135.5,34.7],5],
+    [[139.69,35.69],7],[[130.41,33.59],4],
+    // Southeast Asia
+    [[106.85,-6.21],5],[[101.7,3.15],4],
+    // Africa
+    [[31.24,30.06],5],[[36.82,-1.28],4],[[7.4,9.07],4],[[18.06,-33.93],3],
+    [[3.38,6.45],3],[[30.06,-1.94],2],
+    // South America
+    [[-43.18,-22.91],5],[[-46.63,-23.55],5],[[-58.38,-34.6],5],
+    [[-70.65,-33.45],4],[[-77.04,-12.04],3],[[-66.87,10.48],3],
+    // Australia
+    [[151.21,-33.87],4],[[144.96,-37.81],4],[[115.86,-31.95],3],
+    [[153.03,-27.47],3],
+  ];
+  cities.forEach(([[lon,lat],intensity])=>{
+    const[cx2,cy2]=px(lon,lat);
+    const r=intensity*2.5+2;
+    const cityG=lx.createRadialGradient(cx2,cy2,0,cx2,cy2,r);
+    cityG.addColorStop(0,`rgba(255,220,120,${0.8+intensity*0.03})`);
+    cityG.addColorStop(0.4,`rgba(255,180,80,${0.4})`);
+    cityG.addColorStop(1,'rgba(255,150,50,0)');
+    lx.fillStyle=cityG;lx.beginPath();lx.arc(cx2,cy2,r,0,Math.PI*2);lx.fill();
+    // Add scatter dots for city suburbs
+    for(let d=0;d<intensity*3;d++){
+      const dx=(Math.random()-0.5)*r*2.5,dy=(Math.random()-0.5)*r*2.5;
+      lx.fillStyle=`rgba(255,${160+Math.random()*80},${60+Math.random()*60},${0.3+Math.random()*0.4})`;
+      lx.fillRect(cx2+dx,cy2+dy,1.5,1.5);
+    }
+  });
+  // Add road-like connections between nearby cities
+  lx.strokeStyle='rgba(255,180,80,0.06)';lx.lineWidth=0.5;
+  [[[-74,40],[-87,41]],[[-87,41],[-83,42]],[[-0.12,51.5],[2.35,48.85]],
+   [[13.4,52.5],[8.68,50.12]],[[116.39,39.91],[139.69,35.69]]].forEach(([[lo1,la1],[lo2,la2]])=>{
+    const[x1,y1]=px(lo1,la1),[x2,y2]=px(lo2,la2);
+    lx.beginPath();lx.moveTo(x1,y1);lx.lineTo(x2,y2);lx.stroke();
+  });
+  const lightTex=new THREE.CanvasTexture(lc);
+
+  // ── EARTH MESH with day + night textures ─────────────────────────────────
+  // Use emissiveMap for city lights (shows on dark side naturally with Phong)
+  const earthGeo=new THREE.SphereGeometry(600,80,52);
+  const emat=new THREE.MeshPhongMaterial({
+    map:eTex,
+    emissiveMap:lightTex,
+    emissive:new THREE.Color(0xffa020),
+    emissiveIntensity:0.85,
+    shininess:22,
+    specular:new THREE.Color(0x336699),
+  });
+  issEarth=new THREE.Mesh(earthGeo,emat);
+  issScene.add(issEarth);
+
+  // Atmosphere: multi-layer
+  const atm1=new THREE.Mesh(new THREE.SphereGeometry(614,32,20),
+    new THREE.MeshPhongMaterial({color:0x4488ff,transparent:true,opacity:0.12,side:THREE.BackSide,depthWrite:false}));
+  issScene.add(atm1);
+  const atm2=new THREE.Mesh(new THREE.SphereGeometry(625,32,20),
+    new THREE.MeshPhongMaterial({color:0x2266cc,transparent:true,opacity:0.05,side:THREE.BackSide,depthWrite:false}));
+  issScene.add(atm2);
+
+  // ── MOON ─────────────────────────────────────────────────────────────────
+  // Moon at realistic relative position (about 384,000 km away; scale for visibility)
+  const moonGeo=new THREE.SphereGeometry(160,24,16); // 160 scene units (Moon is ~0.27× Earth)
+  const mc=document.createElement('canvas');mc.width=256;mc.height=128;
+  const mx=mc.getContext('2d');
+  // Moon base: grey
+  mx.fillStyle='#a0a0a0';mx.fillRect(0,0,256,128);
+  // Lunar maria (dark regions)
+  const moonRng=mkRng(7777);
+  [[[120,55],[40,30],'#707878'],[[60,60],[35,25],'#686e6e'],[[140,35],[50,28],'#6a7070'],
+   [[100,75],[30,20],'#787878'],[[170,65],[45,25],'#6e7474'],[[80,40],[28,18],'#737070']
+  ].forEach(([[cx3,cy3],[rw,rh],col])=>{
+    const mg=mx.createRadialGradient(cx3,cy3,0,cx3,cy3,Math.max(rw,rh));
+    mg.addColorStop(0,col);mg.addColorStop(1,'#a0a0a0');
+    mx.fillStyle=mg;mx.save();mx.translate(cx3,cy3);mx.scale(rw/rh,1);mx.translate(-cx3,-cy3);
+    mx.beginPath();mx.arc(cx3,cy3,rh,0,Math.PI*2);mx.fill();mx.restore();
+  });
+  // Craters
+  for(let cr=0;cr<80;cr++){
+    const crx=moonRng()*256,cry=moonRng()*128,crr=1+moonRng()*6;
+    mx.strokeStyle=`rgba(60,60,60,${0.3+moonRng()*0.4})`;
+    mx.lineWidth=0.8;mx.beginPath();mx.arc(crx,cry,crr,0,Math.PI*2);mx.stroke();
+    mx.fillStyle=`rgba(${80+moonRng()*40},${80+moonRng()*40},${80+moonRng()*40},0.3)`;
+    mx.fill();
+  }
+  const moonTex=new THREE.CanvasTexture(mc);
+  const moonMat=new THREE.MeshPhongMaterial({map:moonTex,shininess:4});
+  window._issMoon=new THREE.Mesh(moonGeo,moonMat);
+  // Moon starts at a fixed position: right side, slightly behind Earth
+  window._issMoon.position.set(3200,400,-2000);
+  issScene.add(window._issMoon);
+
+  // ── LIGHTING ─────────────────────────────────────────────────────────────
+  issScene.add(new THREE.AmbientLight(0x111825,0.35));
+  const sun=new THREE.DirectionalLight(0xfffde8,1.5);
+  sun.position.set(4000,800,3000);
+  issScene.add(sun);
+  // Moon gets same sunlight
+  const sun2=new THREE.DirectionalLight(0xfffde8,1.5);
+  sun2.position.copy(sun.position);issScene.add(sun2);
+
+  // ── ISS MODEL ────────────────────────────────────────────────────────────
+  issISSGroup=new THREE.Group();
+  buildDetailedISS(issISSGroup);
+  issISSGroup.scale.setScalar(4.5);
+  issScene.add(issISSGroup);
+
+  issAngle=0;
+  animateISS();
+}
+
+// ── ISS CAMERA CONTROLS (orbit + zoom) ──────────────────────────────────────
+const issCtrl={
+  theta:Math.PI*1.1, phi:Math.PI*0.38,  // spherical angles
+  r:1950,           // radius from target
+  rMin:700, rMax:8000,
+  target:new THREE.Vector3(0,0,0),
+  dragging:false, lastX:0, lastY:0,
+  pinchDist:0,
+  autoRotate:true,  // auto-orbit until user interacts
+};
+
+function issUpdateCamera(){
+  if(!issCam)return;
+  const sp=Math.sin(issCtrl.phi),cp=Math.cos(issCtrl.phi);
+  const st=Math.sin(issCtrl.theta),ct=Math.cos(issCtrl.theta);
+  issCam.position.set(
+    issCtrl.target.x+issCtrl.r*sp*ct,
+    issCtrl.target.y+issCtrl.r*cp,
+    issCtrl.target.z+issCtrl.r*sp*st
+  );
+  issCam.lookAt(issCtrl.target);
+}
+
+function issSetupControls(){
+  const canvas=document.getElementById('issCanvas');
+  if(!canvas)return;
+
+  // Mouse
+  canvas.addEventListener('mousedown',e=>{
+    issCtrl.dragging=true;issCtrl.autoRotate=false;
+    issCtrl.lastX=e.clientX;issCtrl.lastY=e.clientY;
+    e.preventDefault();
+  },{passive:false});
+  canvas.addEventListener('mousemove',e=>{
+    if(!issCtrl.dragging)return;
+    const dx=e.clientX-issCtrl.lastX, dy=e.clientY-issCtrl.lastY;
+    issCtrl.theta-=dx*0.006;
+    issCtrl.phi=Math.max(0.08,Math.min(Math.PI-0.08,issCtrl.phi+dy*0.006));
+    issCtrl.lastX=e.clientX;issCtrl.lastY=e.clientY;
+  });
+  canvas.addEventListener('mouseup',()=>{issCtrl.dragging=false;});
+  canvas.addEventListener('mouseleave',()=>{issCtrl.dragging=false;});
+  canvas.addEventListener('wheel',e=>{
+    e.preventDefault();
+    issCtrl.autoRotate=false;
+    const factor=e.deltaY>0?1.12:0.89;
+    issCtrl.r=Math.max(issCtrl.rMin,Math.min(issCtrl.rMax,issCtrl.r*factor));
+  },{passive:false});
+
+  // Touch (Android / iOS)
+  canvas.addEventListener('touchstart',e=>{
+    issCtrl.autoRotate=false;
+    if(e.touches.length===1){
+      issCtrl.dragging=true;
+      issCtrl.lastX=e.touches[0].clientX;
+      issCtrl.lastY=e.touches[0].clientY;
+    } else if(e.touches.length===2){
+      issCtrl.dragging=false;
+      const dx=e.touches[0].clientX-e.touches[1].clientX;
+      const dy=e.touches[0].clientY-e.touches[1].clientY;
+      issCtrl.pinchDist=Math.sqrt(dx*dx+dy*dy);
+    }
+    e.preventDefault();
+  },{passive:false});
+  canvas.addEventListener('touchmove',e=>{
+    if(e.touches.length===1&&issCtrl.dragging){
+      const dx=e.touches[0].clientX-issCtrl.lastX;
+      const dy=e.touches[0].clientY-issCtrl.lastY;
+      issCtrl.theta-=dx*0.007;
+      issCtrl.phi=Math.max(0.08,Math.min(Math.PI-0.08,issCtrl.phi+dy*0.007));
+      issCtrl.lastX=e.touches[0].clientX;
+      issCtrl.lastY=e.touches[0].clientY;
+    } else if(e.touches.length===2){
+      const dx=e.touches[0].clientX-e.touches[1].clientX;
+      const dy=e.touches[0].clientY-e.touches[1].clientY;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(issCtrl.pinchDist>0){
+        const factor=issCtrl.pinchDist/dist;
+        issCtrl.r=Math.max(issCtrl.rMin,Math.min(issCtrl.rMax,issCtrl.r*factor));
+      }
+      issCtrl.pinchDist=dist;
+    }
+    e.preventDefault();
+  },{passive:false});
+  canvas.addEventListener('touchend',e=>{
+    issCtrl.dragging=false;issCtrl.pinchDist=0;
+  });
+}
+
+function buildDetailedISS(issISSGroup){
+  // ISS at 7.5× scale = 1 unit ≈ 1 meter
+  const alum=new THREE.MeshPhongMaterial({color:0xc5d8e8,shininess:90,specular:new THREE.Color(0x8899bb)});
+  const goldPan=new THREE.MeshPhongMaterial({color:0xbb8e10,shininess:65,specular:new THREE.Color(0xffdd88)});
+  const white=new THREE.MeshPhongMaterial({color:0xecf2f8,shininess:55});
+  const dark=new THREE.MeshPhongMaterial({color:0x18283a,shininess:25});
+  const darkBlue=new THREE.MeshPhongMaterial({color:0x192c48,shininess:35});
+  const grey=new THREE.MeshPhongMaterial({color:0x8899aa,shininess:40});
+  const red=new THREE.MeshPhongMaterial({color:0xcc2211,shininess:30});
+  const orange=new THREE.MeshPhongMaterial({color:0xdd6600,shininess:30});
+
+  function box(w,h,d,mat,x,y,z,rx,ry,rz){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+    m.position.set(x||0,y||0,z||0);
+    if(rx)m.rotation.x=rx;if(ry)m.rotation.y=ry;if(rz)m.rotation.z=rz;
+    issISSGroup.add(m);return m;
+  }
+  function cyl(r1,r2,l,segs,mat,x,y,z,rx,ry,rz){
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,l,segs||12),mat);
+    m.position.set(x||0,y||0,z||0);
+    if(rx)m.rotation.x=rx;if(ry)m.rotation.y=ry;if(rz)m.rotation.z=rz;
+    issISSGroup.add(m);return m;
+  }
+  const H=Math.PI/2;
+
+  // ── MAIN INTEGRATED TRUSS (ITS) — 109m total ─────────────────────────────
+  // Central S0 truss
+  box(9,1.2,1.2,alum,0,0,0);
+  // P/S1 trusses (left/right)
+  [-1,1].forEach(s=>{
+    box(12,0.9,0.9,alum,s*10.5,0,0);
+    box(12,0.9,0.9,alum,s*22.5,0,0);
+    // Truss diagonal bracing
+    for(let i=0;i<3;i++){
+      box(0.15,0.15,8,darkBlue,s*(5+i*5),0.3,0,0.3,0,0);
+      box(0.15,0.15,8,darkBlue,s*(5+i*5),-0.3,0,-0.3,0,0);
+    }
+    // Truss end plates
+    box(0.4,1.1,1.1,grey,s*16.8,0,0);
+    box(0.4,1.1,1.1,grey,s*28.5,0,0);
+  });
+
+  // ── SOLAR ARRAY WINGS (8 panels total — 4 pairs) ─────────────────────────
+  const panelConf=[
+    {x:-22,ys:[1,-1],pw:15,ph:0.05,pd:11},{x:-11,ys:[1,-1],pw:15,ph:0.05,pd:11},
+    {x:11, ys:[1,-1],pw:15,ph:0.05,pd:11},{x:22, ys:[1,-1],pw:15,ph:0.05,pd:11},
+  ];
+  panelConf.forEach(({x,ys,pw,ph,pd})=>{
+    ys.forEach(ys2=>{
+      const yoff=ys2*(pd/2+0.6);
+      // Main panel surface (dark blue photovoltaic cells)
+      const panel=new THREE.Mesh(new THREE.BoxGeometry(pw,ph,pd),goldPan);
+      panel.position.set(x,0,yoff);issISSGroup.add(panel);
+      // Cell grid lines
+      for(let ci=0;ci<12;ci++){
+        const cl=new THREE.Mesh(new THREE.BoxGeometry(pw,ph+0.04,0.08),darkBlue);
+        cl.position.set(x,0.01,yoff-pd/2+ci*(pd/11));issISSGroup.add(cl);
+      }
+      for(let ri=0;ri<6;ri++){
+        const rl=new THREE.Mesh(new THREE.BoxGeometry(0.08,ph+0.04,pd),darkBlue);
+        rl.position.set(x-pw/2+ri*(pw/5),0.01,yoff);issISSGroup.add(rl);
+      }
+      // Panel frame (aluminium border)
+      box(pw+0.2,0.12,pd+0.2,alum,x,0,yoff);
+      // Mast connecting panel to truss
+      cyl(0.12,0.12,0.9,6,alum,x,0,(yoff>0?yoff-pd/2-0.45:yoff+pd/2+0.45));
+    });
+  });
+
+  // ── THERMAL RADIATORS (ITS-integrated, white folded panels) ───────────────
+  [-1,1].forEach(s=>{
+    box(8,0.08,3.5,white,s*14,1.8,0,0.4*s,0,0);
+    box(8,0.08,3.5,white,s*14,-1.8,0,-0.4*s,0,0);
+    box(6,0.08,3.0,white,s*22,1.4,0,0.35*s,0,0);
+    box(6,0.08,3.0,white,s*22,-1.4,0,-0.35*s,0,0);
+  });
+
+  // ── HABITAT MODULE STACK (along Z axis) ───────────────────────────────────
+  // Node 1 (Unity) - white
+  cyl(1.05,1.05,4.0,16,white,0,0,-3,H);
+  // Node 1 radial ports (4 berthing ports)
+  [[0,1.15,-3],[0,-1.15,-3]].forEach(([x,y,z])=>cyl(0.55,0.55,1.0,10,alum,x,y,z,0,0,0));
+  box(1.0,1.0,0.5,alum,1.15,0,-3,0,0,H); // port side
+  box(1.0,1.0,0.5,alum,-1.15,0,-3,0,0,H); // starboard side
+
+  // PMA-1 (Pressurized Mating Adapter)
+  cyl(0.90,0.65,1.8,12,alum,0,0,-5.4,H);
+  // Zarya (FGB — Russian module, darker)
+  cyl(1.05,1.05,5.0,16,grey,0,0,-8.5,H);
+  // Zarya solar panels (2 smaller fixed panels)
+  [-1,1].forEach(s=>{
+    box(6.5,0.06,2.2,goldPan,0,s*2.0,-8.5,0.2*s);
+  });
+
+  // PMA-2 / CBM
+  cyl(0.80,0.60,1.4,12,alum,0,0,-11.5,H);
+
+  // Node 2 (Harmony) - white  
+  cyl(1.05,1.05,4.4,16,white,0,0,1.5,H);
+  // Harmony radial ports
+  [[1.15,0,1.5],[-1.15,0,1.5]].forEach(([x,y,z])=>cyl(0.55,0.55,1.0,10,alum,x,y,z,0,0,H));
+  [[0,1.15,1.5],[0,-1.15,1.5]].forEach(([x,y,z])=>cyl(0.55,0.55,1.0,10,alum,x,y,z));
+
+  // Destiny (US Lab) - white cylinder
+  cyl(1.08,1.08,5.0,16,white,0,0,5,H);
+  // Destiny windows  
+  box(0.3,0.3,0.08,darkBlue,1.1,0.3,5);
+  box(0.3,0.3,0.08,darkBlue,-1.1,0.3,5);
+
+  // Quest (Airlock module)
+  cyl(0.90,0.90,2.5,14,white,1.2,0,6,0,0,H);
+  cyl(0.70,0.70,2.0,12,alum,1.2,0,7.5,0,0,H);
+
+  // Tranquility (Node 3) + Cupola
+  cyl(1.05,1.05,4.2,16,white,-1.1,0,5,0,0,H);
+  // Cupola (7-windowed observation module)
+  const cupolaTrunc=new THREE.Mesh(new THREE.CylinderGeometry(0.70,0.92,0.7,7),darkBlue);
+  cupolaTrunc.position.set(-1.1,-1.1,5);issISSGroup.add(cupolaTrunc);
+  const cupolaTop=new THREE.Mesh(new THREE.CylinderGeometry(0.0,0.70,0.35,7),darkBlue);
+  cupolaTop.position.set(-1.1,-1.55,5);issISSGroup.add(cupolaTop);
+  // Cupola window frames
+  for(let wi=0;wi<7;wi++){
+    const wa=wi*(Math.PI*2/7);
+    box(0.18,0.22,0.08,grey,-1.1+0.72*Math.cos(wa),-1.1,5+0.72*Math.sin(wa),0,wa,0);
+  }
+
+  // Columbus (European lab) — perpendicular to stack
+  cyl(0.98,0.98,4.5,16,white,0,0,8.5,0,0,H);
+
+  // Kibō (Japanese lab — largest module)
+  cyl(1.10,1.10,5.2,16,white,0,0,12,H);
+  // Kibō Pressurized Module
+  cyl(1.05,1.05,3.8,14,white,1.15,0,12,0,0,H);
+  // JEM Exposed Facility
+  box(3.5,1.4,1.8,alum,0,-1.5,13.5);
+  // JEM RMS (robotic arm - small)
+  cyl(0.08,0.08,2.5,6,grey,0,-2.2,12,0.3,0,0);
+
+  // MRM-1/2 (Russian docking modules, top)
+  cyl(0.75,0.75,3.0,12,grey,0,1.2,-8,H);
+  cyl(0.65,0.65,2.5,10,grey,0,1.2,-3.5,H);
+
+  // Pirs / Poisk (nadir/zenith)
+  cyl(0.62,0.62,2.2,10,grey,0,-1.2,-8,H);
+
+  // ── CANADARM2 (Mobile Servicing System) ───────────────────────────────────
+  const armBase=new THREE.Group();
+  // Mobile base (rides along truss)
+  box(1.5,0.4,0.4,alum,0,0,0);
+  // Arm segments
+  const seg1=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,5.5,8),alum);
+  seg1.rotation.z=0.6;seg1.position.set(1.5,1.8,0);armBase.add(seg1);
+  const seg2=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.11,5.0,8),alum);
+  seg2.rotation.z=-0.2;seg2.position.set(3.5,3.8,0);armBase.add(seg2);
+  const seg3=new THREE.Mesh(new THREE.CylinderGeometry(0.10,0.10,3.5,8),alum);
+  seg3.rotation.z=0.3;seg3.position.set(5.8,4.2,0);armBase.add(seg3);
+  // Latching end effector
+  const lee=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.12,0.4,8),grey);
+  lee.rotation.z=H;lee.position.set(7.8,3.9,0);armBase.add(lee);
+  // Joint details (shoulder, elbow, wrist)
+  [
+    [1.5,1.8,0],[3.5,3.8,0],[5.8,4.2,0]
+  ].forEach(([x,y,z])=>{
+    const j=new THREE.Mesh(new THREE.SphereGeometry(0.18,8,6),grey);
+    j.position.set(x,y,z);armBase.add(j);
+  });
+  armBase.position.set(3,0.8,4);
+  issISSGroup.add(armBase);
+
+  // ── DOCKING ADAPTERS ──────────────────────────────────────────────────────
+  // IDA-2 / PMA-3 (Dragon, Starliner dock here)
+  cyl(0.62,0.80,1.2,12,alum,0,1.15,1.5);
+  cyl(0.50,0.62,0.6,12,dark,0,1.9,1.5);
+
+  // ── ANTENNAS & COMM SYSTEMS ───────────────────────────────────────────────
+  // S-band antennas (4 dishes)
+  [[3,-1.2,0],[3,1.2,0],[-3,-1.2,0],[-3,1.2,0]].forEach(([x,y,z])=>{
+    cyl(0.04,0.04,0.9,5,alum,x,y,z);
+    const dish=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.05,0.1,12),grey);
+    dish.position.set(x,y+(y>0?0.5:-0.5),z);issISSGroup.add(dish);
+  });
+  // Ku-band dish (main high-gain)
+  cyl(0.04,0.04,1.2,5,alum,5.5,-0.6,0);
+  const kuDish=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.08,0.14,16),grey);
+  kuDish.position.set(5.5,-1.3,0);issISSGroup.add(kuDish);
+
+  // Navigation lights
+  const navR=new THREE.Mesh(new THREE.SphereGeometry(0.08,6,4),red);
+  navR.position.set(-29,0,0);issISSGroup.add(navR);
+  const navG=new THREE.Mesh(new THREE.SphereGeometry(0.08,6,4),new THREE.MeshPhongMaterial({color:0x00cc44,emissive:new THREE.Color(0x00aa33),emissiveIntensity:0.8}));
+  navG.position.set(29,0,0);issISSGroup.add(navG);
+  const strobe=new THREE.Mesh(new THREE.SphereGeometry(0.06,5,4),white);
+  strobe.position.set(0,1.3,0);issISSGroup.add(strobe);
+}
+
+function animateISS(){
+  if(!issRenderer)return;
+  issAnimId=requestAnimationFrame(animateISS);
+  issAngle+=0.0020;
+
+  // ISS orbit: 51.6° inclination
+  const orbitR=1008,inc=51.6*Math.PI/180;
+  if(issISSGroup){
+    const x=Math.cos(issAngle)*orbitR;
+    const y=Math.sin(issAngle)*orbitR*Math.sin(inc);
+    const z=Math.sin(issAngle)*orbitR*Math.cos(inc);
+    issISSGroup.position.set(x,y,z);
+    issISSGroup.rotation.y=issAngle+Math.PI/2;
+    issISSGroup.rotation.z=-inc*0.5;
+    // Point camera at ISS when auto-rotating
+    if(issCtrl.autoRotate){
+      issCtrl.target.lerp(issISSGroup.position.clone().multiplyScalar(0.3),0.02);
+      issCtrl.theta+=0.0012;
+    }
+  }
+
+  if(issEarth)issEarth.rotation.y+=0.00028;
+
+  if(window._issMoon){
+    const mAng=issAngle*0.037;
+    window._issMoon.position.set(
+      3200*Math.cos(mAng)-500*Math.sin(mAng),
+      300+Math.sin(mAng*0.5)*200,
+      -2000*Math.cos(mAng*0.3)
+    );
+    window._issMoon.rotation.y+=0.0001;
+  }
+
+  issUpdateCamera();
+  issRenderer.render(issScene,issCam);
+}
+
+function openISSView(){
+  const ov=document.getElementById('issOverlay');
+  ov.style.display='flex';
+  // Reset camera to default view
+  issCtrl.theta=Math.PI*1.1;issCtrl.phi=Math.PI*0.38;
+  issCtrl.r=1950;issCtrl.autoRotate=true;
+  issCtrl.target.set(0,0,0);
+  setTimeout(()=>{
+    buildISSScene();
+    issSetupControls();
+  },50);
+}
+
+function closeISSView(){
+  if(issAnimId)cancelAnimationFrame(issAnimId);
+  if(issRenderer){issRenderer.dispose();issRenderer=null;}
+  issScene=null;issISSGroup=null;issEarth=null;window._issMoon=null;
+  document.getElementById('issOverlay').style.display='none';
+}
+
+document.getElementById('issClose').addEventListener('click',closeISSView);
+
+// ── Add BH indicators to GALAXY_DATA after build ─────────────────────────────
+// Known galaxies with confirmed massive black holes — show a small BH glow
+const GALAXY_BH={
+  'Andromeda Galaxy (M31)':{mass:'100 million',color:0xff8822},
+  'Messier 87 / M87* Black Hole':{mass:'6.5 billion',color:0xff7700},
+  'Sombrero Galaxy (M104)':{mass:'1 billion',color:0xff8833},
+  'NGC 4889 (Coma Cluster BCG)':{mass:'21 billion',color:0xff9900},
+  'NGC 4889 SE':{mass:'21 billion',color:0xff9900},
+  'NGC 1277 Black Hole (17 Billion M☉)':{mass:'17 billion',color:0xff8800},
+  'Bode\'s Galaxy (M81)':{mass:'70 million',color:0xff9944},
+  'Centaurus A (NGC 5128)':{mass:'55 million',color:0xff8822},
+  'NGC 5128 / Cen A':{mass:'55 million',color:0xff8822},
+  'NGC 4261 (Jets Galaxy)':{mass:'400 million',color:0xff9933},
+  'NGC 1068 (M77)':{mass:'10 million',color:0xff9944},
+  'NGC 1275 (Perseus A)':{mass:'340 million',color:0xff8800},
+  'NGC 3147':{mass:'300 million',color:0xff9944},
+  'NGC 1600':{mass:'17 billion',color:0xff8800},
+  'Markarian 231':{mass:'3 billion',color:0xff7700},
+  'Cygnus A (3C 405)':{mass:'2.5 billion',color:0xff8822},
+};
+
+window._galaxyBHadded=false;
+function addGalaxyBHMarkers(){
+  if(window._galaxyBHadded)return;
+  window._galaxyBHadded=true;
+  const gdat=window._galaxyDataRef||[];
+  gdat.forEach(gd=>{
+    const bh=GALAXY_BH[gd.name];
+    if(!bh)return;
+    // Small BH glow marker
+    const bhSp=new THREE.Sprite(makeGlowMat(bh.color,0.7));
+    bhSp.scale.set(gd.sz*0.08,gd.sz*0.08,1);bhSp.position.set(gd.x,gd.y,gd.z);
+    galaxyScene.add(bhSp);
+    const bhDot=new THREE.Sprite(makeGlowMat(0x000000,0.9));
+    bhDot.scale.set(gd.sz*0.03,gd.sz*0.03,1);bhDot.position.set(gd.x,gd.y,gd.z);
+    galaxyScene.add(bhDot);
+  });
+}
+// Call after galaxy scene builds
+setTimeout(addGalaxyBHMarkers,2000);
+
+
 </script>
 </body>
 </html>
