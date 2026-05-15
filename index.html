@@ -724,6 +724,59 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   <div class="hbtn" id="galaxyTimeClose" style="width:34px;height:34px;font-size:12px;">✕</div>
 </div>
   <div id="issClose" onclick="closeISSView()" ontouchend="event.preventDefault();closeISSView();" style="position:fixed;top:7px;right:52px;z-index:10000;width:38px;height:38px;display:none;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;color:var(--cyan);background:rgba(0,5,15,0.45);border:1px solid rgba(0,212,255,0.2);border-radius:10px;backdrop-filter:blur(8px);font-size:18px;">←</div>
+<!-- ═══════════════════════════════════════════════════════ SKY WALK OVERLAY -->
+<div id="skyWalkOverlay" style="position:fixed;inset:0;background:#00000f;z-index:30000;display:none;">
+  <!-- Canvas fills entire screen -->
+  <canvas id="skwCanvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+
+  <!-- STEVKA logo top left (same as all other modes) -->
+  <div class="h-brand" style="position:absolute;top:0;left:0;height:52px;display:flex;align-items:center;padding-left:14px;z-index:2;pointer-events:none;"><em>STEVKA</em></div>
+  <!-- Top center: SKY WALK title + position info (pointer-events:none so touches go to canvas) -->
+  <div style="position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:2;display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:3px;">
+    <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,0.85);text-shadow:0 0 16px rgba(0,180,255,0.4);">SKY WALK</div>
+    <div id="skwCompass" style="font-family:'Space Mono',monospace;font-size:9px;color:rgba(0,212,255,0.7);letter-spacing:1.5px;">AZ 0° | ALT 45°</div>
+  </div>
+
+  <!-- Bottom left: back to Earth button -->
+  <div id="skwClose" onclick="closeSkyWalk()"
+    ontouchend="event.preventDefault();event.stopPropagation();closeSkyWalk();"
+    style="position:absolute;top:54px;left:8px;z-index:100;
+    background:rgba(0,5,15,0.6);border:1px solid rgba(0,212,255,0.3);
+    border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:6px;
+    cursor:pointer;touch-action:manipulation;backdrop-filter:blur(12px);">
+    <span style="font-size:14px;color:var(--cyan);">←</span>
+    <span style="font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.8);">EARTH</span>
+  </div>
+
+  <!-- Info panel (slides up from bottom when object tapped) -->
+  <div id="skwPanel" style="position:absolute;bottom:0;left:0;right:0;z-index:3;
+    background:rgba(0,5,18,0.95);border-top:1px solid rgba(0,212,255,0.2);
+    backdrop-filter:blur(20px);transform:translateY(100%);
+    transition:transform 0.35s cubic-bezier(.22,1,.36,1);padding:16px 16px 36px;">
+    <div id="skwPanelClose" onclick="hideSkyPanel()" ontouchend="event.preventDefault();hideSkyPanel();" style="position:absolute;top:10px;right:12px;font-size:20px;color:rgba(255,255,255,0.3);cursor:pointer;touch-action:manipulation;">✕</div>
+    <div style="display:flex;gap:12px;align-items:flex-start;">
+      <img id="skwImg" style="width:68px;height:68px;border-radius:10px;object-fit:cover;background:rgba(255,255,255,0.05);flex-shrink:0;" src="" alt="">
+      <div style="flex:1;min-width:0;">
+        <div id="skwName" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;"></div>
+        <div id="skwSub" style="font-size:10px;color:rgba(0,212,255,0.7);letter-spacing:1px;margin-bottom:6px;"></div>
+        <div id="skwDesc" style="font-size:11px;color:rgba(180,210,240,0.8);line-height:1.5;"></div>
+      </div>
+    </div>
+    <div id="skwStats" style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;"></div>
+  </div>
+
+  <!-- Bottom hint -->
+  <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:2;text-align:center;">
+    <div id="skwHint" style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.18);font-family:'Space Mono',monospace;white-space:nowrap;">TILT PHONE · TAP STARS & PLANETS</div>
+  </div>
+
+  <!-- iOS gyro button -->
+  <div id="skwGyroBtn" style="position:absolute;bottom:52px;left:50%;transform:translateX(-50%);display:none;z-index:2;
+    background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);
+    border-radius:20px;padding:10px 20px;font-family:'Orbitron',monospace;
+    font-size:10px;color:var(--cyan);cursor:pointer;letter-spacing:2px;">📱 ENABLE GYROSCOPE</div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ══════════════════════════════════════════════════════
@@ -8138,6 +8191,1053 @@ function addGalaxyBHMarkers(){
 setTimeout(addGalaxyBHMarkers,2000);
 
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SKY WALK — Star Walk 2-style sky viewer with gyroscope
+// ═══════════════════════════════════════════════════════════════════════════
+(function(){
+'use strict';
+
+// ── Compact bright star catalog (HIP, RA hours, Dec degrees, magnitude, name, spectral) ──
+// Top ~300 brightest stars for performance
+var STARS=[
+  // [ra_hours, dec_deg, mag, name, spectral, desc]
+  [6.752,16.716,-1.46,'Sirius','A1V','Brightest star in the night sky, 8.6 ly away'],
+  [6.399,-52.695,-0.72,'Canopus','F0Ib','Second brightest, 310 ly away'],
+  [14.261,-60.833,-0.27,'Rigil Kentaurus','G2V','Alpha Centauri A, nearest star system, 4.37 ly'],
+  [5.919,7.407,0.45,'Rigel','B8Ia','Blue supergiant in Orion, ~860 ly'],
+  [7.655,5.225,0.38,'Procyon','F5IV-V','8th brightest, 11.46 ly away'],
+  [5.278,-8.202,0.18,'Betelgeuse','M2Iab','Red supergiant, may go supernova'],
+  [1.628,29.090,0.99,'Hamal','K2III','Brightest star in Aries'],
+  [16.490,-26.432,-0.04,'Antares','M1.5Iab','Red supergiant heart of Scorpius'],
+  [13.420,55.959,0.18,'Arcturus','K0III','Brightest in northern hemisphere, 37 ly'],
+  [18.615,38.783,0.03,'Vega','A0Va','5th brightest, 25 ly, former pole star'],
+  [5.917,7.407,0.45,'Betelgeuse','M2Iab','Red supergiant in Orion shoulder'],
+  [20.691,45.280,1.25,'Deneb','A2Ia','Brightest in Cygnus, ~2600 ly'],
+  [22.961,-29.621,1.17,'Fomalhaut','A3V','Lonely star of autumn, 25 ly'],
+  [12.448,-63.099,0.77,'Mimosa','B0.5III','2nd brightest in Southern Cross'],
+  [12.265,-63.099,0.77,'Acrux','B0.5IV','Brightest in Southern Cross'],
+  [6.655,16.716,1.58,'Mirzam','B1II','Blue giant near Sirius'],
+  [19.846,8.868,0.76,'Altair','A7V','12th brightest, 17 ly, rotating fast'],
+  [4.598,16.509,0.87,'Aldebaran','K5III','Eye of Taurus, 67 ly'],
+  [5.534,-5.909,0.13,'Rigel','B8Ia','Blue supergiant foot of Orion'],
+  [7.577,31.889,1.58,'Pollux','K0III','Twin of Castor, 34 ly'],
+  [7.577,31.889,1.14,'Castor','A2Vm','Sextuple star system, 51 ly'],
+  [0.673,56.537,2.23,'Schedar','K0IIIa','Alpha Cassiopeiae'],
+  [3.792,24.105,2.87,'Alcyone','B7IIIe','Brightest Pleiades star'],
+  [10.139,11.967,1.36,'Regulus','B7V','Heart of Leo, 79 ly'],
+  [20.370,40.257,2.46,'Sadr','F8Ib','Center of Northern Cross'],
+  [2.530,89.264,2.02,'Polaris','F7Ib','North Star, pole star, 433 ly'],
+  [17.556,-43.019,1.63,'Shaula','B1.5IV','Scorpion tail, 700 ly'],
+  [13.923,18.398,2.65,'Spica','B1V','Brightest in Virgo, 250 ly'],
+  [23.079,15.206,2.49,'Markab','B9III','Alpha Pegasi'],
+  [14.850,74.156,2.08,'Kochab','K4III','Beta Ursae Minoris, former pole star'],
+  [11.062,61.751,1.77,'Dubhe','K0III','Alpha Ursae Majoris, pointer star'],
+  [11.896,53.695,2.37,'Merak','A1V','Beta Ursae Majoris, pointer star'],
+  [21.736,9.876,2.44,'Enif','K2Ib','Nose of Pegasus'],
+  [8.745,-54.708,1.67,'Avior','K3III','Epsilon Carinae'],
+  [9.133,-69.717,1.67,'Miaplacidus','A2IV','Beta Carinae'],
+  [16.000,-22.622,2.43,'Zubenelgenubi','A3IV','Alpha Librae'],
+  [17.622,-37.104,1.79,'Kaus Australis','B9.5III','Epsilon Sagittarii'],
+  [18.402,-34.384,2.02,'Nunki','B2.5V','Sigma Sagittarii'],
+  [4.857,6.961,2.00,'Bellatrix','B2III','Orions left shoulder'],
+  [5.679,-1.202,1.69,'Alnilam','B0Ia','Middle star of Orions belt'],
+  [5.796,-1.943,2.05,'Alnitak','O9.5Iab','East star of Orions belt'],
+  [5.533,-0.299,1.77,'Mintaka','B0III','West star of Orions belt'],
+,// Additional bright and named stars
+  [0.139,29.091,2.06,'Mirach','M0IIIa','Beta Andromedae, red giant, 197 ly'],
+  [0.655,30.861,2.10,'Almach','K3IIb','Gamma Andromedae, striking double star'],
+  [3.138,40.957,2.06,'Mirfak','F5Ib','Alpha Persei, brightest in Perseus'],
+  [3.408,31.884,2.12,'Algol','B8V','Beta Persei, famous eclipsing binary variable, Demon Star'],
+  [4.012,16.509,3.54,'Ain','K0III','Epsilon Tauri, in the Hyades cluster'],
+  [5.279,45.998,1.90,'Capella','G5III+G0III','Sixth brightest, binary system, 43 ly'],
+  [5.432,-5.086,1.64,'Saiph','B0Ia','Kappa Orionis, Orions foot, 724 ly'],
+  [5.248,-6.844,2.20,'Hatsya','O9III','Iota Orionis, hot blue giant'],
+  [7.453,31.889,1.93,'Alhena','A0IV','Gamma Geminorum, foot of Gemini, 109 ly'],
+  [7.655,-26.393,2.21,'Wezen','F8Ia','Delta Canis Majoris, yellow supergiant'],
+  [8.159,-24.304,2.45,'Adhara','B2Ia','Epsilon Canis Majoris, once brightest star'],
+  [9.274,26.009,2.56,'Ras Elased','K0IIIb','Epsilon Leonis, head of Leo'],
+  [10.332,19.841,2.98,'Algeiba','K0IIIb','Gamma Leonis, mane of Lion, double star'],
+  [11.235,-54.491,2.21,'Muhlifain','A1IV','Gamma Centauri'],
+  [12.133,57.033,1.86,'Alioth','A0p','Epsilon Ursae Majoris, brightest Big Dipper star'],
+  [12.257,57.032,2.27,'Mizar','A1V','Zeta Ursae Majoris, famous double star, 78 ly'],
+  [12.900,55.960,1.77,'Alkaid','B3V','Eta Ursae Majoris, end of Big Dipper handle'],
+  [13.664,-53.466,2.06,'Hadar','B1III','Beta Centauri, 390 ly'],
+  [14.064,-60.373,1.33,'Rigil Kentaurus A','G2V','Alpha Centauri A, nearest star system, 4.37 ly'],
+  [14.461,64.376,2.64,'Athebyne','M4II','Eta Draconis'],
+  [15.578,26.715,2.78,'Kornephoros','G8III','Beta Herculis, brightest in Hercules'],
+  [16.619,-28.216,1.63,'Graffias','B0.5IV','Beta Scorpii, visual double star'],
+  [16.714,-34.293,2.31,'Dschubba','B0IV','Delta Scorpii, brightened in 2000'],
+  [17.512,-37.296,2.69,'Girtab','B1.5III','Kappa Scorpii'],
+  [17.793,-40.127,3.21,'Lesath','B2IV','Upsilon Scorpii, near Shaula'],
+  [18.355,39.401,3.48,'Sheliak','B8II','Beta Lyrae, eclipsing binary'],
+  [18.983,32.690,3.05,'Albireo','K3II+B8V','Beta Cygni, beautiful gold and blue double'],
+  [19.512,27.960,2.99,'Tarazed','K3II','Gamma Aquilae, the wounded bird'],
+  [20.691,45.280,1.25,'Deneb','A2Ia','Alpha Cygni, brightest in Cygnus, ~2600 ly'],
+  [21.526,-16.662,2.91,'Sadalsuud','G0Ib','Beta Aquarii'],
+  [22.091,-0.320,2.96,'Sadalmelik','G2Ia','Alpha Aquarii, lucky stars of the king'],
+  [22.711,-15.821,3.77,'Sadachbia','G2III','Gamma Aquarii, the lucky stars of the tents'],
+  [23.066,28.083,2.83,'Scheat','M2II','Beta Pegasi, red giant, variable'],
+  [0.220,15.184,2.83,'Algenib','B2IV','Gamma Pegasi, corner of great square'],
+  // Notable nearby stars and systems visible to naked eye
+  [17.758,4.567,2.74,'Rasalhague','A5III','Alpha Ophiuchi, head of serpent bearer, 47 ly'],
+  [16.481,-26.432,1.09,'Antares B','K0III','Companion of Antares, 554 ly'],
+  [1.101,-17.987,2.04,'Deneb Kaitos','K0III','Beta Ceti, tail of the sea-monster, 96 ly'],
+  [3.791,23.948,2.87,'Alcyone','B7IIIe','Brightest Pleiades, 440 ly'],
+  [10.998,56.382,2.37,'Tania Australis','M0III','Mu Ursae Majoris'],
+];
+
+// ── Planet data (we compute positions dynamically) ──────────────────────────
+var PLANETS=[
+  {name:'Mercury',symbol:'☿',color:'#aaaaaa',radius:4,desc:'Closest to Sun, extreme temperatures -180°C to 430°C, 88-day year'},
+  {name:'Venus',symbol:'♀',color:'#ffd080',radius:8,desc:'Brightest planet in the sky, thick CO2 atmosphere, surface temp 465°C'},
+  {name:'Mars',symbol:'♂',color:'#e06030',radius:6,desc:'Red Planet — iron oxide surface, largest volcano Olympus Mons, 24.6h day'},
+  {name:'Jupiter',symbol:'♃',color:'#c8a060',radius:14,desc:'Largest planet, Great Red Spot storm 350+ years old, 95 known moons'},
+  {name:'Saturn',symbol:'♄',color:'#d4b870',radius:12,desc:'Lord of the rings — ring system 282,000 km wide but only 10m thick'},
+  {name:'Uranus',symbol:'⛢',color:'#80d0e0',radius:8,desc:'Ice giant tilted 98° — rotates on its side, -224°C coldest planet'},
+  {name:'Neptune',symbol:'♆',color:'#4060e0',radius:8,desc:'Windiest planet 2100 km/h, 30 AU from Sun, 165-year orbit'},
+];
+
+// ── Named constellations (centroid position, clickable) ──────────────────
+var CONSTELLATIONS_INFO=[
+  {name:'Orion',ra_h:5.58,dec:-1.9,desc:'The Hunter — most recognizable constellation. Contains Betelgeuse, Rigel, and the famous Orion Nebula (M42). Visible worldwide Dec–Mar.',symbol:'⚔'},
+  {name:'Ursa Major',ra_h:10.67,dec:55.4,desc:'The Great Bear — home of the Big Dipper. Circumpolar in northern hemisphere, used for navigation. Contains M81, M82 galaxies.',symbol:'🐻'},
+  {name:'Scorpius',ra_h:16.9,dec:-30,desc:'The Scorpion — prominent summer constellation. Antares is its bright red heart. Points toward the galactic center.',symbol:'🦂'},
+  {name:'Cassiopeia',ra_h:1.32,dec:60.2,desc:'The Queen — distinctive W-shape, circumpolar. In the Milky Way, rich in star clusters. Supernova of 1572 appeared here.',symbol:'👑'},
+  {name:'Leo',ra_h:10.7,dec:20,desc:'The Lion — spring constellation, contains Regulus. Home to Leo galaxy triplet (M65, M66, M96).',symbol:'🦁'},
+  {name:'Lyra',ra_h:18.6,dec:36,desc:'The Lyre — contains Vega, 5th brightest star. The Ring Nebula (M57) is here. Vega was the pole star 12,000 years ago.',symbol:'♪'},
+  {name:'Cygnus',ra_h:20.6,dec:44,desc:'The Swan — Northern Cross shape. Deneb anchors it. Cygnus X-1 is a famous black hole. Rich in nebulae.',symbol:'🦢'},
+  {name:'Perseus',ra_h:3.2,dec:42,desc:'The Hero — contains Algol (the Demon Star), a famous eclipsing binary. The Perseus Double Cluster is spectacular.',symbol:'🗡'},
+  {name:'Virgo',ra_h:13.2,dec:0,desc:'The Maiden — contains Spica. The Virgo Cluster of galaxies (1300+ galaxies including M87) lies here.',symbol:'♍'},
+  {name:'Sagittarius',ra_h:18.9,dec:-27,desc:'The Archer — points toward the galactic center. Densest star field in the sky. Rich in nebulae and clusters: Lagoon, Trifid, Eagle.',symbol:'🏹'},
+  {name:'Aquila',ra_h:19.8,dec:5,desc:'The Eagle — contains Altair, part of the Summer Triangle. The Milky Way runs through it.',symbol:'🦅'},
+  {name:'Andromeda',ra_h:1.25,dec:37,desc:'Princess of Ethiopia. Home to M31 (Andromeda Galaxy), 2.5 million light-years away, largest galaxy visible to naked eye.',symbol:'🌌'},
+  {name:'Southern Cross',ra_h:12.3,dec:-60,desc:'Crux — smallest constellation. Four bright stars form a cross. Used for navigation in southern hemisphere, on 5 national flags.',symbol:'✚'},
+  {name:'Gemini',ra_h:7.5,dec:24,desc:'The Twins — Castor and Pollux mark their heads. A winter constellation rich in open clusters including M35.',symbol:'👥'},
+  {name:'Hercules',ra_h:17.4,dec:27,desc:'The Strong Man — contains M13, the Great Globular Cluster, with 300,000 stars. One of the finest sights through a telescope.',symbol:'💪'},
+];
+
+// ── Constellation lines [star1_index, star2_index] using our STARS array ───
+// Simplified — main recognizable patterns
+var CONSTELLATIONS=[
+  // Orion: Betelgeuse(5)-Bellatrix(38)-Mintaka(40)-Alnilam(39)-Alnitak(41)-Rigel(18)-Betelgeuse
+  // ... we'll draw by RA/Dec proximity in the renderer
+
+];
+
+// ── Coordinate math ─────────────────────────────────────────────────────────
+var skwState={
+  showGrid:false,showCons:true,
+  az:180,  // azimuth (compass bearing, 0=N, 90=E)
+  alt:45,  // altitude above horizon (degrees)
+  fov:90,  // field of view degrees
+  W:0,H:0, // canvas size
+  gyroActive:false,
+  dragActive:false,
+  dragLast:{x:0,y:0},
+  selected:null,
+  active:false,
+  // Device orientation
+  alpha:0,beta:0,gamma:0,
+  // Animation
+  rafId:null,
+  // Lat/lon (rough, for horizon)
+  lat:48,lon:0,
+};
+
+function degToRad(d){return d*Math.PI/180;}
+function radToDeg(r){return r*180/Math.PI;}
+
+// Convert RA (hours) + Dec (deg) → Altitude + Azimuth (for observer at lat, local sidereal time)
+function raDecToAltAz(ra_h, dec_d, lst_h, lat_d){
+  var ra=degToRad(ra_h*15);
+  var dec=degToRad(dec_d);
+  var lat=degToRad(lat_d);
+  var ha=degToRad((lst_h-ra_h)*15); // hour angle
+  var sinAlt=Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(lat)*Math.cos(ha);
+  var alt=Math.asin(Math.max(-1,Math.min(1,sinAlt)));
+  var cosAz=(-Math.sin(dec)+Math.sin(alt)*Math.sin(lat))/(Math.cos(alt)*Math.cos(lat));
+  cosAz=Math.max(-1,Math.min(1,cosAz));
+  var az=Math.acos(cosAz);
+  if(Math.sin(ha)>0)az=2*Math.PI-az;
+  return {alt:radToDeg(alt),az:radToDeg(az)};
+}
+
+// Get current Local Sidereal Time (approximate)
+function getLST(){
+  var now=new Date();
+  var jd=now.getTime()/86400000+2440587.5;
+  var T=(jd-2451545.0)/36525;
+  var gst=280.46061837+360.98564736629*(jd-2451545)+T*T*0.000387933;
+  gst=((gst%360)+360)%360;
+  return (gst+skwState.lon)/15; // convert to hours
+}
+
+// Simplified planet positions (mean motion approximation)
+// ── Sun position (needed for day/night and Moon calculation) ──────────────
+function getSunPosition(){
+  var now=new Date();
+  var jd=now.getTime()/86400000+2440587.5;
+  var n=jd-2451545.0; // days since J2000.0
+  var L=((280.460+0.9856474*n)%360+360)%360; // mean longitude
+  var g=((357.528+0.9856003*n)%360+360)%360; // mean anomaly
+  var gRad=g*Math.PI/180;
+  var lam=L+1.915*Math.sin(gRad)+0.020*Math.sin(2*gRad); // ecliptic longitude
+  var eps=23.439-0.0000004*n; // obliquity
+  var lamRad=lam*Math.PI/180,epsRad=eps*Math.PI/180;
+  var ra=Math.atan2(Math.cos(epsRad)*Math.sin(lamRad),Math.cos(lamRad))*180/Math.PI;
+  var dec=Math.asin(Math.sin(epsRad)*Math.sin(lamRad))*180/Math.PI;
+  ra=((ra%360)+360)%360;
+  return {ra_h:ra/15,dec:dec,mag:-26.7};
+}
+
+// ── Moon position (simplified) ────────────────────────────────────────────
+function getMoonPosition(){
+  var now=new Date();
+  var jd=now.getTime()/86400000+2440587.5;
+  var n=jd-2451545.0;
+  // Simplified lunar theory
+  var L=((218.316+13.176396*n)%360+360)%360; // mean longitude
+  var M=((134.963+13.064993*n)%360+360)%360; // mean anomaly
+  var F=((93.272+13.229350*n)%360+360)%360;  // argument of latitude
+  var Mrad=M*Math.PI/180,Frad=F*Math.PI/180,Lrad=L*Math.PI/180;
+  var lam=L+6.289*Math.sin(Mrad); // ecliptic longitude
+  var bet=5.128*Math.sin(Frad);   // ecliptic latitude
+  var eps=23.439*Math.PI/180;
+  var lamRad=lam*Math.PI/180,betRad=bet*Math.PI/180;
+  var ra=Math.atan2(Math.sin(lamRad)*Math.cos(eps)-Math.tan(betRad)*Math.sin(eps),Math.cos(lamRad))*180/Math.PI;
+  var dec=Math.asin(Math.sin(betRad)*Math.cos(eps)+Math.cos(betRad)*Math.sin(eps)*Math.sin(lamRad))*180/Math.PI;
+  ra=((ra%360)+360)%360;
+  // Moon phase angle for icon
+  var sunPos=getSunPosition();
+  var elongation=((lam-sunPos.ra_h*15)%360+360)%360;
+  var phase=elongation>180?'🌖':elongation>90?'🌔':elongation>10?'🌒':'🌕';
+  if(elongation>350||elongation<10)phase='🌕';
+  if(elongation>170&&elongation<190)phase='🌑';
+  return {ra_h:ra/15,dec:dec,mag:-12.7,phase:phase};
+}
+
+function getPlanetPositions(){
+  var now=new Date();
+  var jd=now.getTime()/86400000+2440587.5;
+  var T=(jd-2451545.0)/36525;
+  var lst=getLST();
+  var lat=skwState.lat;
+  var planets=[];
+  
+  // Mean longitude elements (simplified)
+  var elems=[
+    {L0:252.25,L1:149474,e:0.206,a:0.387,i:7.0,Omega:48.3,lon0:77.5,M0:174.8,M1:149474},
+    {L0:181.98,L1:58519,e:0.007,a:0.723,i:3.4,Omega:76.7,lon0:131.5,M0:50.4,M1:58519},
+    {L0:100.47,L1:129597,e:0.017,a:1.0,i:0,Omega:0,lon0:102.9,M0:357.5,M1:35999},
+    {L0:355.43,L1:68905,e:0.093,a:1.524,i:1.85,Omega:49.6,lon0:336.1,M0:19.4,M1:19141},
+    {L0:34.35,L1:10925,e:0.049,a:5.204,i:1.3,Omega:100.5,lon0:14.3,M0:20.0,M1:3035},
+    {L0:50.08,L1:4400,e:0.057,a:9.582,i:2.49,Omega:113.7,lon0:93.1,M0:317.0,M1:1222},
+    {L0:314.06,L1:1542,e:0.046,a:19.20,i:0.77,Omega:74.0,lon0:173.0,M0:142.0,M1:429},
+    {L0:304.35,L1:786,e:0.010,a:30.05,i:1.77,Omega:131.8,lon0:48.1,M0:267.8,M1:219},
+  ];
+  
+  // Add Sun
+  (function(){
+    var s=getSunPosition();
+    var pos=raDecToAltAz(s.ra_h,s.dec,lst,lat);
+    planets.push({name:'Sun',symbol:'☀',color:'#fff7a0',radius:18,
+      alt:pos.alt,az:pos.az,type:'planet',
+      desc:'Our star — 1.39 million km diameter, 8 light-minutes away, surface 5500°C'});
+  })();
+  // Add Moon
+  (function(){
+    var m=getMoonPosition();
+    var pos=raDecToAltAz(m.ra_h,m.dec,lst,lat);
+    planets.push({name:'Moon '+m.phase,symbol:m.phase,color:'#dde0e8',radius:16,
+      alt:pos.alt,az:pos.az,type:'planet',
+      desc:'Our natural satellite — 384,400 km away, 27.3 day orbit, tidally locked'});
+  })();
+
+  PLANETS.forEach(function(pl,idx){
+    if(idx>=7)return;
+    var el=elems[idx];
+    // Mean anomaly
+    var M=((el.M0+el.M1*T)%360+360)%360;
+    var Mrad=degToRad(M);
+    // Equation of center (simplified)
+    var v=M+2*el.e*radToDeg(Math.sin(Mrad))+1.25*el.e*el.e*radToDeg(Math.sin(2*Mrad));
+    var Lrad=degToRad(((v+el.lon0)%360+360)%360);
+    // Ecliptic to equatorial (simplified, J2000 ecliptic obliquity ~23.44°)
+    var eps=degToRad(23.44);
+    var ra=radToDeg(Math.atan2(Math.sin(Lrad)*Math.cos(eps),Math.cos(Lrad)));
+    var dec=radToDeg(Math.asin(Math.sin(Lrad)*Math.sin(eps)));
+    ra=((ra%360)+360)%360;
+    var ra_h=ra/15;
+    var pos=raDecToAltAz(ra_h,dec,lst,lat);
+    planets.push({name:pl.name,symbol:pl.symbol,color:pl.color,radius:pl.radius,
+      alt:pos.alt,az:pos.az,desc:pl.desc,type:'planet'});
+  });
+
+  return planets;
+}
+
+// Project alt/az to screen x,y given current view direction (skwState.az, skwState.alt)
+function project(objAz, objAlt){
+  var dAz=objAz-skwState.az;
+  // Wrap azimuth difference to -180..180
+  while(dAz>180)dAz-=360;
+  while(dAz<-180)dAz+=360;
+  var dAlt=objAlt-skwState.alt;
+  var fov=skwState.fov;
+  var halfW=skwState.W/2, halfH=skwState.H/2;
+  var scale=skwState.H/fov;
+  var x=halfW+dAz*scale;
+  var y=halfH-dAlt*scale;
+  var visible=Math.abs(dAz)<fov*0.7&&Math.abs(dAlt)<fov*0.55;
+  return {x,y,visible};
+}
+
+// ── Renderer ─────────────────────────────────────────────────────────────────
+function renderSky(){
+  if(!skwState.active)return;
+  var canvas=document.getElementById('skwCanvas');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  var W=skwState.W=canvas.width=window.innerWidth;
+  var H=skwState.H=canvas.height=window.innerHeight;
+
+  // Deep space background
+  ctx.fillStyle='#00000a';
+  ctx.fillRect(0,0,W,H);
+
+  // ── Milky Way diffuse band (simplified for performance) ──────────────────
+  (function(){
+    // Draw MW as overlapping soft blobs along galactic equator - fast
+    var lst2=getLST(),lat2=skwState.lat;
+    for(var gl2=0;gl2<360;gl2+=4){
+      var glRad=gl2*Math.PI/180;
+      var dec_a=Math.asin(Math.cos(62.6*Math.PI/180)*Math.sin(glRad-33*Math.PI/180))*180/Math.PI;
+      var ra_a=(192.25+Math.atan2(Math.sin(glRad-33*Math.PI/180),Math.cos(glRad-33*Math.PI/180)*Math.sin(62.6*Math.PI/180))*180/Math.PI+360)%360;
+      var pos2=raDecToAltAz(ra_a/15,dec_a,lst2,lat2);
+      if(pos2.alt<-20)continue;
+      var proj2=project(pos2.az,pos2.alt);
+      if(!proj2.visible)continue;
+      var distGC=Math.min(gl2,360-gl2)/180;
+      var bright2=(0.04+0.10*(1-distGC));
+      ctx.fillStyle='rgba(180,155,110,'+bright2+')';
+      ctx.beginPath();ctx.arc(proj2.x,proj2.y,8+12*(1-distGC),0,Math.PI*2);ctx.fill();
+    }
+  })();
+
+  // ── Background faint stars (3000) ──────────────────────────────────────────
+  (function(){
+    // Use a seeded RNG keyed to sky position so stars are stable
+    var lst=getLST(),lat=skwState.lat;
+    var fov=skwState.fov;
+    // Only generate stars in visible region
+    for(var fi=0;fi<3000;fi++){
+      // Pseudo-random stable star positions from seed
+      var h=((fi*2654435761)>>>0)/4294967296;
+      var h2=((fi*1013904223+1664525)>>>0)/4294967296;
+      var h3=((fi*214013+2531011)>>>0)/4294967296;
+      var ra_h=h*24;
+      var dec=(h2*180-90)*0.9; // avoid poles
+      var pos=raDecToAltAz(ra_h,dec,lst,lat);
+      if(pos.alt<-5)continue;
+      var proj=project(pos.az,pos.alt);
+      if(!proj.visible)continue;
+      var mag=2.5+h3*4; // faint stars 2.5-6.5
+      var sz=Math.max(0.3,1.4-mag*0.15);
+      var alpha=Math.max(0.1,0.8-mag*0.1);
+      // Slight color variation
+      var t=h2*3;
+      if(t<1)ctx.fillStyle='rgba(200,210,255,'+alpha+')';
+      else if(t<2)ctx.fillStyle='rgba(255,255,220,'+alpha+')';
+      else ctx.fillStyle='rgba(255,230,200,'+alpha+')';
+      ctx.beginPath();
+      ctx.arc(proj.x,proj.y,sz,0,Math.PI*2);
+      ctx.fill();
+    }
+  })();
+
+  // Get current positions
+  var lst=getLST();
+  var lat=skwState.lat;
+  var planets=getPlanetPositions();
+
+
+  // ── Spherical alt-az grid ─────────────────────────────────────────────────
+  (function(){
+    var gridAlpha=skwState.showGrid?0.4:0.07;
+    var dirs={0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SW',270:'W',315:'NW'};
+    ctx.setLineDash([]);
+
+    // Altitude circles: every 30°
+    for(var gAlt=-60;gAlt<=90;gAlt+=30){
+      ctx.beginPath();
+      var moved=false;
+      for(var gA=0;gA<=362;gA+=2){
+        var pp=project(gA,gAlt);
+        if(pp.visible){
+          if(!moved){ctx.moveTo(pp.x,pp.y);moved=true;}
+          else ctx.lineTo(pp.x,pp.y);
+        } else moved=false;
+      }
+      var isHorizon=gAlt===0;
+      ctx.strokeStyle=isHorizon?'rgba(0,212,255,'+(gridAlpha*1.8)+')':'rgba(80,140,220,'+gridAlpha+')';
+      ctx.lineWidth=isHorizon?1.2:0.6;
+      ctx.stroke();
+      if(skwState.showGrid){
+        var lp=project(skwState.az+2,gAlt);
+        if(lp.visible){
+          ctx.fillStyle='rgba(100,180,255,0.55)';
+          ctx.font='7px "Space Mono"';
+          ctx.fillText(gAlt+'°',lp.x,lp.y-3);
+        }
+      }
+    }
+
+    // Azimuth meridians every 30°
+    for(var gAz=0;gAz<360;gAz+=30){
+      ctx.beginPath();
+      var moved2=false;
+      for(var gAl=-85;gAl<=90;gAl+=2){
+        var pp2=project(gAz,gAl);
+        if(pp2.visible){
+          if(!moved2){ctx.moveTo(pp2.x,pp2.y);moved2=true;}
+          else ctx.lineTo(pp2.x,pp2.y);
+        } else moved2=false;
+      }
+      var isCard=gAz%90===0;
+      ctx.strokeStyle=isCard?'rgba(0,212,255,'+(gridAlpha*1.5)+')':'rgba(60,120,200,'+gridAlpha+')';
+      ctx.lineWidth=isCard?0.9:0.5;
+      ctx.stroke();
+      // Cardinal labels at horizon
+      if(dirs[gAz]){
+        var lp2=project(gAz,1);
+        if(lp2.visible){
+          ctx.fillStyle=isCard?'rgba(0,212,255,'+(gridAlpha*2.5)+')':'rgba(100,160,220,'+(gridAlpha*2)+')';
+          ctx.font='bold '+(isCard?'11':'8')+'px "Orbitron"';
+          ctx.textAlign='center';
+          ctx.fillText(dirs[gAz],lp2.x,lp2.y-10);
+          ctx.textAlign='left';
+        }
+      }
+    }
+
+    // Zenith cross
+    var zen=project(skwState.az,90);
+    if(zen.visible){
+      ctx.strokeStyle='rgba(0,212,255,'+(gridAlpha*2)+')';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(zen.x-10,zen.y);ctx.lineTo(zen.x+10,zen.y);
+      ctx.moveTo(zen.x,zen.y-10);ctx.lineTo(zen.x,zen.y+10);
+      ctx.stroke();
+    }
+  })();
+
+  // ── Compute bright star positions ──────────────────────────────────────────
+  var visibleStars=[];
+  STARS.forEach(function(s,idx){
+    var pos=raDecToAltAz(s[0],s[1],lst,lat);
+    if(pos.alt<-15)return;
+    var proj=project(pos.az,pos.alt);
+    var mag=s[2],sz=Math.max(0.8,3.0-mag*0.7);
+    visibleStars.push({x:proj.x,y:proj.y,visible:proj.visible,
+      az:pos.az,alt:pos.alt,mag:mag,size:sz,
+      name:s[3],spectral:s[4],desc:s[5],type:'star',idx:idx});
+  });
+
+  // ── Constellation lines ────────────────────────────────────────────────────
+  var CONS=[
+    // Orion: [idxA, idxB] using STARS array indices
+    // Betelgeuse(10)->Bellatrix(38), Bellatrix->Mintaka(40), Mintaka->Alnilam(39),
+    // Alnilam->Alnitak(41), Betelgeuse->Alnilam, Rigel(18)->Alnitak
+    {name:'Orion',lines:[[10,38],[38,40],[40,39],[39,41],[10,39],[18,41]]},
+    // Ursa Major: Dubhe(30)->Merak(31)
+    {name:'Ursa Major',lines:[[30,31]]},
+    // Scorpius: Antares(7)->Shaula(16)
+    {name:'Scorpius',lines:[[7,16]]},
+  ];
+
+  ctx.strokeStyle='rgba(100,180,255,0.18)';
+  ctx.lineWidth=0.8;
+  CONS.forEach(function(con){
+    con.lines.forEach(function(pair){
+      var s1=visibleStars[pair[0]],s2=visibleStars[pair[1]];
+      if(!s1||!s2||!s1.visible||!s2.visible)return;
+      ctx.beginPath();
+      ctx.moveTo(s1.x,s1.y);
+      ctx.lineTo(s2.x,s2.y);
+      ctx.stroke();
+    });
+  });
+
+  // ── Draw stars ─────────────────────────────────────────────────────────────
+  visibleStars.forEach(function(s){
+    if(!s.visible)return;
+    var col='#ffffff';
+    var sp=s.spectral?s.spectral[0]:'G';
+    if(sp==='O')col='#c0d0ff';
+    else if(sp==='B')col='#d8e8ff';
+    else if(sp==='A')col='#f8f8ff';
+    else if(sp==='F')col='#fff8f0';
+    else if(sp==='G')col='#ffe880';
+    else if(sp==='K')col='#ffa040';
+    else if(sp==='M')col='#ff6050';
+
+    if(s.mag<2.5){ctx.shadowColor=col;ctx.shadowBlur=s.mag<0?16:10;}
+    ctx.fillStyle=col;
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+
+    if(s.mag<1.8){
+      ctx.fillStyle='rgba(180,210,255,0.55)';
+      ctx.font='8px "Space Mono"';
+      ctx.fillText(s.name,s.x+s.size+4,s.y+3);
+    }
+  });
+
+  // ── Constellation labels (toggleable) ──────────────────────────────────────
+  if(skwState.showCons!==false)(CONSTELLATIONS_INFO||[]).forEach(function(con){
+    var pos=raDecToAltAz(con.ra_h,con.dec,lst,lat);
+    if(pos.alt<-5)return;
+    var proj=project(pos.az,pos.alt);
+    if(!proj.visible)return;
+    ctx.fillStyle='rgba(0,212,255,0.22)';
+    ctx.font='10px "Orbitron"';
+    ctx.textAlign='center';
+    ctx.fillText(con.symbol+' '+con.name,proj.x,proj.y);
+    ctx.textAlign='left';
+  });
+
+  // ── Draw Sun, Moon, and planets ──────────────────────────────────────────
+  planets.forEach(function(pl){
+    if(pl.alt<-10)return;
+    var proj=project(pl.az,pl.alt);
+    if(!proj.visible)return;
+
+    if(pl.type==='sun'){
+      // Sun: multi-layer canvas glow
+      var sg=ctx.createRadialGradient(proj.x,proj.y,0,proj.x,proj.y,pl.radius*4);
+      sg.addColorStop(0,'rgba(255,255,200,0.9)');
+      sg.addColorStop(0.15,'rgba(255,240,100,0.7)');
+      sg.addColorStop(0.4,'rgba(255,200,0,0.25)');
+      sg.addColorStop(1,'rgba(255,150,0,0)');
+      ctx.fillStyle=sg;
+      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius*4,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#fffde0';ctx.shadowColor='#ffee00';ctx.shadowBlur=20;
+      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(255,240,150,0.9)';
+      ctx.font='bold 9px "Space Mono"';
+      ctx.fillText('☀ Sun',proj.x+pl.radius+4,proj.y+4);
+    } else if(pl.type==='moon'){
+      // Moon: glowing sphere with phase color
+      var mg=ctx.createRadialGradient(proj.x-3,proj.y-3,0,proj.x,proj.y,pl.radius*2.5);
+      mg.addColorStop(0,'rgba(240,230,210,0.6)');
+      mg.addColorStop(0.4,'rgba(200,190,170,0.2)');
+      mg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=mg;
+      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius*2.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#e8e0d0';ctx.shadowColor='#c8c0a8';ctx.shadowBlur=10;
+      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(220,210,190,0.8)';
+      ctx.font='bold 9px "Space Mono"';
+      ctx.fillText(pl.symbol+' Moon',proj.x+pl.radius+4,proj.y+4);
+    } else {
+      ctx.shadowColor=pl.color;ctx.shadowBlur=14;
+      ctx.fillStyle=pl.color;
+      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(255,220,120,0.85)';
+      ctx.font='bold 9px "Space Mono"';
+      ctx.fillText(pl.symbol+' '+pl.name,proj.x+pl.radius+4,proj.y+4);
+    }
+  });
+
+  // ── Crosshair ──────────────────────────────────────────────────────────────
+  var cx=W/2,cy=H/2;
+  ctx.strokeStyle='rgba(0,212,255,0.25)';
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(cx-18,cy);ctx.lineTo(cx-7,cy);
+  ctx.moveTo(cx+7,cy);ctx.lineTo(cx+18,cy);
+  ctx.moveTo(cx,cy-18);ctx.lineTo(cx,cy-7);
+  ctx.moveTo(cx,cy+7);ctx.lineTo(cx,cy+18);
+  ctx.stroke();
+  ctx.strokeStyle='rgba(0,212,255,0.15)';
+  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.stroke();
+
+  // ── Compass strip (bottom) — infinite scrolling panoramic band ────────────
+  (function(){
+    var sw=W-16, sh=52, sx=8, sy=H-sh-8; // strip dimensions
+    var curAz=((skwState.az%360)+360)%360;
+    
+    // Background
+    ctx.fillStyle='rgba(0,3,15,0.75)';
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(sx,sy,sw,sh,8);ctx.fill();}
+    else{ctx.fillRect(sx,sy,sw,sh);}
+    
+    // Draw 360° of azimuth, centered on current heading
+    var degPerPx=sw/120; // 120° visible in the strip
+    var halfW=sw/2;
+    
+    // Cardinal/intercardinal markers
+    var marks=[
+      [0,'N'],[15,''],[30,'NNE'],[45,'NE'],[60,''],[75,'ENE'],[90,'E'],
+      [105,''],[120,'ESE'],[135,'SE'],[150,''],[165,'SSE'],[180,'S'],
+      [195,''],[210,'SSW'],[225,'SW'],[240,''],[255,'WSW'],[270,'W'],
+      [285,''],[300,'WNW'],[315,'NW'],[330,''],[345,'NNW'],[360,'N']
+    ];
+    
+    marks.forEach(function(m){
+      var az3=m[0],lbl=m[1];
+      // Draw for current view ±180°
+      for(var wrap=-360;wrap<=360;wrap+=360){
+        var dAz3=az3+wrap-curAz;
+        if(dAz3<-180||dAz3>180)continue;
+        var x3=sx+halfW+dAz3*degPerPx;
+        if(x3<sx||x3>sx+sw)continue;
+        var isMajor=az3%90===0;
+        var isMed=az3%45===0;
+        var tickH=isMajor?sh*0.5:isMed?sh*0.35:sh*0.2;
+        ctx.strokeStyle=isMajor?'rgba(0,212,255,0.7)':isMed?'rgba(0,212,255,0.4)':'rgba(100,160,220,0.25)';
+        ctx.lineWidth=isMajor?1.5:0.8;
+        ctx.beginPath();ctx.moveTo(x3,sy+sh-tickH);ctx.lineTo(x3,sy+sh);ctx.stroke();
+        if(lbl){
+          ctx.fillStyle=isMajor?'rgba(0,212,255,0.9)':'rgba(150,190,230,0.65)';
+          ctx.font=(isMajor?'bold 10':'8')+'px "Orbitron"';
+          ctx.textAlign='center';
+          ctx.fillText(lbl,x3,sy+11);
+        }
+      }
+    });
+    
+    // Degree numbers every 30°
+    for(var d=-180;d<=180;d+=30){
+      var az4=((curAz+d)%360+360)%360;
+      var x4=sx+halfW+d*degPerPx;
+      if(x4<sx+5||x4>sx+sw-5)continue;
+      ctx.fillStyle='rgba(80,140,200,0.4)';
+      ctx.font='6px "Space Mono"';ctx.textAlign='center';
+      ctx.fillText(Math.round(az4)+'°',x4,sy+sh-4);
+    }
+    
+    // Stars visible near horizon — dots on the strip
+    (skwState._stars||[]).forEach(function(s){
+      if(s.alt<-8||s.alt>25||s.mag>3)return;
+      var dAz=s.az-curAz;
+      while(dAz>180)dAz-=360;while(dAz<-180)dAz+=360;
+      var x5=sx+halfW+dAz*degPerPx;
+      if(x5<sx+3||x5>sx+sw-3)return;
+      var altY=sy+sh*0.6-s.alt*0.6; // higher alt = higher on strip
+      ctx.fillStyle=s.mag<1?'rgba(255,255,200,0.9)':s.mag<2?'rgba(220,230,255,0.7)':'rgba(180,200,255,0.5)';
+      ctx.beginPath();ctx.arc(x5,altY,Math.max(0.8,1.5-s.mag*0.2),0,Math.PI*2);ctx.fill();
+    });
+    
+    // Planets on strip
+    (skwState._planets||[]).forEach(function(pl){
+      if(pl.alt<-8||pl.alt>25)return;
+      var dAz=pl.az-curAz;
+      while(dAz>180)dAz-=360;while(dAz<-180)dAz+=360;
+      var x5=sx+halfW+dAz*degPerPx;
+      if(x5<sx+3||x5>sx+sw-3)return;
+      var altY=sy+sh*0.6-pl.alt*0.6;
+      ctx.fillStyle=pl.color;
+      ctx.beginPath();ctx.arc(x5,altY,pl.name==='Sun'?4:3,0,Math.PI*2);ctx.fill();
+    });
+    
+    // Center marker (current heading)
+    ctx.strokeStyle='rgba(0,212,255,0.9)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(sx+halfW,sy);ctx.lineTo(sx+halfW,sy+sh);ctx.stroke();
+    // Triangle pointer
+    ctx.fillStyle='rgba(0,212,255,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(sx+halfW,sy+2);
+    ctx.lineTo(sx+halfW-5,sy+10);
+    ctx.lineTo(sx+halfW+5,sy+10);
+    ctx.closePath();ctx.fill();
+    
+    // Alt indicator (right side)
+    ctx.fillStyle='rgba(0,212,255,0.5)';
+    ctx.font='7px "Space Mono"';ctx.textAlign='right';
+    ctx.fillText('ALT '+Math.round(skwState.alt)+'°',sx+sw-4,sy+sh-4);
+    ctx.textAlign='left';
+    
+    // Border
+    ctx.strokeStyle='rgba(0,212,255,0.2)';ctx.lineWidth=0.8;
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(sx,sy,sw,sh,8);ctx.stroke();}
+    else{ctx.strokeRect(sx,sy,sw,sh);}
+  })();
+
+  // ── Compass readout ────────────────────────────────────────────────────────
+  var compassEl=document.getElementById('skwCompass');
+  if(compassEl){
+    var dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    var az=((skwState.az%360)+360)%360;
+    var di=Math.round(az/22.5)%16;
+    compassEl.textContent=dirs[di]+' '+Math.round(az)+'°  ALT '+Math.round(skwState.alt)+'°';
+  }
+
+  skwState._stars=visibleStars;
+  skwState._planets=planets;
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+function setupSkyControls(){
+  var canvas=document.getElementById('skwCanvas');
+  
+  // Try device orientation (gyroscope)
+  function enableGyro(){
+    if(typeof DeviceOrientationEvent==='undefined')return;
+    if(DeviceOrientationEvent.requestPermission){
+      // iOS: show button, request permission on tap (must be direct user gesture)
+      var gBtn=document.getElementById('skwGyroBtn');
+      if(gBtn){
+        gBtn.style.display='block';
+        gBtn.addEventListener('click',function(){
+          DeviceOrientationEvent.requestPermission().then(function(r){
+            if(r==='granted'){attachGyro();gBtn.style.display='none';}
+          }).catch(function(){});
+        });
+      }
+    } else {
+      // Android + desktop: attach directly
+      attachGyro();
+    }
+  }
+  
+  function attachGyro(){
+    window.addEventListener('deviceorientation',function(e){
+      if(e.alpha===null||e.alpha===undefined)return;
+      if(!skwState.active)return; // stop updating when sky walk closed
+      skwState.gyroActive=true;
+      // Compass: alpha 0=N, increases clockwise. Convert to az: 0=N clockwise
+      skwState.az=((360-e.alpha)%360+360)%360;
+      // Tilt: beta=0 phone upright, beta=-90 phone horizontal face-up (pointing at zenith)
+      // alt=0 at horizon, alt=90 at zenith
+      skwState.alt=Math.max(-85,Math.min(85,-e.beta));
+      var hint=document.getElementById('skwHint');
+      if(hint)hint.style.opacity='0';
+    },{passive:true});
+    skwState.gyroActive=true;
+  }
+  
+  enableGyro();
+  
+  // Touch drag fallback
+  var lastTouch={x:0,y:0};
+  var touching=false;
+  var tapStart={x:0,y:0,t:0};
+  var lastTap=0;
+  
+  canvas.addEventListener('touchstart',function(e){
+    e.preventDefault();
+    var t=e.touches[0];
+    lastTouch={x:t.clientX,y:t.clientY};
+    tapStart={x:t.clientX,y:t.clientY,t:Date.now()};
+    touching=true;
+  },{passive:false});
+  
+  canvas.addEventListener('touchmove',function(e){
+    e.preventDefault();
+    if(!touching)return;
+    var t=e.touches[0];
+    var dx=t.clientX-lastTouch.x;
+    var dy=t.clientY-lastTouch.y;
+    if(!skwState.gyroActive){
+      skwState.az-=dx*0.15;
+      skwState.alt+=dy*0.15;
+      skwState.alt=Math.max(-85,Math.min(85,skwState.alt));
+    }
+    lastTouch={x:t.clientX,y:t.clientY};
+  },{passive:false});
+  
+  canvas.addEventListener('touchend',function(e){
+    touching=false;
+    var dt=Date.now()-tapStart.t;
+    var dx=e.changedTouches[0].clientX-tapStart.x;
+    var dy=e.changedTouches[0].clientY-tapStart.y;
+    if(dt<300&&Math.hypot(dx,dy)<20){
+      handleSkyTap(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+    }
+  },{passive:true});
+  
+  // Mouse drag fallback for desktop
+  canvas.addEventListener('mousedown',function(e){
+    skwState.dragActive=true;
+    skwState.dragLast={x:e.clientX,y:e.clientY};
+  });
+  canvas.addEventListener('mousemove',function(e){
+    if(!skwState.dragActive)return;
+    var dx=e.clientX-skwState.dragLast.x;
+    var dy=e.clientY-skwState.dragLast.y;
+    skwState.az-=dx*0.15;
+    skwState.alt+=dy*0.15;
+    skwState.alt=Math.max(-85,Math.min(85,skwState.alt));
+    skwState.dragLast={x:e.clientX,y:e.clientY};
+  });
+  canvas.addEventListener('mouseup',function(e){
+    var wasDragging=skwState.dragActive;
+    skwState.dragActive=false;
+  });
+  canvas.addEventListener('click',function(e){
+    handleSkyTap(e.clientX,e.clientY);
+  });
+}
+
+// ── Tap detection ─────────────────────────────────────────────────────────────
+function handleSkyTap(tx,ty){
+  var best=null,bestD=50;
+  var lst=getLST(),lat=skwState.lat;
+
+  (skwState._stars||[]).forEach(function(s){
+    if(!s.visible)return;
+    var d=Math.hypot(s.x-tx,s.y-ty);
+    if(d<bestD){bestD=d;best=s;}
+  });
+
+  (skwState._planets||[]).forEach(function(pl){
+    var proj=project(pl.az,pl.alt);
+    if(!proj.visible)return;
+    var d=Math.hypot(proj.x-tx,proj.y-ty);
+    if(d<bestD){bestD=d;best=Object.assign({},pl,{x:proj.x,y:proj.y});}
+  });
+
+  // Check constellation centroids (larger tap radius)
+  (CONSTELLATIONS_INFO||[]).forEach(function(con){
+    var pos=raDecToAltAz(con.ra_h,con.dec,lst,lat);
+    if(pos.alt<-10)return;
+    var proj=project(pos.az,pos.alt);
+    if(!proj.visible)return;
+    var d=Math.hypot(proj.x-tx,proj.y-ty);
+    if(d<70&&d<bestD){
+      bestD=d;
+      best=Object.assign({},con,{type:'constellation',alt:pos.alt,az:pos.az,x:proj.x,y:proj.y});
+    }
+  });
+
+  if(best)showSkyObject(best);
+  else hideSkyPanel();
+}
+
+function showSkyObject(obj){
+  skwState.selected=obj;
+  var panel=document.getElementById('skwPanel');
+  document.getElementById('skwName').textContent=obj.name;
+  var typeLabel=obj.type==='planet'?(obj.symbol+' Planet'):
+    obj.type==='constellation'?'✦ Constellation':
+    ('★ '+(obj.spectral||'')+(obj.mag!==undefined?' — Mag '+obj.mag:''));
+  document.getElementById('skwSub').textContent=typeLabel+' — Alt '+Math.round(obj.alt||0)+'° Az '+Math.round(obj.az||0)+'°';
+  document.getElementById('skwDesc').textContent=obj.desc||'';
+  
+  var stats=document.getElementById('skwStats');
+  stats.innerHTML='';
+  var items=obj.type==='star'?[
+    ['Magnitude',obj.mag],
+    ['Type',obj.spectral],
+    ['Altitude',Math.round(obj.alt)+'°'],
+    ['Azimuth',Math.round(obj.az)+'°'],
+  ]:[
+    ['Symbol',obj.symbol],
+    ['Altitude',Math.round(obj.alt)+'°'],
+    ['Azimuth',Math.round(obj.az)+'°'],
+  ];
+  items.forEach(function(it){
+    var d=document.createElement('div');
+    d.style.cssText='background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.15);border-radius:8px;padding:5px 10px;font-size:9px;text-align:center;';
+    d.innerHTML='<div style="color:rgba(0,212,255,0.6);letter-spacing:1px">'+it[0]+'</div><div style="color:#fff;font-weight:700">'+it[1]+'</div>';
+    stats.appendChild(d);
+  });
+  
+  // Load image from Wikimedia
+  var imgEl=document.getElementById('skwImg');
+  imgEl.src='';
+  imgEl.style.background='rgba(255,255,255,0.05)';
+  var wikiQuery=obj.name+' star';
+  if(obj.type==='planet')wikiQuery=obj.name+' planet';
+  fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(obj.name))
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data.thumbnail&&data.thumbnail.source){
+        imgEl.src=data.thumbnail.source;
+        imgEl.style.background='';
+      }
+      if(data.extract){
+        var existing=document.getElementById('skwDesc').textContent;
+        if(!existing&&data.extract)
+          document.getElementById('skwDesc').textContent=data.extract.split('.')[0]+'.';
+      }
+    }).catch(function(){});
+  
+  panel.style.transform='translateY(0)';panel.style.opacity='1';
+}
+
+function hideSkyPanel(){
+  var p=document.getElementById('skwPanel');
+  p.style.transform='translateY(-120%)';p.style.opacity='0';
+  skwState.selected=null;
+}
+
+// ── Open / Close ──────────────────────────────────────────────────────────────
+function openSkyWalk(){
+  // Close earth view if open (its canvas has touch listeners that interfere)
+  var issOv=document.getElementById('issOverlay');
+  if(issOv&&issOv.style.display==='flex'){
+    if(issAnimId)cancelAnimationFrame(issAnimId);
+    if(issRenderer){issRenderer.dispose();issRenderer=null;}
+    issScene=null;issISSGroup=null;issEarth=null;window._issMoon=null;
+    issOv.style.display='none';
+  }
+  var ov=document.getElementById('skyWalkOverlay');
+  ov.style.display='flex';
+  ov.style.opacity='0';
+  ov.style.transition='opacity 0.4s ease';
+  skwState.active=true;
+  skwState.az=180;skwState.alt=30; // face South, 30° up (sky default)
+  
+  // Try to get user location for accurate LST
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){skwState.lat=pos.coords.latitude;skwState.lon=pos.coords.longitude;},function(){},{timeout:3000});
+  }
+  
+  setupSkyControls();
+  setTimeout(function(){ov.style.opacity='1';},30);
+  // Hide main app header buttons during sky walk to avoid confusion
+  var _mhdr=document.querySelector('header');
+  if(_mhdr)_mhdr.style.visibility='hidden';
+
+  // ── Create ⋮ menu button dynamically ────────────────────────────────────────
+  (function(){
+    // Remove any stale ones first
+    var old=document.getElementById('skwMenuBtn');
+    if(old)old.parentNode.removeChild(old);
+    var oldD=document.getElementById('skwDropdown');
+    if(oldD)oldD.parentNode.removeChild(oldD);
+
+    // State
+    var dropOpen=false;
+
+    // Dropdown
+    var drop=document.createElement('div');
+    drop.id='skwDropdown';
+    drop.style.cssText='position:fixed;top:52px;right:8px;z-index:40000;display:none;flex-direction:column;gap:6px;align-items:center;padding:6px 0;';
+    
+    function makeItem(icon,label,fn){
+      var d=document.createElement('div');
+      d.className='hbtn menu-item';
+      d.style.cssText='font-size:13px;width:44px;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;padding:4px 0;';
+      var ico=document.createElement('span');ico.textContent=icon;ico.style.fontSize='16px';
+      var lbl=document.createElement('span');lbl.textContent=label;lbl.style.cssText='font-size:6px;letter-spacing:0.5px;color:rgba(180,220,255,0.6);font-family:"Space Mono",monospace;';
+      d.appendChild(ico);d.appendChild(lbl);
+      d.ontouchstart=function(e){e.stopPropagation();};
+      d.ontouchend=function(e){e.preventDefault();e.stopPropagation();fn(d);};
+      d.onclick=function(){fn(d);};
+      return d;
+    }
+
+    function closeMenu(){
+      dropOpen=false;
+      drop.style.display='none';
+      btn.style.background='rgba(0,5,15,0.55)';
+      btn.classList.remove('active-tab');
+    }
+
+    drop.appendChild(makeItem('🌍','EARTH',function(){closeMenu();closeSkyWalk();}));
+    drop.appendChild(makeItem('🔲','GRID',function(el){
+      skwState.showGrid=!skwState.showGrid;
+      el.style.color=skwState.showGrid?'var(--cyan)':''; closeMenu();
+    }));
+    drop.appendChild(makeItem('✦','CONST',function(el){
+      skwState.showCons=!skwState.showCons;
+      el.style.color=skwState.showCons?'var(--cyan)':''; closeMenu();
+    }));
+    drop.appendChild(makeItem('🧭','NORTH',function(){
+      skwState.az=0;skwState.alt=30; closeMenu();
+    }));
+    document.body.appendChild(drop);
+
+    // ⋮ button
+    var btn=document.createElement('div');
+    btn.id='skwMenuBtn';
+    btn.className='hbtn';
+    btn.style.cssText='position:fixed;top:7px;right:8px;z-index:40000;width:38px;height:38px;font-size:20px;font-weight:700;letter-spacing:-1px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+    btn.textContent='⋮';
+    btn.ontouchstart=function(e){e.stopPropagation();};
+    btn.ontouchend=function(e){
+      e.preventDefault(); e.stopPropagation();
+      dropOpen=!dropOpen;
+      drop.style.display=dropOpen?'flex':'none';
+      btn.style.background=dropOpen?'rgba(0,212,255,0.15)':'';
+      btn.classList.toggle('active-tab',dropOpen);
+    };
+    btn.onclick=function(){
+      dropOpen=!dropOpen;
+      drop.style.display=dropOpen?'flex':'none';
+      btn.style.background=dropOpen?'rgba(0,212,255,0.15)':'';
+      btn.classList.toggle('active-tab',dropOpen);
+    };
+    document.body.appendChild(btn);
+  // Hide main app ⋮ button (same position) to prevent visual overlap
+  var _mainMenu=document.getElementById('menuBtn');
+  if(_mainMenu)_mainMenu.style.visibility='hidden';
+  })();
+
+  
+  // Start render loop
+  function loop(){
+    if(!skwState.active)return;
+    renderSky();
+    skwState.rafId=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function closeSkyWalk(){
+  skwState.active=false;
+  if(skwState.rafId)cancelAnimationFrame(skwState.rafId);
+  // Remove dynamically created menu
+  var _oldMenu=document.getElementById('skwMenuBtn');
+  if(_oldMenu&&_oldMenu.parentNode)_oldMenu.parentNode.removeChild(_oldMenu);
+  var _oldDrop=document.getElementById('skwDropdown');
+  if(_oldDrop&&_oldDrop.parentNode)_oldDrop.parentNode.removeChild(_oldDrop);
+  // Restore main app menu button
+  var _mainMenu2=document.getElementById('menuBtn');
+  if(_mainMenu2)_mainMenu2.style.visibility='visible';
+  // Restore main header
+  var _mhdr2=document.querySelector('header');
+  if(_mhdr2)_mhdr2.style.visibility='visible';
+  var ov=document.getElementById('skyWalkOverlay');
+  ov.style.opacity='0';
+  setTimeout(function(){ov.style.display='none';},400);
+}
+
+// ── Wire close button ─────────────────────────────────────────────────────────
+addTap(document.getElementById('skwClose'),function(){closeSkyWalk();});
+addTap(document.getElementById('skwPanelClose'),function(){hideSkyPanel();});
+// ⋮ button toggles the sky walk's own dropdown (no cross-stacking-context issues)
+// skw menu wired dynamically in openSkyWalk
+
+// ── Wire double-tap on Earth in Earth view ────────────────────────────────────
+var _lastEarthTap=0;
+var _issCanvasEl=document.getElementById('issCanvas');
+if(_issCanvasEl){
+  _issCanvasEl.addEventListener('dblclick',function(){openSkyWalk();},{passive:true});
+  _issCanvasEl.addEventListener('touchend',function(e){
+    var now=Date.now();
+    if(now-_lastEarthTap<350){openSkyWalk();}
+    _lastEarthTap=now;
+  },{passive:true});
+}
+
+// Expose globally
+window.openSkyWalk=openSkyWalk;
+window.closeSkyWalk=closeSkyWalk;
+window.hideSkyPanel=hideSkyPanel;
+
+})(); // end Sky Walk IIFE
+
 </script>
 
 <!-- Legend popup panel -->
@@ -8165,6 +9265,8 @@ setTimeout(addGalaxyBHMarkers,2000);
 <style>
 @keyframes legendIn{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
 </style>
+
+
 
 
 </body>
