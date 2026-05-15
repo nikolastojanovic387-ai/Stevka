@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8198,8 +8199,6 @@ setTimeout(addGalaxyBHMarkers,2000);
 (function(){
 'use strict';
 
-// ── Compact bright star catalog (HIP, RA hours, Dec degrees, magnitude, name, spectral) ──
-// Top ~300 brightest stars for performance
 var STARS=[
   // [ra_hours, dec_deg, mag, name, spectral, desc]
   [6.752,16.716,-1.46,'Sirius','A1V','Brightest star in the night sky, 8.6 ly away'],
@@ -8287,7 +8286,6 @@ var STARS=[
   [10.998,56.382,2.37,'Tania Australis','M0III','Mu Ursae Majoris'],
 ];
 
-// ── Planet data (we compute positions dynamically) ──────────────────────────
 var PLANETS=[
   {name:'Mercury',symbol:'☿',color:'#aaaaaa',radius:4,desc:'Closest to Sun, extreme temperatures -180°C to 430°C, 88-day year'},
   {name:'Venus',symbol:'♀',color:'#ffd080',radius:8,desc:'Brightest planet in the sky, thick CO2 atmosphere, surface temp 465°C'},
@@ -8298,7 +8296,6 @@ var PLANETS=[
   {name:'Neptune',symbol:'♆',color:'#4060e0',radius:8,desc:'Windiest planet 2100 km/h, 30 AU from Sun, 165-year orbit'},
 ];
 
-// ── Named constellations (centroid position, clickable) ──────────────────
 var CONSTELLATIONS_INFO=[
   {name:'Orion',ra_h:5.58,dec:-1.9,desc:'The Hunter — most recognizable constellation. Contains Betelgeuse, Rigel, and the famous Orion Nebula (M42). Visible worldwide Dec–Mar.',symbol:'⚔'},
   {name:'Ursa Major',ra_h:10.67,dec:55.4,desc:'The Great Bear — home of the Big Dipper. Circumpolar in northern hemisphere, used for navigation. Contains M81, M82 galaxies.',symbol:'🐻'},
@@ -8317,183 +8314,206 @@ var CONSTELLATIONS_INFO=[
   {name:'Hercules',ra_h:17.4,dec:27,desc:'The Strong Man — contains M13, the Great Globular Cluster, with 300,000 stars. One of the finest sights through a telescope.',symbol:'💪'},
 ];
 
-// ── Constellation lines [star1_index, star2_index] using our STARS array ───
-// Simplified — main recognizable patterns
-var CONSTELLATIONS=[
-  // Orion: Betelgeuse(5)-Bellatrix(38)-Mintaka(40)-Alnilam(39)-Alnitak(41)-Rigel(18)-Betelgeuse
-  // ... we'll draw by RA/Dec proximity in the renderer
-
-];
-
-// ── Coordinate math ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════
 var skwState={
-  showGrid:false,showCons:true,
-  az:180,  // azimuth (compass bearing, 0=N, 90=E)
-  alt:45,  // altitude above horizon (degrees)
-  fov:90,  // field of view degrees
-  W:0,H:0, // canvas size
+  az:180, alt:30,    // current view direction
+  fov:90,            // field of view degrees
+  W:0, H:0,
   gyroActive:false,
   dragActive:false,
   dragLast:{x:0,y:0},
   selected:null,
   active:false,
-  // Device orientation
-  alpha:0,beta:0,gamma:0,
-  // Animation
+  alpha:0, beta:0, gamma:0,
   rafId:null,
-  // Lat/lon (rough, for horizon)
-  lat:48,lon:0,
+  lat:null, lon:null,  // null until GPS acquired
+  locReady:false,
+  showGrid:false,
+  showCons:true,
+  _starCache:null, _starCacheLst:null, _starCacheLat:null,
+  _planets:[], _stars:[]
 };
 
+// ═══════════════════════════════════════════════════════════════════════
+// ASTRONOMY MATH
+// ═══════════════════════════════════════════════════════════════════════
 function degToRad(d){return d*Math.PI/180;}
 function radToDeg(r){return r*180/Math.PI;}
 
-// Convert RA (hours) + Dec (deg) → Altitude + Azimuth (for observer at lat, local sidereal time)
-function raDecToAltAz(ra_h, dec_d, lst_h, lat_d){
-  var ra=degToRad(ra_h*15);
-  var dec=degToRad(dec_d);
-  var lat=degToRad(lat_d);
-  var ha=degToRad((lst_h-ra_h)*15); // hour angle
-  var sinAlt=Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(lat)*Math.cos(ha);
-  var alt=Math.asin(Math.max(-1,Math.min(1,sinAlt)));
-  var cosAz=(-Math.sin(dec)+Math.sin(alt)*Math.sin(lat))/(Math.cos(alt)*Math.cos(lat));
-  cosAz=Math.max(-1,Math.min(1,cosAz));
-  var az=Math.acos(cosAz);
-  if(Math.sin(ha)>0)az=2*Math.PI-az;
-  return {alt:radToDeg(alt),az:radToDeg(az)};
+function getJD(){
+  return Date.now()/86400000+2440587.5;
 }
 
-// Get current Local Sidereal Time (approximate)
-function getLST(){
-  var now=new Date();
-  var jd=now.getTime()/86400000+2440587.5;
-  var T=(jd-2451545.0)/36525;
-  var gst=280.46061837+360.98564736629*(jd-2451545)+T*T*0.000387933;
-  gst=((gst%360)+360)%360;
-  return (gst+skwState.lon)/15; // convert to hours
-}
-
-// Simplified planet positions (mean motion approximation)
-// ── Sun position (needed for day/night and Moon calculation) ──────────────
-function getSunPosition(){
-  var now=new Date();
-  var jd=now.getTime()/86400000+2440587.5;
-  var n=jd-2451545.0; // days since J2000.0
-  var L=((280.460+0.9856474*n)%360+360)%360; // mean longitude
-  var g=((357.528+0.9856003*n)%360+360)%360; // mean anomaly
-  var gRad=g*Math.PI/180;
-  var lam=L+1.915*Math.sin(gRad)+0.020*Math.sin(2*gRad); // ecliptic longitude
-  var eps=23.439-0.0000004*n; // obliquity
-  var lamRad=lam*Math.PI/180,epsRad=eps*Math.PI/180;
-  var ra=Math.atan2(Math.cos(epsRad)*Math.sin(lamRad),Math.cos(lamRad))*180/Math.PI;
-  var dec=Math.asin(Math.sin(epsRad)*Math.sin(lamRad))*180/Math.PI;
-  ra=((ra%360)+360)%360;
-  return {ra_h:ra/15,dec:dec,mag:-26.7};
-}
-
-// ── Moon position (simplified) ────────────────────────────────────────────
-function getMoonPosition(){
-  var now=new Date();
-  var jd=now.getTime()/86400000+2440587.5;
+function getGST(jd){
   var n=jd-2451545.0;
-  // Simplified lunar theory
-  var L=((218.316+13.176396*n)%360+360)%360; // mean longitude
-  var M=((134.963+13.064993*n)%360+360)%360; // mean anomaly
-  var F=((93.272+13.229350*n)%360+360)%360;  // argument of latitude
-  var Mrad=M*Math.PI/180,Frad=F*Math.PI/180,Lrad=L*Math.PI/180;
-  var lam=L+6.289*Math.sin(Mrad); // ecliptic longitude
-  var bet=5.128*Math.sin(Frad);   // ecliptic latitude
-  var eps=23.439*Math.PI/180;
-  var lamRad=lam*Math.PI/180,betRad=bet*Math.PI/180;
-  var ra=Math.atan2(Math.sin(lamRad)*Math.cos(eps)-Math.tan(betRad)*Math.sin(eps),Math.cos(lamRad))*180/Math.PI;
-  var dec=Math.asin(Math.sin(betRad)*Math.cos(eps)+Math.cos(betRad)*Math.sin(eps)*Math.sin(lamRad))*180/Math.PI;
+  return ((280.46061837+360.98564736629*n)%360+360)%360;
+}
+
+function getLST(){
+  var gst=getGST(getJD());
+  var lon=skwState.lon||0;
+  return ((gst+lon)/15+24)%24;
+}
+
+function getSunPosition(){
+  var jd=getJD();
+  var n=jd-2451545.0;
+  var L=((280.460+0.9856474*n)%360+360)%360;
+  var g=degToRad(((357.528+0.9856003*n)%360+360)%360);
+  var lam=L+1.915*Math.sin(g)+0.020*Math.sin(2*g);
+  var eps=degToRad(23.439-0.0000004*n);
+  var lamR=degToRad(lam);
+  var ra=radToDeg(Math.atan2(Math.cos(eps)*Math.sin(lamR),Math.cos(lamR)));
+  var dec=radToDeg(Math.asin(Math.sin(eps)*Math.sin(lamR)));
+  return {ra_h:((ra%360)+360)%360/15, dec:dec};
+}
+
+function getMoonPosition(){
+  var jd=getJD();
+  var n=jd-2451545.0;
+  var L=((218.316+13.176396*n)%360+360)%360;
+  var M=degToRad(((134.963+13.064993*n)%360+360)%360);
+  var F=degToRad(((93.272+13.229350*n)%360+360)%360);
+  var lam=L+6.289*Math.sin(M);
+  var bet=5.128*Math.sin(F);
+  var eps=degToRad(23.439);
+  var lamR=degToRad(lam),betR=degToRad(bet);
+  var ra=radToDeg(Math.atan2(Math.sin(lamR)*Math.cos(eps)-Math.tan(betR)*Math.sin(eps),Math.cos(lamR)));
+  var dec=radToDeg(Math.asin(Math.sin(betR)*Math.cos(eps)+Math.cos(betR)*Math.sin(eps)*Math.sin(lamR)));
   ra=((ra%360)+360)%360;
-  // Moon phase angle for icon
-  var sunPos=getSunPosition();
-  var elongation=((lam-sunPos.ra_h*15)%360+360)%360;
-  var phase=elongation>180?'🌖':elongation>90?'🌔':elongation>10?'🌒':'🌕';
-  if(elongation>350||elongation<10)phase='🌕';
-  if(elongation>170&&elongation<190)phase='🌑';
-  return {ra_h:ra/15,dec:dec,mag:-12.7,phase:phase};
+  // Phase
+  var sun=getSunPosition();
+  var elong=((lam-sun.ra_h*15)%360+360)%360;
+  var phase=elong<10||elong>350?'🌕':elong<180?'🌒':'🌘';
+  if(elong>85&&elong<95)phase='🌓';
+  if(elong>175&&elong<185)phase='🌑';
+  if(elong>265&&elong<275)phase='🌗';
+  return {ra_h:ra/15, dec:dec, phase:phase};
 }
 
 function getPlanetPositions(){
-  var now=new Date();
-  var jd=now.getTime()/86400000+2440587.5;
-  var T=(jd-2451545.0)/36525;
-  var lst=getLST();
-  var lat=skwState.lat;
-  var planets=[];
-  
-  // Mean longitude elements (simplified)
+  var lst=getLST(), lat=skwState.lat||0;
+  var jd=getJD(), T=(jd-2451545.0)/36525;
+  var result=[];
+
+  // Sun
+  var sun=getSunPosition();
+  var sp=raDecToAltAz(sun.ra_h,sun.dec,lst,lat);
+  result.push({name:'Sun',symbol:'☀',color:'#fff8a0',radius:18,
+    alt:sp.alt,az:sp.az,type:'planet',
+    desc:'Our star — 1.39M km diameter, 8 light-minutes away, surface 5500°C. Never look directly at the Sun!'});
+
+  // Moon
+  var moon=getMoonPosition();
+  var mp=raDecToAltAz(moon.ra_h,moon.dec,lst,lat);
+  result.push({name:'Moon',symbol:moon.phase,color:'#dde0e8',radius:16,
+    alt:mp.alt,az:mp.az,type:'planet',
+    desc:'Earth natural satellite — 384,400 km away, 27.3 day orbit, tidally locked. Phase: '+moon.phase});
+
+  // Planets (simplified orbital elements)
   var elems=[
-    {L0:252.25,L1:149474,e:0.206,a:0.387,i:7.0,Omega:48.3,lon0:77.5,M0:174.8,M1:149474},
-    {L0:181.98,L1:58519,e:0.007,a:0.723,i:3.4,Omega:76.7,lon0:131.5,M0:50.4,M1:58519},
-    {L0:100.47,L1:129597,e:0.017,a:1.0,i:0,Omega:0,lon0:102.9,M0:357.5,M1:35999},
-    {L0:355.43,L1:68905,e:0.093,a:1.524,i:1.85,Omega:49.6,lon0:336.1,M0:19.4,M1:19141},
-    {L0:34.35,L1:10925,e:0.049,a:5.204,i:1.3,Omega:100.5,lon0:14.3,M0:20.0,M1:3035},
-    {L0:50.08,L1:4400,e:0.057,a:9.582,i:2.49,Omega:113.7,lon0:93.1,M0:317.0,M1:1222},
-    {L0:314.06,L1:1542,e:0.046,a:19.20,i:0.77,Omega:74.0,lon0:173.0,M0:142.0,M1:429},
-    {L0:304.35,L1:786,e:0.010,a:30.05,i:1.77,Omega:131.8,lon0:48.1,M0:267.8,M1:219},
+    {name:'Mercury',symbol:'☿',color:'#aaaaaa',r:4,L0:252.25,L1:149474,e:0.206,w:77.5,M0:174.8,M1:149474},
+    {name:'Venus',symbol:'♀',color:'#ffd080',r:8,L0:181.98,L1:58519,e:0.007,w:131.5,M0:50.4,M1:58519},
+    {name:'Mars',symbol:'♂',color:'#e06030',r:6,L0:355.43,L1:68905,e:0.093,w:336.1,M0:19.4,M1:19141},
+    {name:'Jupiter',symbol:'♃',color:'#c8a060',r:14,L0:34.35,L1:10925,e:0.049,w:14.3,M0:20.0,M1:3035},
+    {name:'Saturn',symbol:'♄',color:'#d4b870',r:12,L0:50.08,L1:4400,e:0.057,w:93.1,M0:317.0,M1:1222},
+    {name:'Uranus',symbol:'⛢',color:'#80d0e0',r:8,L0:314.06,L1:1542,e:0.046,w:173.0,M0:142.0,M1:429},
+    {name:'Neptune',symbol:'♆',color:'#4060e0',r:8,L0:304.35,L1:786,e:0.010,w:48.1,M0:267.8,M1:219},
   ];
-  
-  // Add Sun
-  (function(){
-    var s=getSunPosition();
-    var pos=raDecToAltAz(s.ra_h,s.dec,lst,lat);
-    planets.push({name:'Sun',symbol:'☀',color:'#fff7a0',radius:18,
-      alt:pos.alt,az:pos.az,type:'planet',
-      desc:'Our star — 1.39 million km diameter, 8 light-minutes away, surface 5500°C'});
-  })();
-  // Add Moon
-  (function(){
-    var m=getMoonPosition();
-    var pos=raDecToAltAz(m.ra_h,m.dec,lst,lat);
-    planets.push({name:'Moon '+m.phase,symbol:m.phase,color:'#dde0e8',radius:16,
-      alt:pos.alt,az:pos.az,type:'planet',
-      desc:'Our natural satellite — 384,400 km away, 27.3 day orbit, tidally locked'});
-  })();
-
-  PLANETS.forEach(function(pl,idx){
-    if(idx>=7)return;
-    var el=elems[idx];
-    // Mean anomaly
-    var M=((el.M0+el.M1*T)%360+360)%360;
-    var Mrad=degToRad(M);
-    // Equation of center (simplified)
-    var v=M+2*el.e*radToDeg(Math.sin(Mrad))+1.25*el.e*el.e*radToDeg(Math.sin(2*Mrad));
-    var Lrad=degToRad(((v+el.lon0)%360+360)%360);
-    // Ecliptic to equatorial (simplified, J2000 ecliptic obliquity ~23.44°)
-    var eps=degToRad(23.44);
-    var ra=radToDeg(Math.atan2(Math.sin(Lrad)*Math.cos(eps),Math.cos(Lrad)));
-    var dec=radToDeg(Math.asin(Math.sin(Lrad)*Math.sin(eps)));
+  var eps0=degToRad(23.439);
+  elems.forEach(function(pl){
+    var M=degToRad(((pl.M0+pl.M1*T)%360+360)%360);
+    var v=((pl.M0+pl.M1*T)+radToDeg(2*pl.e*Math.sin(M)+1.25*pl.e*pl.e*Math.sin(2*M)))%360;
+    var L=degToRad(((v+pl.w)%360+360)%360);
+    var ra=radToDeg(Math.atan2(Math.sin(L)*Math.cos(eps0),Math.cos(L)));
+    var dec=radToDeg(Math.asin(Math.sin(L)*Math.sin(eps0)));
     ra=((ra%360)+360)%360;
-    var ra_h=ra/15;
-    var pos=raDecToAltAz(ra_h,dec,lst,lat);
-    planets.push({name:pl.name,symbol:pl.symbol,color:pl.color,radius:pl.radius,
-      alt:pos.alt,az:pos.az,desc:pl.desc,type:'planet'});
+    var pos=raDecToAltAz(ra/15,dec,lst,lat);
+    result.push({name:pl.name,symbol:pl.symbol,color:pl.color,radius:pl.r,
+      alt:pos.alt,az:pos.az,type:'planet',desc:pl.name+' — tap for details'});
   });
-
-  return planets;
+  return result;
 }
 
-// Project alt/az to screen x,y given current view direction (skwState.az, skwState.alt)
-function project(objAz, objAlt){
+// CORRECT azimuth formula (Meeus, azimuth from North clockwise)
+function raDecToAltAz(ra_h,dec_d,lst_h,lat_d){
+  var ra=degToRad(ra_h*15);
+  var dec=degToRad(dec_d);
+  var lat=degToRad(lat_d);
+  var ha=degToRad((lst_h-ra_h)*15); // hour angle: positive=west of meridian
+  var sinAlt=Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(lat)*Math.cos(ha);
+  var alt=Math.asin(Math.max(-1,Math.min(1,sinAlt)));
+  // Azimuth from North, clockwise (Meeus formula)
+  var cosAz=(Math.sin(dec)-Math.sin(lat)*Math.sin(alt))/(Math.cos(lat)*Math.cos(alt)+1e-10);
+  cosAz=Math.max(-1,Math.min(1,cosAz));
+  var az=Math.acos(cosAz);
+  if(Math.sin(ha)>0)az=2*Math.PI-az; // afternoon/west: flip
+  return {alt:radToDeg(alt), az:radToDeg(az)};
+}
+
+// Project az/alt to canvas x,y
+function project(objAz,objAlt){
   var dAz=objAz-skwState.az;
-  // Wrap azimuth difference to -180..180
   while(dAz>180)dAz-=360;
   while(dAz<-180)dAz+=360;
   var dAlt=objAlt-skwState.alt;
-  var fov=skwState.fov;
-  var halfW=skwState.W/2, halfH=skwState.H/2;
-  var scale=skwState.H/fov;
-  var x=halfW+dAz*scale;
-  var y=halfH-dAlt*scale;
-  var visible=Math.abs(dAz)<fov*0.7&&Math.abs(dAlt)<fov*0.55;
-  return {x,y,visible};
+  var scale=skwState.H/skwState.fov;
+  var x=skwState.W/2+dAz*scale;
+  var y=skwState.H/2-dAlt*scale;
+  var visible=Math.abs(dAz)<skwState.fov*0.65&&Math.abs(dAlt)<skwState.fov*0.55;
+  return {x:x,y:y,visible:visible};
 }
 
-// ── Renderer ─────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// LOCATION — Request GPS immediately when sky walk opens
+// ═══════════════════════════════════════════════════════════════════════
+function requestLocation(){
+  if(!navigator.geolocation){return;}
+  // Show "locating" state
+  skwState.lat=0;skwState.lon=0;skwState.locReady=false;
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      skwState.lat=pos.coords.latitude;
+      skwState.lon=pos.coords.longitude;
+      skwState.locReady=true;
+      // Clear star cache to recompute with real location
+      skwState._starCache=null;
+      var hint=document.getElementById('skwHint');
+      if(hint)hint.textContent='TILT PHONE TO EXPLORE · TAP STARS & PLANETS';
+    },
+    function(err){
+      // If denied, ask user to enter location or use IP geolocation
+      fetchIPLocation();
+    },
+    {timeout:8000,maximumAge:60000,enableHighAccuracy:true}
+  );
+}
+
+// IP-based location fallback
+function fetchIPLocation(){
+  fetch('https://ipapi.co/json/')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.latitude&&d.longitude){
+        skwState.lat=d.latitude;skwState.lon=d.longitude;
+        skwState.locReady=true;skwState._starCache=null;
+        var hint=document.getElementById('skwHint');
+        if(hint)hint.textContent='LOCATION: '+d.city+' · TILT PHONE TO EXPLORE';
+      }
+    }).catch(function(){
+      // Last resort: use browser timezone to guess rough longitude
+      var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // Rough lat/lon from timezone (not accurate but better than 0,0)
+      skwState.lat=50;skwState.lon=10;skwState.locReady=true;
+      skwState._starCache=null;
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════════
 function renderSky(){
   if(!skwState.active)return;
   var canvas=document.getElementById('skwCanvas');
@@ -8502,522 +8522,321 @@ function renderSky(){
   var W=skwState.W=canvas.width=window.innerWidth;
   var H=skwState.H=canvas.height=window.innerHeight;
 
-  // Deep space background
-  ctx.fillStyle='#00000a';
-  ctx.fillRect(0,0,W,H);
+  // Show GPS loading overlay
+  if(!skwState.locReady){
+    ctx.fillStyle='#00000f';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(0,212,255,0.8)';
+    ctx.font='bold 12px "Orbitron"';ctx.textAlign='center';
+    ctx.fillText('ACQUIRING LOCATION…',W/2,H/2-20);
+    ctx.fillStyle='rgba(150,180,210,0.5)';
+    ctx.font='10px "Space Mono"';
+    ctx.fillText('Please allow location access',W/2,H/2+10);
+    ctx.textAlign='left';
+    return;
+  }
 
-  // ── Milky Way diffuse band (simplified for performance) ──────────────────
+  // ── Deep space background ───────────────────────────────────────────
+  ctx.fillStyle='#00000c';ctx.fillRect(0,0,W,H);
+
+  // ── Milky Way band ──────────────────────────────────────────────────
   (function(){
-    // Draw MW as overlapping soft blobs along galactic equator - fast
     var lst2=getLST(),lat2=skwState.lat;
-    for(var gl2=0;gl2<360;gl2+=4){
-      var glRad=gl2*Math.PI/180;
-      var dec_a=Math.asin(Math.cos(62.6*Math.PI/180)*Math.sin(glRad-33*Math.PI/180))*180/Math.PI;
-      var ra_a=(192.25+Math.atan2(Math.sin(glRad-33*Math.PI/180),Math.cos(glRad-33*Math.PI/180)*Math.sin(62.6*Math.PI/180))*180/Math.PI+360)%360;
-      var pos2=raDecToAltAz(ra_a/15,dec_a,lst2,lat2);
+    for(var gl2=0;gl2<360;gl2+=5){
+      var glR=degToRad(gl2);
+      var decA=radToDeg(Math.asin(Math.cos(degToRad(62.6))*Math.sin(glR-degToRad(33))));
+      var raA=((192.25+radToDeg(Math.atan2(Math.sin(glR-degToRad(33)),
+        Math.cos(glR-degToRad(33))*Math.sin(degToRad(62.6)))))+360)%360;
+      var pos2=raDecToAltAz(raA/15,decA,lst2,lat2);
       if(pos2.alt<-20)continue;
       var proj2=project(pos2.az,pos2.alt);
       if(!proj2.visible)continue;
-      var distGC=Math.min(gl2,360-gl2)/180;
-      var bright2=(0.04+0.10*(1-distGC));
-      ctx.fillStyle='rgba(180,155,110,'+bright2+')';
-      ctx.beginPath();ctx.arc(proj2.x,proj2.y,8+12*(1-distGC),0,Math.PI*2);ctx.fill();
+      var dGC=Math.min(gl2,360-gl2)/180;
+      var b=0.04+0.12*(1-dGC);
+      ctx.fillStyle='rgba(180,155,110,'+b+')';
+      ctx.beginPath();ctx.arc(proj2.x,proj2.y,8+14*(1-dGC),0,Math.PI*2);ctx.fill();
     }
   })();
 
-  // ── Background faint stars (3000) ──────────────────────────────────────────
+  // ── Background faint stars ──────────────────────────────────────────
   (function(){
-    // Use a seeded RNG keyed to sky position so stars are stable
-    var lst=getLST(),lat=skwState.lat;
-    var fov=skwState.fov;
-    // Only generate stars in visible region
-    for(var fi=0;fi<3000;fi++){
-      // Pseudo-random stable star positions from seed
-      var h=((fi*2654435761)>>>0)/4294967296;
+    var lst3=getLST(),lat3=skwState.lat;
+    for(var fi=0;fi<2000;fi++){
+      var h1=((fi*2654435761)>>>0)/4294967296;
       var h2=((fi*1013904223+1664525)>>>0)/4294967296;
       var h3=((fi*214013+2531011)>>>0)/4294967296;
-      var ra_h=h*24;
-      var dec=(h2*180-90)*0.9; // avoid poles
-      var pos=raDecToAltAz(ra_h,dec,lst,lat);
-      if(pos.alt<-5)continue;
-      var proj=project(pos.az,pos.alt);
-      if(!proj.visible)continue;
-      var mag=2.5+h3*4; // faint stars 2.5-6.5
-      var sz=Math.max(0.3,1.4-mag*0.15);
-      var alpha=Math.max(0.1,0.8-mag*0.1);
-      // Slight color variation
-      var t=h2*3;
-      if(t<1)ctx.fillStyle='rgba(200,210,255,'+alpha+')';
-      else if(t<2)ctx.fillStyle='rgba(255,255,220,'+alpha+')';
-      else ctx.fillStyle='rgba(255,230,200,'+alpha+')';
-      ctx.beginPath();
-      ctx.arc(proj.x,proj.y,sz,0,Math.PI*2);
-      ctx.fill();
+      var ra_h2=h1*24,dec2=(h2*160-80);
+      var pos3=raDecToAltAz(ra_h2,dec2,lst3,lat3);
+      if(pos3.alt<-5)continue;
+      var proj3=project(pos3.az,pos3.alt);
+      if(!proj3.visible)continue;
+      var mag2=2.5+h3*4;
+      var sz2=Math.max(0.3,1.2-mag2*0.12);
+      var al2=Math.max(0.1,0.7-mag2*0.08);
+      ctx.fillStyle='rgba(200,210,255,'+al2+')';
+      ctx.beginPath();ctx.arc(proj3.x,proj3.y,sz2,0,Math.PI*2);ctx.fill();
     }
   })();
 
-  // Get current positions
-  var lst=getLST();
-  var lat=skwState.lat;
-  var planets=getPlanetPositions();
-
-
-  // ── Spherical alt-az grid ─────────────────────────────────────────────────
+  // ── Spherical alt-az grid ───────────────────────────────────────────
   (function(){
-    var gridAlpha=skwState.showGrid?0.4:0.07;
+    var ga=skwState.showGrid?0.4:0.07;
     var dirs={0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SW',270:'W',315:'NW'};
-    ctx.setLineDash([]);
-
-    // Altitude circles: every 30°
     for(var gAlt=-60;gAlt<=90;gAlt+=30){
-      ctx.beginPath();
-      var moved=false;
+      ctx.beginPath();var moved=false;
       for(var gA=0;gA<=362;gA+=2){
         var pp=project(gA,gAlt);
-        if(pp.visible){
-          if(!moved){ctx.moveTo(pp.x,pp.y);moved=true;}
-          else ctx.lineTo(pp.x,pp.y);
-        } else moved=false;
+        if(pp.visible){if(!moved){ctx.moveTo(pp.x,pp.y);moved=true;}else ctx.lineTo(pp.x,pp.y);}
+        else moved=false;
       }
-      var isHorizon=gAlt===0;
-      ctx.strokeStyle=isHorizon?'rgba(0,212,255,'+(gridAlpha*1.8)+')':'rgba(80,140,220,'+gridAlpha+')';
-      ctx.lineWidth=isHorizon?1.2:0.6;
-      ctx.stroke();
-      if(skwState.showGrid){
-        var lp=project(skwState.az+2,gAlt);
-        if(lp.visible){
-          ctx.fillStyle='rgba(100,180,255,0.55)';
-          ctx.font='7px "Space Mono"';
-          ctx.fillText(gAlt+'°',lp.x,lp.y-3);
-        }
+      ctx.strokeStyle=gAlt===0?'rgba(0,212,255,'+(ga*2)+')':'rgba(80,140,220,'+ga+')';
+      ctx.lineWidth=gAlt===0?1.2:0.6;ctx.stroke();
+      if(skwState.showGrid&&gAlt!==0){
+        var lp=project(skwState.az+3,gAlt);
+        if(lp.visible){ctx.fillStyle='rgba(100,180,255,0.5)';ctx.font='7px Space Mono';ctx.fillText(gAlt+'°',lp.x,lp.y-3);}
       }
     }
-
-    // Azimuth meridians every 30°
     for(var gAz=0;gAz<360;gAz+=30){
-      ctx.beginPath();
-      var moved2=false;
-      for(var gAl=-85;gAl<=90;gAl+=2){
+      ctx.beginPath();var moved2=false;
+      for(var gAl=-85;gAl<=90;gAl+=3){
         var pp2=project(gAz,gAl);
-        if(pp2.visible){
-          if(!moved2){ctx.moveTo(pp2.x,pp2.y);moved2=true;}
-          else ctx.lineTo(pp2.x,pp2.y);
-        } else moved2=false;
+        if(pp2.visible){if(!moved2){ctx.moveTo(pp2.x,pp2.y);moved2=true;}else ctx.lineTo(pp2.x,pp2.y);}
+        else moved2=false;
       }
-      var isCard=gAz%90===0;
-      ctx.strokeStyle=isCard?'rgba(0,212,255,'+(gridAlpha*1.5)+')':'rgba(60,120,200,'+gridAlpha+')';
-      ctx.lineWidth=isCard?0.9:0.5;
-      ctx.stroke();
-      // Cardinal labels at horizon
+      var isC=gAz%90===0;
+      ctx.strokeStyle=isC?'rgba(0,212,255,'+(ga*1.8)+')':'rgba(60,120,200,'+ga+')';
+      ctx.lineWidth=isC?0.9:0.5;ctx.stroke();
       if(dirs[gAz]){
         var lp2=project(gAz,1);
         if(lp2.visible){
-          ctx.fillStyle=isCard?'rgba(0,212,255,'+(gridAlpha*2.5)+')':'rgba(100,160,220,'+(gridAlpha*2)+')';
-          ctx.font='bold '+(isCard?'11':'8')+'px "Orbitron"';
-          ctx.textAlign='center';
-          ctx.fillText(dirs[gAz],lp2.x,lp2.y-10);
-          ctx.textAlign='left';
+          ctx.fillStyle=isC?'rgba(0,212,255,'+(ga*3)+')':'rgba(100,160,220,'+(ga*2.5)+')';
+          ctx.font=(isC?'bold 10':'8')+'px Orbitron';ctx.textAlign='center';
+          ctx.fillText(dirs[gAz],lp2.x,lp2.y-10);ctx.textAlign='left';
         }
       }
     }
-
-    // Zenith cross
-    var zen=project(skwState.az,90);
-    if(zen.visible){
-      ctx.strokeStyle='rgba(0,212,255,'+(gridAlpha*2)+')';
-      ctx.lineWidth=1;
-      ctx.beginPath();
-      ctx.moveTo(zen.x-10,zen.y);ctx.lineTo(zen.x+10,zen.y);
-      ctx.moveTo(zen.x,zen.y-10);ctx.lineTo(zen.x,zen.y+10);
-      ctx.stroke();
-    }
   })();
 
-  // ── Compute bright star positions ──────────────────────────────────────────
-  var visibleStars=[];
-  STARS.forEach(function(s,idx){
-    var pos=raDecToAltAz(s[0],s[1],lst,lat);
-    if(pos.alt<-15)return;
-    var proj=project(pos.az,pos.alt);
-    var mag=s[2],sz=Math.max(0.8,3.0-mag*0.7);
-    visibleStars.push({x:proj.x,y:proj.y,visible:proj.visible,
-      az:pos.az,alt:pos.alt,mag:mag,size:sz,
-      name:s[3],spectral:s[4],desc:s[5],type:'star',idx:idx});
-  });
-
-  // ── Constellation lines ────────────────────────────────────────────────────
-  var CONS=[
-    // Orion: [idxA, idxB] using STARS array indices
-    // Betelgeuse(10)->Bellatrix(38), Bellatrix->Mintaka(40), Mintaka->Alnilam(39),
-    // Alnilam->Alnitak(41), Betelgeuse->Alnilam, Rigel(18)->Alnitak
-    {name:'Orion',lines:[[10,38],[38,40],[40,39],[39,41],[10,39],[18,41]]},
-    // Ursa Major: Dubhe(30)->Merak(31)
-    {name:'Ursa Major',lines:[[30,31]]},
-    // Scorpius: Antares(7)->Shaula(16)
-    {name:'Scorpius',lines:[[7,16]]},
-  ];
-
-  ctx.strokeStyle='rgba(100,180,255,0.18)';
-  ctx.lineWidth=0.8;
-  CONS.forEach(function(con){
-    con.lines.forEach(function(pair){
-      var s1=visibleStars[pair[0]],s2=visibleStars[pair[1]];
-      if(!s1||!s2||!s1.visible||!s2.visible)return;
-      ctx.beginPath();
-      ctx.moveTo(s1.x,s1.y);
-      ctx.lineTo(s2.x,s2.y);
-      ctx.stroke();
+  // ── Compute bright star positions (cached) ──────────────────────────
+  var lst=getLST(),lat=skwState.lat;
+  var lstR=Math.round(lst*360)/360;
+  if(!skwState._starCache||skwState._starCacheLst!==lstR||skwState._starCacheLat!==Math.round(lat*10)/10){
+    skwState._starCache=[];skwState._starCacheLst=lstR;skwState._starCacheLat=Math.round(lat*10)/10;
+    STARS.forEach(function(s){
+      var pos=raDecToAltAz(s[0],s[1],lst,lat);
+      skwState._starCache.push({ra_h:s[0],dec:s[1],az:pos.az,alt:pos.alt,
+        mag:s[2],name:s[3],spectral:s[4],desc:s[5],type:'star'});
     });
+  }
+  var visibleStars=skwState._starCache.map(function(s){
+    var proj=project(s.az,s.alt);
+    return {x:proj.x,y:proj.y,visible:proj.visible,az:s.az,alt:s.alt,
+      mag:s.mag,size:Math.max(0.8,3.0-s.mag*0.7),
+      name:s.name,spectral:s.spectral,desc:s.desc,type:'star'};
   });
 
-  // ── Draw stars ─────────────────────────────────────────────────────────────
+  // ── Constellation labels ────────────────────────────────────────────
+  if(skwState.showCons)(CONSTELLATIONS_INFO||[]).forEach(function(con){
+    var pos=raDecToAltAz(con.ra_h,con.dec,lst,lat);
+    if(pos.alt<-5)return;
+    var proj=project(pos.az,pos.alt);if(!proj.visible)return;
+    ctx.fillStyle='rgba(0,180,255,0.2)';ctx.font='10px Orbitron';ctx.textAlign='center';
+    ctx.fillText(con.symbol+' '+con.name,proj.x,proj.y);ctx.textAlign='left';
+  });
+
+  // ── Draw stars ──────────────────────────────────────────────────────
   visibleStars.forEach(function(s){
     if(!s.visible)return;
-    var col='#ffffff';
-    var sp=s.spectral?s.spectral[0]:'G';
-    if(sp==='O')col='#c0d0ff';
-    else if(sp==='B')col='#d8e8ff';
-    else if(sp==='A')col='#f8f8ff';
-    else if(sp==='F')col='#fff8f0';
-    else if(sp==='G')col='#ffe880';
-    else if(sp==='K')col='#ffa040';
+    var col='#fff';var sp=s.spectral?s.spectral[0]:'G';
+    if(sp==='O')col='#c0d0ff';else if(sp==='B')col='#d8e8ff';
+    else if(sp==='A')col='#f8f8ff';else if(sp==='F')col='#fff8f0';
+    else if(sp==='G')col='#ffe880';else if(sp==='K')col='#ffa040';
     else if(sp==='M')col='#ff6050';
-
-    if(s.mag<2.5){ctx.shadowColor=col;ctx.shadowBlur=s.mag<0?16:10;}
-    ctx.fillStyle=col;
-    ctx.beginPath();
-    ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
-    ctx.fill();
+    if(s.mag<2.5){ctx.shadowColor=col;ctx.shadowBlur=s.mag<0?18:10;}
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(s.x,s.y,s.size,0,Math.PI*2);ctx.fill();
     ctx.shadowBlur=0;
-
     if(s.mag<1.8){
-      ctx.fillStyle='rgba(180,210,255,0.55)';
-      ctx.font='8px "Space Mono"';
+      ctx.fillStyle='rgba(180,210,255,0.6)';ctx.font='8px Space Mono';
       ctx.fillText(s.name,s.x+s.size+4,s.y+3);
     }
   });
 
-  // ── Constellation labels (toggleable) ──────────────────────────────────────
-  if(skwState.showCons!==false)(CONSTELLATIONS_INFO||[]).forEach(function(con){
-    var pos=raDecToAltAz(con.ra_h,con.dec,lst,lat);
-    if(pos.alt<-5)return;
-    var proj=project(pos.az,pos.alt);
-    if(!proj.visible)return;
-    ctx.fillStyle='rgba(0,212,255,0.22)';
-    ctx.font='10px "Orbitron"';
-    ctx.textAlign='center';
-    ctx.fillText(con.symbol+' '+con.name,proj.x,proj.y);
-    ctx.textAlign='left';
-  });
-
-  // ── Draw Sun, Moon, and planets ──────────────────────────────────────────
+  // ── Draw planets (including Sun & Moon) ────────────────────────────
+  var planets=getPlanetPositions();
   planets.forEach(function(pl){
-    if(pl.alt<-10)return;
-    var proj=project(pl.az,pl.alt);
-    if(!proj.visible)return;
-
-    if(pl.type==='sun'){
-      // Sun: multi-layer canvas glow
-      var sg=ctx.createRadialGradient(proj.x,proj.y,0,proj.x,proj.y,pl.radius*4);
-      sg.addColorStop(0,'rgba(255,255,200,0.9)');
-      sg.addColorStop(0.15,'rgba(255,240,100,0.7)');
-      sg.addColorStop(0.4,'rgba(255,200,0,0.25)');
-      sg.addColorStop(1,'rgba(255,150,0,0)');
-      ctx.fillStyle=sg;
-      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius*4,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#fffde0';ctx.shadowColor='#ffee00';ctx.shadowBlur=20;
-      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius,0,Math.PI*2);ctx.fill();
-      ctx.shadowBlur=0;
-      ctx.fillStyle='rgba(255,240,150,0.9)';
-      ctx.font='bold 9px "Space Mono"';
-      ctx.fillText('☀ Sun',proj.x+pl.radius+4,proj.y+4);
-    } else if(pl.type==='moon'){
-      // Moon: glowing sphere with phase color
-      var mg=ctx.createRadialGradient(proj.x-3,proj.y-3,0,proj.x,proj.y,pl.radius*2.5);
-      mg.addColorStop(0,'rgba(240,230,210,0.6)');
-      mg.addColorStop(0.4,'rgba(200,190,170,0.2)');
-      mg.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=mg;
-      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius*2.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#e8e0d0';ctx.shadowColor='#c8c0a8';ctx.shadowBlur=10;
-      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius,0,Math.PI*2);ctx.fill();
-      ctx.shadowBlur=0;
-      ctx.fillStyle='rgba(220,210,190,0.8)';
-      ctx.font='bold 9px "Space Mono"';
-      ctx.fillText(pl.symbol+' Moon',proj.x+pl.radius+4,proj.y+4);
+    if(pl.alt<-5)return;
+    var proj=project(pl.az,pl.alt);if(!proj.visible)return;
+    var isSun=pl.name==='Sun',isMoon=pl.name==='Moon';
+    if(isSun){
+      var sg=ctx.createRadialGradient(proj.x,proj.y,0,proj.x,proj.y,pl.radius*3);
+      sg.addColorStop(0,'rgba(255,255,220,1)');sg.addColorStop(0.3,'rgba(255,240,100,0.6)');
+      sg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=sg;ctx.fillRect(proj.x-pl.radius*3,proj.y-pl.radius*3,pl.radius*6,pl.radius*6);
+      ctx.shadowColor='rgba(255,255,150,0.9)';ctx.shadowBlur=25;
+      ctx.fillStyle='rgba(255,252,200,1)';
+    } else if(isMoon){
+      ctx.shadowColor='rgba(180,190,210,0.5)';ctx.shadowBlur=12;
+      ctx.fillStyle='rgba(210,215,235,1)';
     } else {
-      ctx.shadowColor=pl.color;ctx.shadowBlur=14;
-      ctx.fillStyle=pl.color;
-      ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius,0,Math.PI*2);ctx.fill();
-      ctx.shadowBlur=0;
-      ctx.fillStyle='rgba(255,220,120,0.85)';
-      ctx.font='bold 9px "Space Mono"';
-      ctx.fillText(pl.symbol+' '+pl.name,proj.x+pl.radius+4,proj.y+4);
+      ctx.shadowColor=pl.color;ctx.shadowBlur=12;ctx.fillStyle=pl.color;
     }
+    ctx.beginPath();ctx.arc(proj.x,proj.y,pl.radius,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+    var lbl=isSun?'☀ Sun':isMoon?(pl.symbol+' Moon'):pl.symbol+' '+pl.name;
+    ctx.fillStyle=isSun?'rgba(255,250,180,0.9)':isMoon?'rgba(200,210,235,0.9)':'rgba(255,220,120,0.85)';
+    ctx.font='bold 9px Space Mono';ctx.fillText(lbl,proj.x+pl.radius+4,proj.y+4);
   });
+  skwState._planets=planets;
+  skwState._stars=visibleStars;
 
-  // ── Crosshair ──────────────────────────────────────────────────────────────
+  // ── Crosshair ───────────────────────────────────────────────────────
   var cx=W/2,cy=H/2;
-  ctx.strokeStyle='rgba(0,212,255,0.25)';
-  ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(0,212,255,0.3)';ctx.lineWidth=1;
   ctx.beginPath();
-  ctx.moveTo(cx-18,cy);ctx.lineTo(cx-7,cy);
-  ctx.moveTo(cx+7,cy);ctx.lineTo(cx+18,cy);
-  ctx.moveTo(cx,cy-18);ctx.lineTo(cx,cy-7);
-  ctx.moveTo(cx,cy+7);ctx.lineTo(cx,cy+18);
-  ctx.stroke();
-  ctx.strokeStyle='rgba(0,212,255,0.15)';
+  ctx.moveTo(cx-18,cy);ctx.lineTo(cx-7,cy);ctx.moveTo(cx+7,cy);ctx.lineTo(cx+18,cy);
+  ctx.moveTo(cx,cy-18);ctx.lineTo(cx,cy-7);ctx.moveTo(cx,cy+7);ctx.lineTo(cx,cy+18);
+  ctx.stroke();ctx.strokeStyle='rgba(0,212,255,0.15)';
   ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.stroke();
 
-  // ── Compass strip (bottom) — infinite scrolling panoramic band ────────────
+  // ── Compass strip (bottom) ──────────────────────────────────────────
   (function(){
-    var sw=W-16, sh=52, sx=8, sy=H-sh-8; // strip dimensions
+    var sw=W-16,sh=48,sx=8,sy=H-sh-8;
     var curAz=((skwState.az%360)+360)%360;
-    
-    // Background
-    ctx.fillStyle='rgba(0,3,15,0.75)';
+    ctx.fillStyle='rgba(0,3,15,0.72)';
     if(ctx.roundRect){ctx.beginPath();ctx.roundRect(sx,sy,sw,sh,8);ctx.fill();}
-    else{ctx.fillRect(sx,sy,sw,sh);}
-    
-    // Draw 360° of azimuth, centered on current heading
-    var degPerPx=sw/120; // 120° visible in the strip
-    var halfW=sw/2;
-    
-    // Cardinal/intercardinal markers
-    var marks=[
-      [0,'N'],[15,''],[30,'NNE'],[45,'NE'],[60,''],[75,'ENE'],[90,'E'],
-      [105,''],[120,'ESE'],[135,'SE'],[150,''],[165,'SSE'],[180,'S'],
-      [195,''],[210,'SSW'],[225,'SW'],[240,''],[255,'WSW'],[270,'W'],
-      [285,''],[300,'WNW'],[315,'NW'],[330,''],[345,'NNW'],[360,'N']
-    ];
-    
-    marks.forEach(function(m){
-      var az3=m[0],lbl=m[1];
-      // Draw for current view ±180°
-      for(var wrap=-360;wrap<=360;wrap+=360){
-        var dAz3=az3+wrap-curAz;
-        if(dAz3<-180||dAz3>180)continue;
-        var x3=sx+halfW+dAz3*degPerPx;
-        if(x3<sx||x3>sx+sw)continue;
-        var isMajor=az3%90===0;
-        var isMed=az3%45===0;
-        var tickH=isMajor?sh*0.5:isMed?sh*0.35:sh*0.2;
-        ctx.strokeStyle=isMajor?'rgba(0,212,255,0.7)':isMed?'rgba(0,212,255,0.4)':'rgba(100,160,220,0.25)';
-        ctx.lineWidth=isMajor?1.5:0.8;
-        ctx.beginPath();ctx.moveTo(x3,sy+sh-tickH);ctx.lineTo(x3,sy+sh);ctx.stroke();
-        if(lbl){
-          ctx.fillStyle=isMajor?'rgba(0,212,255,0.9)':'rgba(150,190,230,0.65)';
-          ctx.font=(isMajor?'bold 10':'8')+'px "Orbitron"';
-          ctx.textAlign='center';
-          ctx.fillText(lbl,x3,sy+11);
-        }
+    else ctx.fillRect(sx,sy,sw,sh);
+    var degPerPx=sw/110;
+    var marks=[0,30,45,60,90,120,135,150,180,210,225,240,270,300,315,330,360];
+    var labels={0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SW',270:'W',315:'NW'};
+    for(var i=-360;i<=720;i+=15){
+      var az2=((i%360)+360)%360;
+      var dAz2=i-curAz;if(dAz2<-180)dAz2+=360;if(dAz2>180)dAz2-=360;
+      if(Math.abs(dAz2)>60)continue;
+      var x3=sx+sw/2+dAz2*degPerPx;
+      if(x3<sx||x3>sx+sw)continue;
+      var isMaj=az2%90===0,isMed=az2%45===0;
+      var tickH=isMaj?sh*0.45:isMed?sh*0.32:sh*0.18;
+      ctx.strokeStyle=isMaj?'rgba(0,212,255,0.75)':isMed?'rgba(0,212,255,0.4)':'rgba(100,160,220,0.22)';
+      ctx.lineWidth=isMaj?1.5:0.8;
+      ctx.beginPath();ctx.moveTo(x3,sy+sh-tickH);ctx.lineTo(x3,sy+sh);ctx.stroke();
+      if(labels[az2]){
+        ctx.fillStyle=isMaj?'rgba(0,212,255,0.95)':'rgba(160,200,240,0.7)';
+        ctx.font=(isMaj?'bold 10':'8')+'px Orbitron';ctx.textAlign='center';
+        ctx.fillText(labels[az2],x3,sy+13);
       }
-    });
-    
-    // Degree numbers every 30°
-    for(var d=-180;d<=180;d+=30){
-      var az4=((curAz+d)%360+360)%360;
-      var x4=sx+halfW+d*degPerPx;
-      if(x4<sx+5||x4>sx+sw-5)continue;
-      ctx.fillStyle='rgba(80,140,200,0.4)';
-      ctx.font='6px "Space Mono"';ctx.textAlign='center';
-      ctx.fillText(Math.round(az4)+'°',x4,sy+sh-4);
     }
-    
-    // Stars visible near horizon — dots on the strip
-    (skwState._stars||[]).forEach(function(s){
-      if(s.alt<-8||s.alt>25||s.mag>3)return;
-      var dAz=s.az-curAz;
-      while(dAz>180)dAz-=360;while(dAz<-180)dAz+=360;
-      var x5=sx+halfW+dAz*degPerPx;
-      if(x5<sx+3||x5>sx+sw-3)return;
-      var altY=sy+sh*0.6-s.alt*0.6; // higher alt = higher on strip
-      ctx.fillStyle=s.mag<1?'rgba(255,255,200,0.9)':s.mag<2?'rgba(220,230,255,0.7)':'rgba(180,200,255,0.5)';
-      ctx.beginPath();ctx.arc(x5,altY,Math.max(0.8,1.5-s.mag*0.2),0,Math.PI*2);ctx.fill();
-    });
-    
-    // Planets on strip
-    (skwState._planets||[]).forEach(function(pl){
-      if(pl.alt<-8||pl.alt>25)return;
-      var dAz=pl.az-curAz;
-      while(dAz>180)dAz-=360;while(dAz<-180)dAz+=360;
-      var x5=sx+halfW+dAz*degPerPx;
-      if(x5<sx+3||x5>sx+sw-3)return;
-      var altY=sy+sh*0.6-pl.alt*0.6;
-      ctx.fillStyle=pl.color;
-      ctx.beginPath();ctx.arc(x5,altY,pl.name==='Sun'?4:3,0,Math.PI*2);ctx.fill();
-    });
-    
-    // Center marker (current heading)
+    // Degree readout
+    ctx.fillStyle='rgba(0,212,255,0.45)';ctx.font='6px Space Mono';ctx.textAlign='right';
+    ctx.fillText(Math.round(curAz)+'° | ALT '+Math.round(skwState.alt)+'°',sx+sw-4,sy+sh-4);
+    // Center pointer
     ctx.strokeStyle='rgba(0,212,255,0.9)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(sx+halfW,sy);ctx.lineTo(sx+halfW,sy+sh);ctx.stroke();
-    // Triangle pointer
-    ctx.fillStyle='rgba(0,212,255,0.9)';
-    ctx.beginPath();
-    ctx.moveTo(sx+halfW,sy+2);
-    ctx.lineTo(sx+halfW-5,sy+10);
-    ctx.lineTo(sx+halfW+5,sy+10);
+    ctx.beginPath();ctx.moveTo(sx+sw/2,sy);ctx.lineTo(sx+sw/2,sy+sh);ctx.stroke();
+    ctx.fillStyle='rgba(0,212,255,0.9)';ctx.beginPath();
+    ctx.moveTo(sx+sw/2,sy+2);ctx.lineTo(sx+sw/2-5,sy+11);ctx.lineTo(sx+sw/2+5,sy+11);
     ctx.closePath();ctx.fill();
-    
-    // Alt indicator (right side)
-    ctx.fillStyle='rgba(0,212,255,0.5)';
-    ctx.font='7px "Space Mono"';ctx.textAlign='right';
-    ctx.fillText('ALT '+Math.round(skwState.alt)+'°',sx+sw-4,sy+sh-4);
-    ctx.textAlign='left';
-    
-    // Border
     ctx.strokeStyle='rgba(0,212,255,0.2)';ctx.lineWidth=0.8;
     if(ctx.roundRect){ctx.beginPath();ctx.roundRect(sx,sy,sw,sh,8);ctx.stroke();}
-    else{ctx.strokeRect(sx,sy,sw,sh);}
+    ctx.textAlign='left';
   })();
 
-  // ── Compass readout ────────────────────────────────────────────────────────
+  // ── Compass update ──────────────────────────────────────────────────
   var compassEl=document.getElementById('skwCompass');
   if(compassEl){
-    var dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-    var az=((skwState.az%360)+360)%360;
-    var di=Math.round(az/22.5)%16;
-    compassEl.textContent=dirs[di]+' '+Math.round(az)+'°  ALT '+Math.round(skwState.alt)+'°';
+    var dirs2=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    var az0=((skwState.az%360)+360)%360;
+    var di=Math.round(az0/22.5)%16;
+    compassEl.textContent=dirs2[di]+' '+Math.round(az0)+'°';
   }
-
-  skwState._stars=visibleStars;
-  skwState._planets=planets;
 }
 
-// ── Controls ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════════════════════════════
 function setupSkyControls(){
   var canvas=document.getElementById('skwCanvas');
-  
-  // Try device orientation (gyroscope)
-  function enableGyro(){
-    if(typeof DeviceOrientationEvent==='undefined')return;
+
+  // Gyroscope
+  function attachGyro(){
+    window.addEventListener('deviceorientation',function(e){
+      if(!skwState.active||e.alpha===null)return;
+      skwState.gyroActive=true;
+      // alpha=compass bearing 0=N, clockwise
+      skwState.az=((360-e.alpha)%360+360)%360;
+      // beta: 0=upright(horizon), -90=flat face-up(zenith)
+      skwState.alt=Math.max(-85,Math.min(85,-e.beta));
+      var h=document.getElementById('skwHint');if(h)h.style.opacity='0';
+    },{passive:true});
+  }
+  if(typeof DeviceOrientationEvent!=='undefined'){
     if(DeviceOrientationEvent.requestPermission){
-      // iOS: show button, request permission on tap (must be direct user gesture)
-      var gBtn=document.getElementById('skwGyroBtn');
-      if(gBtn){
-        gBtn.style.display='block';
-        gBtn.addEventListener('click',function(){
+      var gb=document.getElementById('skwGyroBtn');
+      if(gb){gb.style.display='block';
+        gb.addEventListener('click',function(){
           DeviceOrientationEvent.requestPermission().then(function(r){
-            if(r==='granted'){attachGyro();gBtn.style.display='none';}
+            if(r==='granted'){attachGyro();gb.style.display='none';}
           }).catch(function(){});
         });
       }
-    } else {
-      // Android + desktop: attach directly
-      attachGyro();
-    }
+    } else attachGyro();
   }
-  
-  function attachGyro(){
-    window.addEventListener('deviceorientation',function(e){
-      if(e.alpha===null||e.alpha===undefined)return;
-      if(!skwState.active)return; // stop updating when sky walk closed
-      skwState.gyroActive=true;
-      // Compass: alpha 0=N, increases clockwise. Convert to az: 0=N clockwise
-      skwState.az=((360-e.alpha)%360+360)%360;
-      // Tilt: beta=0 phone upright, beta=-90 phone horizontal face-up (pointing at zenith)
-      // alt=0 at horizon, alt=90 at zenith
-      skwState.alt=Math.max(-85,Math.min(85,-e.beta));
-      var hint=document.getElementById('skwHint');
-      if(hint)hint.style.opacity='0';
-    },{passive:true});
-    skwState.gyroActive=true;
-  }
-  
-  enableGyro();
-  
-  // Touch drag fallback
-  var lastTouch={x:0,y:0};
-  var touching=false;
-  var tapStart={x:0,y:0,t:0};
-  var lastTap=0;
-  
+
+  // Touch pan
+  var lTouch={x:0,y:0},touching=false,tapStart={x:0,y:0,t:0};
   canvas.addEventListener('touchstart',function(e){
     e.preventDefault();
-    var t=e.touches[0];
-    lastTouch={x:t.clientX,y:t.clientY};
-    tapStart={x:t.clientX,y:t.clientY,t:Date.now()};
-    touching=true;
+    var t=e.touches[0];lTouch={x:t.clientX,y:t.clientY};
+    tapStart={x:t.clientX,y:t.clientY,t:Date.now()};touching=true;
   },{passive:false});
-  
   canvas.addEventListener('touchmove',function(e){
-    e.preventDefault();
-    if(!touching)return;
+    e.preventDefault();if(!touching)return;
     var t=e.touches[0];
-    var dx=t.clientX-lastTouch.x;
-    var dy=t.clientY-lastTouch.y;
     if(!skwState.gyroActive){
-      skwState.az-=dx*0.15;
-      skwState.alt+=dy*0.15;
-      skwState.alt=Math.max(-85,Math.min(85,skwState.alt));
+      skwState.az-=(t.clientX-lTouch.x)*0.15;
+      skwState.alt=Math.max(-85,Math.min(85,skwState.alt+(t.clientY-lTouch.y)*0.15));
     }
-    lastTouch={x:t.clientX,y:t.clientY};
+    lTouch={x:t.clientX,y:t.clientY};
   },{passive:false});
-  
   canvas.addEventListener('touchend',function(e){
     touching=false;
     var dt=Date.now()-tapStart.t;
     var dx=e.changedTouches[0].clientX-tapStart.x;
     var dy=e.changedTouches[0].clientY-tapStart.y;
-    if(dt<300&&Math.hypot(dx,dy)<20){
-      handleSkyTap(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
-    }
+    if(dt<300&&Math.hypot(dx,dy)<20)handleSkyTap(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
   },{passive:true});
-  
-  // Mouse drag fallback for desktop
-  canvas.addEventListener('mousedown',function(e){
-    skwState.dragActive=true;
-    skwState.dragLast={x:e.clientX,y:e.clientY};
-  });
+  canvas.addEventListener('mousedown',function(e){skwState.dragActive=true;skwState.dragLast={x:e.clientX,y:e.clientY};});
   canvas.addEventListener('mousemove',function(e){
     if(!skwState.dragActive)return;
-    var dx=e.clientX-skwState.dragLast.x;
-    var dy=e.clientY-skwState.dragLast.y;
-    skwState.az-=dx*0.15;
-    skwState.alt+=dy*0.15;
-    skwState.alt=Math.max(-85,Math.min(85,skwState.alt));
+    skwState.az-=(e.clientX-skwState.dragLast.x)*0.15;
+    skwState.alt=Math.max(-85,Math.min(85,skwState.alt+(e.clientY-skwState.dragLast.y)*0.15));
     skwState.dragLast={x:e.clientX,y:e.clientY};
   });
   canvas.addEventListener('mouseup',function(e){
-    var wasDragging=skwState.dragActive;
     skwState.dragActive=false;
-  });
-  canvas.addEventListener('click',function(e){
     handleSkyTap(e.clientX,e.clientY);
   });
+  canvas.addEventListener('click',function(e){handleSkyTap(e.clientX,e.clientY);});
 }
 
-// ── Tap detection ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// TAP
+// ═══════════════════════════════════════════════════════════════════════
 function handleSkyTap(tx,ty){
-  var best=null,bestD=50;
-  var lst=getLST(),lat=skwState.lat;
-
+  var best=null,bestD=55;
   (skwState._stars||[]).forEach(function(s){
     if(!s.visible)return;
-    var d=Math.hypot(s.x-tx,s.y-ty);
-    if(d<bestD){bestD=d;best=s;}
+    var d=Math.hypot(s.x-tx,s.y-ty);if(d<bestD){bestD=d;best=s;}
   });
-
   (skwState._planets||[]).forEach(function(pl){
-    var proj=project(pl.az,pl.alt);
-    if(!proj.visible)return;
+    var proj=project(pl.az,pl.alt);if(!proj.visible)return;
     var d=Math.hypot(proj.x-tx,proj.y-ty);
     if(d<bestD){bestD=d;best=Object.assign({},pl,{x:proj.x,y:proj.y});}
   });
-
-  // Check constellation centroids (larger tap radius)
+  var lst4=getLST(),lat4=skwState.lat;
   (CONSTELLATIONS_INFO||[]).forEach(function(con){
-    var pos=raDecToAltAz(con.ra_h,con.dec,lst,lat);
-    if(pos.alt<-10)return;
-    var proj=project(pos.az,pos.alt);
-    if(!proj.visible)return;
+    var pos=raDecToAltAz(con.ra_h,con.dec,lst4,lat4);if(pos.alt<-10)return;
+    var proj=project(pos.az,pos.alt);if(!proj.visible)return;
     var d=Math.hypot(proj.x-tx,proj.y-ty);
-    if(d<70&&d<bestD){
-      bestD=d;
-      best=Object.assign({},con,{type:'constellation',alt:pos.alt,az:pos.az,x:proj.x,y:proj.y});
-    }
+    if(d<80&&d<bestD){bestD=d;best=Object.assign({},con,{type:'constellation',alt:pos.alt,az:pos.az,x:proj.x,y:proj.y});}
   });
-
   if(best)showSkyObject(best);
   else hideSkyPanel();
 }
@@ -9026,166 +8845,89 @@ function showSkyObject(obj){
   skwState.selected=obj;
   var panel=document.getElementById('skwPanel');
   document.getElementById('skwName').textContent=obj.name;
-  var typeLabel=obj.type==='planet'?(obj.symbol+' Planet'):
-    obj.type==='constellation'?'✦ Constellation':
-    ('★ '+(obj.spectral||'')+(obj.mag!==undefined?' — Mag '+obj.mag:''));
-  document.getElementById('skwSub').textContent=typeLabel+' — Alt '+Math.round(obj.alt||0)+'° Az '+Math.round(obj.az||0)+'°';
+  var typeLabel=obj.type==='planet'?(obj.symbol||'●')+' '+(obj.name==='Sun'||obj.name==='Moon'?obj.name:'Planet'):
+    obj.type==='constellation'?'✦ Constellation':('★ '+(obj.spectral||'')+' Star');
+  document.getElementById('skwSub').textContent=typeLabel+' · Alt '+Math.round(obj.alt||0)+'° Az '+Math.round(obj.az||0)+'°';
   document.getElementById('skwDesc').textContent=obj.desc||'';
-  
-  var stats=document.getElementById('skwStats');
-  stats.innerHTML='';
-  var items=obj.type==='star'?[
-    ['Magnitude',obj.mag],
-    ['Type',obj.spectral],
-    ['Altitude',Math.round(obj.alt)+'°'],
-    ['Azimuth',Math.round(obj.az)+'°'],
-  ]:[
-    ['Symbol',obj.symbol],
-    ['Altitude',Math.round(obj.alt)+'°'],
-    ['Azimuth',Math.round(obj.az)+'°'],
-  ];
+  var stats=document.getElementById('skwStats');stats.innerHTML='';
+  var items=obj.type==='planet'?[['Az',Math.round(obj.az)+'°'],['Alt',Math.round(obj.alt)+'°'],['Type',obj.type==='planet'?'Planet':'']]:
+    [['Mag',obj.mag],['Type',obj.spectral||''],['Alt',Math.round(obj.alt||0)+'°'],['Az',Math.round(obj.az||0)+'°']];
   items.forEach(function(it){
+    if(!it[1]&&it[1]!==0)return;
     var d=document.createElement('div');
-    d.style.cssText='background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.15);border-radius:8px;padding:5px 10px;font-size:9px;text-align:center;';
+    d.style.cssText='background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.15);border-radius:8px;padding:4px 9px;font-size:9px;text-align:center;';
     d.innerHTML='<div style="color:rgba(0,212,255,0.6);letter-spacing:1px">'+it[0]+'</div><div style="color:#fff;font-weight:700">'+it[1]+'</div>';
     stats.appendChild(d);
   });
-  
-  // Load image from Wikimedia
-  var imgEl=document.getElementById('skwImg');
-  imgEl.src='';
-  imgEl.style.background='rgba(255,255,255,0.05)';
-  var wikiQuery=obj.name+' star';
-  if(obj.type==='planet')wikiQuery=obj.name+' planet';
+  var imgEl=document.getElementById('skwImg');imgEl.src='';
   fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(obj.name))
-    .then(function(r){return r.json();})
-    .then(function(data){
-      if(data.thumbnail&&data.thumbnail.source){
-        imgEl.src=data.thumbnail.source;
-        imgEl.style.background='';
-      }
-      if(data.extract){
-        var existing=document.getElementById('skwDesc').textContent;
-        if(!existing&&data.extract)
-          document.getElementById('skwDesc').textContent=data.extract.split('.')[0]+'.';
-      }
+    .then(function(r){return r.json();}).then(function(data){
+      if(data.thumbnail&&data.thumbnail.source)imgEl.src=data.thumbnail.source;
+      if(data.extract&&!obj.desc)document.getElementById('skwDesc').textContent=data.extract.split('.')[0]+'.';
     }).catch(function(){});
-  
   panel.style.transform='translateY(0)';panel.style.opacity='1';
 }
 
 function hideSkyPanel(){
   var p=document.getElementById('skwPanel');
-  p.style.transform='translateY(-120%)';p.style.opacity='0';
+  if(p){p.style.transform='translateY(-120%)';p.style.opacity='0';}
   skwState.selected=null;
 }
+window.hideSkyPanel=hideSkyPanel;
 
-// ── Open / Close ──────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// OPEN / CLOSE
+// ═══════════════════════════════════════════════════════════════════════
 function openSkyWalk(){
-  // Close earth view if open (its canvas has touch listeners that interfere)
+  // Dispose earth view if open
   var issOv=document.getElementById('issOverlay');
   if(issOv&&issOv.style.display==='flex'){
-    if(issAnimId)cancelAnimationFrame(issAnimId);
-    if(issRenderer){issRenderer.dispose();issRenderer=null;}
+    if(typeof issAnimId!=='undefined'&&issAnimId)cancelAnimationFrame(issAnimId);
+    if(typeof issRenderer!=='undefined'&&issRenderer){issRenderer.dispose();issRenderer=null;}
     issScene=null;issISSGroup=null;issEarth=null;window._issMoon=null;
     issOv.style.display='none';
   }
   var ov=document.getElementById('skyWalkOverlay');
-  ov.style.display='flex';
-  ov.style.opacity='0';
-  ov.style.transition='opacity 0.4s ease';
-  skwState.active=true;
-  skwState.az=180;skwState.alt=30; // face South, 30° up (sky default)
-  
-  // Try to get user location for accurate LST
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(function(pos){skwState.lat=pos.coords.latitude;skwState.lon=pos.coords.longitude;},function(){},{timeout:3000});
-  }
-  
+  ov.style.display='flex';ov.style.opacity='0';ov.style.transition='opacity 0.5s ease';
+  skwState.active=true;skwState.az=180;skwState.alt=30;
+  skwState.locReady=false;skwState._starCache=null;
+  // Request location immediately
+  requestLocation();
   setupSkyControls();
   setTimeout(function(){ov.style.opacity='1';},30);
-  // Hide main app header buttons during sky walk to avoid confusion
-  var _mhdr=document.querySelector('header');
-  if(_mhdr)_mhdr.style.visibility='hidden';
+  // Hide main menu button to prevent overlap
+  var mb=document.getElementById('menuBtn');if(mb)mb.style.visibility='hidden';
 
-  // ── Create ⋮ menu button dynamically ────────────────────────────────────────
-  (function(){
-    // Remove any stale ones first
-    var old=document.getElementById('skwMenuBtn');
-    if(old)old.parentNode.removeChild(old);
-    var oldD=document.getElementById('skwDropdown');
-    if(oldD)oldD.parentNode.removeChild(oldD);
+  // Dynamic ⋮ menu
+  var oldBtn=document.getElementById('skwMenuBtn');if(oldBtn)oldBtn.parentNode.removeChild(oldBtn);
+  var oldDrop=document.getElementById('skwDropdown');if(oldDrop)oldDrop.parentNode.removeChild(oldDrop);
+  var dropOpen=false;
+  var drop=document.createElement('div');
+  drop.id='skwDropdown';
+  drop.style.cssText='position:fixed;top:52px;right:8px;z-index:40000;display:none;flex-direction:column;gap:6px;align-items:center;padding:6px 0;';
+  function mkItem(icon,title,fn){
+    var d=document.createElement('div');d.className='hbtn menu-item';
+    d.style.cssText='font-size:16px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+    d.title=title;d.textContent=icon;
+    d.ontouchstart=function(e){e.stopPropagation();};
+    d.ontouchend=function(e){e.preventDefault();e.stopPropagation();fn(d);};
+    d.onclick=function(){fn(d);};return d;
+  }
+  function closeDrop(){dropOpen=false;drop.style.display='none';btn.style.background='';}
+  drop.appendChild(mkItem('🌍','Back to Earth',function(){closeDrop();closeSkyWalk();}));
+  drop.appendChild(mkItem('🔲','Toggle Grid',function(el){skwState.showGrid=!skwState.showGrid;el.style.color=skwState.showGrid?'var(--cyan)':'';closeDrop();}));
+  drop.appendChild(mkItem('✦','Constellations',function(el){skwState.showCons=!skwState.showCons;el.style.color=skwState.showCons?'var(--cyan)':'';closeDrop();}));
+  drop.appendChild(mkItem('🧭','Face South',function(){skwState.az=180;skwState.alt=30;closeDrop();}));
+  document.body.appendChild(drop);
+  var btn=document.createElement('div');btn.id='skwMenuBtn';btn.className='hbtn';
+  btn.style.cssText='position:fixed;top:7px;right:8px;z-index:40000;width:38px;height:38px;font-size:20px;font-weight:700;letter-spacing:-1px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+  btn.textContent='⋮';
+  btn.ontouchstart=function(e){e.stopPropagation();};
+  btn.ontouchend=function(e){e.preventDefault();e.stopPropagation();dropOpen=!dropOpen;drop.style.display=dropOpen?'flex':'none';btn.style.background=dropOpen?'rgba(0,212,255,0.15)':'';};
+  btn.onclick=function(){dropOpen=!dropOpen;drop.style.display=dropOpen?'flex':'none';btn.style.background=dropOpen?'rgba(0,212,255,0.15)':'';};
+  document.body.appendChild(btn);
 
-    // State
-    var dropOpen=false;
-
-    // Dropdown
-    var drop=document.createElement('div');
-    drop.id='skwDropdown';
-    drop.style.cssText='position:fixed;top:52px;right:8px;z-index:40000;display:none;flex-direction:column;gap:6px;align-items:center;padding:6px 0;';
-    
-    function makeItem(icon,label,fn){
-      var d=document.createElement('div');
-      d.className='hbtn menu-item';
-      d.style.cssText='font-size:13px;width:44px;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;padding:4px 0;';
-      var ico=document.createElement('span');ico.textContent=icon;ico.style.fontSize='16px';
-      var lbl=document.createElement('span');lbl.textContent=label;lbl.style.cssText='font-size:6px;letter-spacing:0.5px;color:rgba(180,220,255,0.6);font-family:"Space Mono",monospace;';
-      d.appendChild(ico);d.appendChild(lbl);
-      d.ontouchstart=function(e){e.stopPropagation();};
-      d.ontouchend=function(e){e.preventDefault();e.stopPropagation();fn(d);};
-      d.onclick=function(){fn(d);};
-      return d;
-    }
-
-    function closeMenu(){
-      dropOpen=false;
-      drop.style.display='none';
-      btn.style.background='rgba(0,5,15,0.55)';
-      btn.classList.remove('active-tab');
-    }
-
-    drop.appendChild(makeItem('🌍','EARTH',function(){closeMenu();closeSkyWalk();}));
-    drop.appendChild(makeItem('🔲','GRID',function(el){
-      skwState.showGrid=!skwState.showGrid;
-      el.style.color=skwState.showGrid?'var(--cyan)':''; closeMenu();
-    }));
-    drop.appendChild(makeItem('✦','CONST',function(el){
-      skwState.showCons=!skwState.showCons;
-      el.style.color=skwState.showCons?'var(--cyan)':''; closeMenu();
-    }));
-    drop.appendChild(makeItem('🧭','NORTH',function(){
-      skwState.az=0;skwState.alt=30; closeMenu();
-    }));
-    document.body.appendChild(drop);
-
-    // ⋮ button
-    var btn=document.createElement('div');
-    btn.id='skwMenuBtn';
-    btn.className='hbtn';
-    btn.style.cssText='position:fixed;top:7px;right:8px;z-index:40000;width:38px;height:38px;font-size:20px;font-weight:700;letter-spacing:-1px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
-    btn.textContent='⋮';
-    btn.ontouchstart=function(e){e.stopPropagation();};
-    btn.ontouchend=function(e){
-      e.preventDefault(); e.stopPropagation();
-      dropOpen=!dropOpen;
-      drop.style.display=dropOpen?'flex':'none';
-      btn.style.background=dropOpen?'rgba(0,212,255,0.15)':'';
-      btn.classList.toggle('active-tab',dropOpen);
-    };
-    btn.onclick=function(){
-      dropOpen=!dropOpen;
-      drop.style.display=dropOpen?'flex':'none';
-      btn.style.background=dropOpen?'rgba(0,212,255,0.15)':'';
-      btn.classList.toggle('active-tab',dropOpen);
-    };
-    document.body.appendChild(btn);
-  // Hide main app ⋮ button (same position) to prevent visual overlap
-  var _mainMenu=document.getElementById('menuBtn');
-  if(_mainMenu)_mainMenu.style.visibility='hidden';
-  })();
-
-  
-  // Start render loop
+  // Render loop
   function loop(){
     if(!skwState.active)return;
     renderSky();
@@ -9197,46 +8939,32 @@ function openSkyWalk(){
 function closeSkyWalk(){
   skwState.active=false;
   if(skwState.rafId)cancelAnimationFrame(skwState.rafId);
-  // Remove dynamically created menu
-  var _oldMenu=document.getElementById('skwMenuBtn');
-  if(_oldMenu&&_oldMenu.parentNode)_oldMenu.parentNode.removeChild(_oldMenu);
-  var _oldDrop=document.getElementById('skwDropdown');
-  if(_oldDrop&&_oldDrop.parentNode)_oldDrop.parentNode.removeChild(_oldDrop);
-  // Restore main app menu button
-  var _mainMenu2=document.getElementById('menuBtn');
-  if(_mainMenu2)_mainMenu2.style.visibility='visible';
-  // Restore main header
-  var _mhdr2=document.querySelector('header');
-  if(_mhdr2)_mhdr2.style.visibility='visible';
   var ov=document.getElementById('skyWalkOverlay');
-  ov.style.opacity='0';
-  setTimeout(function(){ov.style.display='none';},400);
+  ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},400);
+  var mb=document.getElementById('menuBtn');if(mb)mb.style.visibility='visible';
+  var oldBtn=document.getElementById('skwMenuBtn');if(oldBtn)oldBtn.parentNode.removeChild(oldBtn);
+  var oldDrop=document.getElementById('skwDropdown');if(oldDrop)oldDrop.parentNode.removeChild(oldDrop);
 }
 
-// ── Wire close button ─────────────────────────────────────────────────────────
-addTap(document.getElementById('skwClose'),function(){closeSkyWalk();});
-addTap(document.getElementById('skwPanelClose'),function(){hideSkyPanel();});
-// ⋮ button toggles the sky walk's own dropdown (no cross-stacking-context issues)
-// skw menu wired dynamically in openSkyWalk
+window.openSkyWalk=openSkyWalk;
+window.closeSkyWalk=closeSkyWalk;
 
-// ── Wire double-tap on Earth in Earth view ────────────────────────────────────
+// Wire double-tap on Earth view canvas
 var _lastEarthTap=0;
-var _issCanvasEl=document.getElementById('issCanvas');
-if(_issCanvasEl){
-  _issCanvasEl.addEventListener('dblclick',function(){openSkyWalk();},{passive:true});
-  _issCanvasEl.addEventListener('touchend',function(e){
-    var now=Date.now();
-    if(now-_lastEarthTap<350){openSkyWalk();}
-    _lastEarthTap=now;
+var _issC=document.getElementById('issCanvas');
+if(_issC){
+  _issC.addEventListener('dblclick',function(){openSkyWalk();},{passive:true});
+  _issC.addEventListener('touchend',function(e){
+    var now=Date.now();if(now-_lastEarthTap<350)openSkyWalk();_lastEarthTap=now;
   },{passive:true});
 }
 
-// Expose globally
-window.openSkyWalk=openSkyWalk;
-window.closeSkyWalk=closeSkyWalk;
-window.hideSkyPanel=hideSkyPanel;
+// Wire addTap for close and panel close buttons
+addTap(document.getElementById('skwClose'),function(){closeSkyWalk();});
+addTap(document.getElementById('skwPanelClose'),function(){hideSkyPanel();});
 
 })(); // end Sky Walk IIFE
+
 
 </script>
 
