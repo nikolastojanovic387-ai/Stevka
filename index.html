@@ -749,6 +749,19 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   </div>
 
   <!-- Info panel (slides up from bottom when object tapped) -->
+  <!-- Star action bar (same pill as galaxy view) -->
+  <div id="skwActionBar" style="position:absolute;bottom:72px;left:8px;z-index:3;
+    display:none;align-items:center;gap:8px;min-width:180px;max-width:280px;
+    background:rgba(0,5,18,0.85);border:1px solid rgba(0,212,255,0.25);border-radius:16px;
+    backdrop-filter:blur(16px);padding:8px 12px;">
+    <div id="skwActDot" style="width:18px;height:18px;border-radius:50%;background:rgba(0,212,255,0.8);flex-shrink:0;font-size:11px;display:flex;align-items:center;justify-content:center;color:#fff;"></div>
+    <div style="flex:1;min-width:0;">
+      <div id="skwActName" style="font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;"></div>
+      <div id="skwActSub" style="font-size:8px;color:rgba(0,212,255,0.6);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;"></div>
+    </div>
+    <div id="skwActInfo" style="background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:8px;padding:5px 10px;font-size:9px;font-family:'Orbitron',monospace;color:var(--cyan);cursor:pointer;touch-action:manipulation;flex-shrink:0;">ℹ Info</div>
+    <div id="skwActClose" style="font-size:16px;color:rgba(255,255,255,0.4);cursor:pointer;touch-action:manipulation;padding:2px 4px;flex-shrink:0;">✕</div>
+  </div>
   <div id="skwPanel" style="position:absolute;bottom:0;left:0;right:0;z-index:3;
     background:rgba(0,5,18,0.95);border-top:1px solid rgba(0,212,255,0.2);
     backdrop-filter:blur(20px);transform:translateY(100%);
@@ -6244,11 +6257,19 @@ function handleTap(cx,cy){
     if(ud.moon){
       const mObj=sysMoonObjs.find(o=>o.moon===ud.moon);
       if(mObj){focusOnObject(mObj.mesh.position.clone(),Math.max(mObj.orbitR*0.5,20));}
-      openMoon(ud.moon);
+      const _mn=ud.moon;
+      const _mnNm=lang==='ru'?(_mn.name_ru||_mn.name):_mn.name;
+      const _mnSub=(_mn.type_ru&&lang==='ru'?_mn.type_ru:_mn.type||'Moon')+(_mn.orbit?' · '+_mn.orbit.toFixed(3)+' AU':'');
+      showObjectActions('🌑',_mnNm,_mnSub,function(){openMoon(_mn);},null);
     } else if(ud.planet){
       const pObj=sysPlanetObjs.find(o=>o.planet===ud.planet);
       if(pObj){focusOnObject(pObj.mesh.position.clone(),Math.max(pObj.pR*18,12));}
-      selPlanet=ud.planet;openPlanet(ud.planet);
+      const _pl=ud.planet;
+      const _plNm=lang==='ru'?pnRu(_pl.name):_pl.name;
+      const _plSub=(lang==='ru'?(_pl.tk_ru||_pl.tk||'Планета'):(_pl.tk||'Planet'))+(_pl.orbit?' · '+_pl.orbit.toFixed(2)+' AU':'');
+      const _enterPl=_pl.name==='Earth'?function(){openISSView();}:null;
+      selPlanet=_pl;
+      showObjectActions(_pl.name==='Earth'?'🌍':_pl.name==='Mars'?'♂':_pl.name==='Jupiter'?'♃':_pl.name==='Saturn'?'♄':_pl.name==='Venus'?'♀':_pl.name==='Mercury'?'☿':_pl.name==='Uranus'?'⛢':_pl.name==='Neptune'?'♆':_pl.name==='Moon'?'🌕':'🪐',_plNm,_plSub,function(){openPlanet(_pl);},_enterPl);
       // ISS button shown inside Earth sheet via renderPlanet
     } else if(ud.isStar&&currentStar){
       sysLookTarget.set(0,0,0);
@@ -6258,11 +6279,20 @@ function handleTap(cx,cy){
       const pObj=sysProbeObjs.find(o=>o.probe===ud.probe);
       const oS=window._orbitScene||(()=>400);
       if(pObj){focusOnObject(pObj.mesh.position.clone(),Math.max(oS(5),80));}
-      openProbe(ud.probe);
+      // Show action bar (same pattern as planets/stars in galaxy view)
+      const _pr=ud.probe;
+      const _prNm=lang==='ru'?(_pr.name_ru||_pr.name):_pr.name;
+      showObjectActions('🛸',_prNm,'Space Probe · '+(_pr.speedAU*(_pr.currentYear||0)||0).toFixed(1)+' AU from Sun',
+        function(){openProbe(_pr);},null);
     } else if(ud.smallBody){
       const sbObj=(window._sysSmallBodyObjs||[]).find(o=>o.body===ud.smallBody);
       if(sbObj){focusOnObject(sbObj.mesh.position.clone(),30);}
-      openSmallBody(ud.smallBody);
+      const _sb=ud.smallBody;
+      const _sbNm=lang==='ru'?(_sb.name_ru||_sb.name):_sb.name;
+      const _sbTp=lang==='ru'?(_sb.type_ru||_sb.type||'Объект'):(_sb.type||'Object');
+      const _sbOrb=_sb.orbit?' · '+parseFloat(_sb.orbit).toFixed(2)+' AU':'';
+      const _sbIcon=(_sb.type||'').toLowerCase().includes('comet')||(_sb.type_ru||'').includes('комет')?'☄':(_sb.type||'').toLowerCase().includes('asteroid')||(_sb.type_ru||'').includes('астер')?'🪨':'🌑';
+      showObjectActions(_sbIcon,_sbNm,_sbTp+_sbOrb,function(){openSmallBody(_sb);},null);
     }
   }
 }
@@ -6508,6 +6538,40 @@ function openMoon(m){
     '<div class="info-card" style="margin-top:10px"><div class="ic-title" style="color:#88ccff">🌫 Atmosphere</div><div style="font-size:12px;color:#aac8e8;line-height:1.6;margin-top:4px">'+mAtm+'</div></div>'+
     '<div class="info-card" style="margin-top:10px"><div class="ic-body">'+desc+'</div></div>'
   );
+}
+
+function renderProbe(probe){
+  const isRu=lang==='ru';
+  const nm=isRu?(probe.name_ru||probe.name):probe.name;
+  const desc=isRu?(probe.desc_ru||probe.desc):probe.desc;
+  const status=isRu?(probe.status_ru||probe.status_en):probe.status_en;
+  const currentYear=jdToDate(sysJD).getUTCFullYear()+(jdToDate(sysJD).getUTCMonth()/12);
+  const distAU=probe.speedAU*(currentYear-probe.launched);
+  const distKm=(distAU*149597870.7).toFixed(0);
+  const distLY=(distAU/63241.1).toFixed(2);
+  const col='#'+probe.color.toString(16).padStart(6,'0');
+  plHead.innerHTML=`<div class="pt-badge" style="background:${col}22;border:1px solid ${col}55;color:${col}">🛸 SPACE PROBE</div><div class="sh-name">${nm}</div><div style="margin-top:7px;font-size:11px;color:rgba(180,210,240,0.7)">${status||''}</div>`;
+  plBody.innerHTML='';
+  // Stats row
+  const statsDiv=document.createElement('div');
+  statsDiv.style.cssText='display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;';
+  [[isRu?'Расстояние':'Distance',distLY+' ly'],[isRu?'От Солнца':'From Sun',distAU.toFixed(1)+' AU'],[isRu?'Запущен':'Launched',Math.floor(probe.launched)],[isRu?'Скорость':'Speed',probe.speedAU.toFixed(2)+' AU/yr']].forEach(function(it){
+    var d=document.createElement('div');
+    d.style.cssText='background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.15);border-radius:10px;padding:7px 11px;text-align:center;flex:1;min-width:80px;';
+    d.innerHTML='<div style="font-size:8px;color:rgba(0,212,255,0.6);letter-spacing:1px;margin-bottom:3px">'+it[0]+'</div><div style="font-size:13px;font-weight:700;color:#fff">'+it[1]+'</div>';
+    statsDiv.appendChild(d);
+  });
+  plBody.appendChild(statsDiv);
+  // Description
+  const descDiv=document.createElement('div');
+  descDiv.style.cssText='font-size:12px;color:rgba(180,210,240,0.85);line-height:1.65;margin-bottom:14px;';
+  descDiv.textContent=desc||'';
+  plBody.appendChild(descDiv);
+  // Distance bar
+  const barDiv=document.createElement('div');
+  barDiv.style.cssText='margin-bottom:14px;padding:10px 12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.07);border-radius:10px;';
+  barDiv.innerHTML='<div style="font-size:8px;letter-spacing:2px;color:rgba(138,176,204,0.4);margin-bottom:6px">DISTANCE FROM SUN</div><div style="font-size:20px;font-weight:700;color:'+col+'">'+distAU.toFixed(1)+' AU</div><div style="font-size:10px;color:rgba(138,176,204,0.5);margin-top:2px">'+distKm+' km  ·  '+(distAU*8.317).toFixed(0)+' light-minutes away</div>';
+  plBody.appendChild(barDiv);
 }
 
 function openProbe(probe){
@@ -8611,15 +8675,17 @@ function updatePlanetPositions(){
 
 // ── Update camera from az/alt ────────────────────────────────────────
 function updateCamera(){
-  if(!SKW.camera)return;
-  // Convert az/alt to a look-at direction vector
+  if(!SKW.camera||SKW.gyroActive)return; // gyro sets quaternion directly
+  // Convert az/alt to look direction for drag/mouse controls
   var lookDir=altAzToVec3(SKW.alt,SKW.az);
-  // Up vector: always use world up (Y=up), camera roll = 0
+  // Up vector
   var up=new THREE.Vector3(0,1,0);
-  // If looking straight up or down, adjust up vector
-  if(Math.abs(SKW.alt)>88)up.set(Math.sin(d2r(SKW.az)),0,-Math.cos(d2r(SKW.az)));
-  SKW.camera.lookAt(lookDir);
+  if(Math.abs(SKW.alt)>88){
+    up.set(Math.sin(d2r(SKW.az+180)),0,-Math.cos(d2r(SKW.az+180)));
+  }
   SKW.camera.up.copy(up);
+  var target=SKW.camera.position.clone().add(lookDir);
+  SKW.camera.lookAt(target);
 }
 
 // ── Render loop ──────────────────────────────────────────────────────
@@ -8650,6 +8716,12 @@ function updateHUD(){
 function requestLocation(){
   var hint=document.getElementById('skwHint');
   if(hint)hint.textContent='ACQUIRING GPS…';
+  // Immediately estimate longitude from timezone offset so stars show roughly correct
+  var tzOff=-(new Date().getTimezoneOffset())/60; // UTC offset in hours
+  SKW.lon=tzOff*15; // rough longitude (±7.5° accurate)
+  SKW.lat=45;       // rough mid-latitude
+  SKW.locReady=true;
+  rebuildStarPositions();
   if(!navigator.geolocation){fetchIPLocation();return;}
   navigator.geolocation.getCurrentPosition(
     function(pos){
@@ -8706,13 +8778,45 @@ function setupControls(){
   var overlay=document.getElementById('skwCanvas');
 
   // Gyroscope
+  // Quaternion for proper full-sphere rotation without gimbal lock or clamping
+  // Standard Three.js DeviceOrientationControls quaternion setup
+  var _euler=new THREE.Euler();
+  var _q1=new THREE.Quaternion(-Math.sqrt(0.5),0,0,Math.sqrt(0.5));
+  var _zee=new THREE.Vector3(0,0,1);
+  var _qScreen=new THREE.Quaternion();
+  var _qDevice=new THREE.Quaternion();
+  var _calibOffset=0; // user can adjust compass offset in degrees
+  SKW.calibOffset=0;
+
   function attachGyro(){
     window.addEventListener('deviceorientation',function(e){
-      if(!SKW.active||e.alpha===null)return;
+      if(!SKW.active||e.alpha===null||e.alpha===undefined)return;
       SKW.gyroActive=true;
-      SKW.az=((360-e.alpha)%360+360)%360;
-      SKW.alt=Math.max(-85,Math.min(85,-e.beta));
       var h=document.getElementById('skwHint');if(h)h.style.opacity='0';
+
+      var alpha=THREE.MathUtils.degToRad((e.alpha+SKW.calibOffset+360)%360);
+      var beta= THREE.MathUtils.degToRad(e.beta||0);
+      var gamma=THREE.MathUtils.degToRad(e.gamma||0);
+
+      // Standard DeviceOrientationControls quaternion (Meade/Three.js reference implementation)
+      _euler.set(beta, alpha, -gamma, 'YXZ');
+      _qDevice.setFromEuler(_euler);
+      _qDevice.multiply(_q1);
+
+      // Screen orientation correction
+      var screenAngle=0;
+      if(window.screen&&window.screen.orientation&&window.screen.orientation.angle!==undefined)
+        screenAngle=window.screen.orientation.angle;
+      else if(window.orientation!==undefined) screenAngle=window.orientation;
+      _qScreen.setFromAxisAngle(_zee,THREE.MathUtils.degToRad(-screenAngle));
+      _qDevice.multiply(_qScreen);
+
+      if(SKW.camera)SKW.camera.quaternion.copy(_qDevice);
+
+      // Update az/alt for compass HUD
+      var dir=new THREE.Vector3(0,0,-1).applyQuaternion(_qDevice);
+      SKW.az=(Math.atan2(dir.x,-dir.z)*180/Math.PI+360)%360;
+      SKW.alt=Math.asin(Math.max(-1,Math.min(1,dir.y)))*180/Math.PI;
     },{passive:true});
   }
   if(typeof DeviceOrientationEvent!=='undefined'){
@@ -8739,8 +8843,12 @@ function setupControls(){
     e.preventDefault();if(!touching)return;
     var t=e.touches[0];
     if(!SKW.gyroActive){
-      SKW.az-=(t.clientX-lt.x)*0.2;
-      SKW.alt=Math.max(-85,Math.min(85,SKW.alt+(t.clientY-lt.y)*0.2));
+      // Accumulate az/alt without clamping alt - allow full sphere
+      SKW.az=(SKW.az-(t.clientX-lt.x)*0.2+360)%360;
+      SKW.alt=SKW.alt+(t.clientY-lt.y)*0.2; // allow going past 90 (wrap around)
+      // Wrap altitude: past zenith continues on other side
+      if(SKW.alt>90){SKW.alt=180-SKW.alt;SKW.az=(SKW.az+180)%360;}
+      if(SKW.alt<-90){SKW.alt=-180-SKW.alt;SKW.az=(SKW.az+180)%360;}
     }
     lt={x:t.clientX,y:t.clientY};
   },{passive:false});
@@ -8753,11 +8861,38 @@ function setupControls(){
   overlay.addEventListener('mousedown',function(e){dragging=true;lt={x:e.clientX,y:e.clientY};});
   overlay.addEventListener('mousemove',function(e){
     if(!dragging)return;
-    SKW.az-=(e.clientX-lt.x)*0.2;
-    SKW.alt=Math.max(-85,Math.min(85,SKW.alt+(e.clientY-lt.y)*0.2));
+    SKW.az=(SKW.az-(e.clientX-lt.x)*0.2+360)%360;
+    SKW.alt=SKW.alt+(e.clientY-lt.y)*0.2;
+    if(SKW.alt>90){SKW.alt=180-SKW.alt;SKW.az=(SKW.az+180)%360;}
+    if(SKW.alt<-90){SKW.alt=-180-SKW.alt;SKW.az=(SKW.az+180)%360;}
     lt={x:e.clientX,y:e.clientY};
   });
   overlay.addEventListener('mouseup',function(e){dragging=false;handleTap(e.clientX,e.clientY);});
+}
+
+// ── Action bar (pill shown on tap before full info panel) ──────────────────
+function showSkyAction(obj){
+  var bar=document.getElementById('skwActionBar');
+  if(!bar)return;
+  var dot=document.getElementById('skwActDot');
+  if(dot){
+    dot.textContent=obj.type==='planet'?(obj.symbol||'●'):obj.type==='constellation'?(obj.symbol||'✦'):'★';
+    dot.style.background=obj.type==='star'?'rgba(255,255,200,0.2)':obj.type==='planet'?(obj.name==='Sun'?'rgba(255,248,100,0.3)':'rgba(0,212,255,0.2)'):'rgba(0,180,255,0.2)';
+  }
+  var nameEl=document.getElementById('skwActName');
+  var subEl=document.getElementById('skwActSub');
+  if(nameEl)nameEl.textContent=obj.name;
+  if(subEl){
+    var sub=obj.type==='planet'?
+      (obj.name==='Sun'?'☀ Our Star · Alt '+Math.round(obj.alt||0)+'°':
+       obj.name==='Moon'?'🌕 Natural satellite · Alt '+Math.round(obj.alt||0)+'°':
+       '🪐 Planet · Alt '+Math.round(obj.alt||0)+'°'):
+      obj.type==='constellation'?'✦ Constellation':
+      ('★ '+(obj.spectral||'')+' · Mag '+parseFloat(obj.mag||0).toFixed(1)+' · Alt '+Math.round(obj.alt||0)+'°');
+    subEl.textContent=sub;
+  }
+  bar._obj=obj;
+  bar.style.display='flex';
 }
 
 // ── Tap detection (raycasting alternative: project stars to screen) ──
@@ -8784,7 +8919,7 @@ function handleTap(tx,ty){
     var d=Math.hypot(sx-tx,sy-ty);
     if(d<bestD){bestD=d;best=Object.assign({},pl,{sx:sx,sy:sy});}
   });
-  if(best)showInfo(best);else hideInfo();
+  if(best){showSkyAction(best);hideInfo();}else{if(window.hideSkyAction)window.hideSkyAction();hideInfo();}
 }
 
 function showInfo(obj){
@@ -8825,6 +8960,7 @@ function openSkyWalk(){
   SKW.locReady=true; // show stars immediately, update positions when GPS arrives
   buildSkyScene();
   setupControls();
+// action bar wired at module level
   requestLocation();
   setTimeout(function(){ov.style.opacity='1';},50);
   var mb=document.getElementById('menuBtn');if(mb)mb.style.visibility='hidden';
@@ -8848,6 +8984,14 @@ function openSkyWalk(){
   drop.appendChild(mk('🔲','Toggle Grid',function(el){SKW.showGrid=!SKW.showGrid;el.style.color=SKW.showGrid?'var(--cyan)':'';cdrop();}));
   drop.appendChild(mk('✦','Constellations',function(el){SKW.showCons=!SKW.showCons;el.style.color=SKW.showCons?'var(--cyan)':'';cdrop();}));
   drop.appendChild(mk('🧭','Face South',function(){SKW.az=180;SKW.alt=30;cdrop();}));
+  drop.appendChild(mk('🔧','Calibrate (if Sun seems off, use this)',function(){
+    // Add 10° to compass offset each tap (magnetic declination correction)
+    SKW.calibOffset=(SKW.calibOffset+10)%360;
+    var hint=document.getElementById('skwHint');
+    if(hint){hint.textContent='COMPASS OFFSET: '+SKW.calibOffset+'° (tap ⋮→🔧 to adjust)';hint.style.opacity='1';
+      setTimeout(function(){hint.style.opacity='0.3';},3000);}
+    cdrop();
+  }));
   document.body.appendChild(drop);
   var btn=document.createElement('div');btn.id='skwMenuBtn';btn.className='hbtn';
   btn.style.cssText='position:fixed;top:7px;right:8px;z-index:40000;width:38px;height:38px;font-size:20px;font-weight:700;letter-spacing:-1px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
@@ -8879,6 +9023,21 @@ function closeSkyWalk(){
 
 window.openSkyWalk=openSkyWalk;
 window.closeSkyWalk=closeSkyWalk;
+window.hideSkyAction=function(){
+  var bar=document.getElementById('skwActionBar');
+  if(bar)bar.style.display='none';
+};
+window.showSkyAction=showSkyAction; // now defined above
+// Wire action bar buttons with addTap (called at script load, elements exist)
+addTap(document.getElementById('skwActInfo'),function(){
+  var bar=document.getElementById('skwActionBar');
+  if(bar&&bar._obj){showInfo(bar._obj);}
+  window.hideSkyAction();
+});
+addTap(document.getElementById('skwActClose'),function(){
+  window.hideSkyAction();
+  hideInfo();
+});
 
 // Wire close buttons
 addTap(document.getElementById('skwClose'),function(){closeSkyWalk();});
